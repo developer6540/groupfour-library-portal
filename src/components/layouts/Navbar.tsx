@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useEffect, useState} from "react";
-import axios from "axios";
+import {FirstNameOnly} from "@/lib/helper";
 
 interface User {
     U_NAME: string;
@@ -49,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                 {/* Theme Toggle Button */}
                 <button
                     className="btn btn-outline-light border rounded-circle p-2 d-flex align-items-center justify-content-center"
-                    style={{ width: '45px', height: '45px' }}
+                    style={{ width: '35px', height: '35px' }}
                 >
                     <i className="bi bi-cart text-dark fs-5"></i>
                 </button>
@@ -58,7 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                 <div className="dropdown">
                     <button
                         className="btn btn-outline-light border rounded-circle p-2 d-flex align-items-center justify-content-center hide-caret"
-                        style={{ width: '45px', height: '45px' }}
+                        style={{ width: '35px', height: '35px' }}
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
                     >
@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                 {/* User Dropdown */}
                 <div className="dropdown">
                     <a
-                        className="nav-link p-0 d-flex align-items-center gap-2 dropdown-toggle hide-caret"
+                        className="prfl nav-link p-0 d-flex align-items-center gap-2 dropdown-toggle hide-caret"
                         href="#"
                         role="button"
                         data-bs-toggle="dropdown"
@@ -106,39 +106,34 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jonh"
                             alt="User"
                             className="rounded-circle border"
-                            width={45}
-                            height={45}
+                            width={35}
+                            height={35}
                         />
                         <div className="d-none d-md-block text-dark">
-                            <span className="fw-semibold text-capitalize">{dataArr.user?.U_NAME}</span>
+                            <span className="p-name fw-semibold small text-uppercase">{FirstNameOnly(dataArr.user?.U_NAME)}</span>
                             <i className="bi bi-chevron-down ms-1 small"></i>
                         </div>
                     </a>
 
                     <ul className="dropdown-menu dropdown-menu-end shadow border-0 p-3 mt-3 user-profile-dropdown">
-                        <li className="px-2 pb-3 border-bottom mb-2">
-                            <h6 className="mb-0 fw-bold text-dark text-capitalize">{dataArr.user?.U_NAME}</h6>
-                            <small className="text-muted text-capitalize">{dataArr.user?.U_EMAIL}</small>
+                        <li className="p-0 border-bottom mb-2">
+                            <p className="mb-0 fw-bold small text-dark text-capitalize">{dataArr.user?.U_NAME.toLowerCase()}</p>
+                            <p className="text-muted small">{dataArr.user?.U_EMAIL.toLowerCase()}</p>
                         </li>
                         <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="#">
-                                <i className="bi bi-person fs-5"></i> Edit profile
+                            <a className="dropdown-item d-flex align-items-center gap-3 py-1 px-2" href="#">
+                                <i className="bi small bi-person fs-5"></i> Edit profile
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="#">
-                                <i className="bi bi-gear fs-5"></i> Account settings
-                            </a>
-                        </li>
-                        <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="#">
-                                <i className="bi bi-info-circle fs-5"></i> Support
+                            <a className="dropdown-item d-flex align-items-center gap-3 py-1 px-2" href="#">
+                                <i className="bi small bi-gear fs-5"></i> Account settings
                             </a>
                         </li>
                         <li><hr className="dropdown-divider mx-n2" /></li>
                         <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2 text-dark" href="#">
-                                <i className="bi bi-box-arrow-right fs-5"></i> Sign out
+                            <a className="dropdown-item d-flex align-items-center gap-3 py-1 px-2 text-dark" href="#">
+                                <i className="bi small bi-box-arrow-right fs-5"></i> Sign out
                             </a>
                         </li>
                     </ul>

@@ -1,5 +1,6 @@
 "use client";
 import "./WelcomeBanner.scss"
+import {FirstNameOnly} from "@/lib/helper";
 
 export default function WelcomeBanner({ user }) {
     return (
@@ -7,7 +8,7 @@ export default function WelcomeBanner({ user }) {
             <div className="card-body d-flex align-items-center">
                 <div className="px-4 py-4">
                     <h4 className="bnr-wlcm mb-3 d-flex align-items-center">
-                        <span className="text-capitalize">Welcome Back, {user?.U_NAME}</span>
+                        <span className="text-capitalize">Welcome Back, {FirstNameOnly(user?.U_NAME)}</span>
                         <img
                             className="bnr-img ms-2"
                             src="/img/hand.gif"
