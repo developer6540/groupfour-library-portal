@@ -26,7 +26,7 @@ export default function SignInPage() {
                     {/* Dark Overlay */}
                     <div
                         className="position-absolute top-0 start-0 w-100 h-100"
-                        style={{background: "rgba(26,24,41,0.70)"}}
+                        style={{background: "rgba(0,0,0,0.60)"}}
                     />
 
                     {/* Content */}
@@ -47,7 +47,7 @@ export default function SignInPage() {
                             </span>
                         </h1>
 
-                        <p className="text-white fs-5 mb-4" style={{ opacity: "0.85" }}>
+                        <p className="text-white fs-5 mb-4" style={{ opacity: "0.80" }}>
                             Sign in to continue exploring new books, connecting with fellow readers, and managing your personal library effortlessly.
                         </p>
 

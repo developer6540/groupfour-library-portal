@@ -23,7 +23,7 @@ export default function SignInPage() {
                     {/* Overlay */}
                     <div
                         className="position-absolute top-0 start-0 w-100 h-100"
-                        style={{background: "rgb(0 0 0 / 50%)"}}
+                        style={{background: "rgba(0,0,0,0.60)"}}
                     />
 
                     {/* Content */}
@@ -42,7 +42,7 @@ export default function SignInPage() {
       </span>
                         </h1>
 
-                        <p className="text-white fs-5 mb-4" style={{ opacity: "0.85" }}>
+                        <p className="text-white fs-5 mb-4" style={{ opacity: "0.80" }}>
                             Reset your password to continue discovering books, managing your library, and staying connected with the reading community.
                         </p>
                     </div>

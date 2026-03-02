@@ -24,7 +24,7 @@ export default function RegisterPage() {
                         {/* Overlay */}
                         <div
                             className="position-absolute top-0 start-0 w-100 h-100"
-                            style={{background: "rgb(0 0 0 / 40%)"}}
+                            style={{background: "rgba(0,0,0,0.60)"}}
                         />
 
                         {/* Content */}
@@ -43,7 +43,7 @@ export default function RegisterPage() {
                                 </span>
                             </h1>
 
-                            <p className="text-white fs-5 mb-4" style={{ opacity: "0.85" }}>
+                            <p className="text-white fs-5 mb-4" style={{ opacity: "0.80" }}>
                                 Create your account today to discover amazing books, connect with like-minded readers, and start building your own personalized library.
                             </p>
                         </div>
