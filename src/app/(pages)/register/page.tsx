@@ -24,7 +24,7 @@ export default function RegisterPage() {
                         {/* Overlay */}
                         <div
                             className="position-absolute top-0 start-0 w-100 h-100"
-                            style={{background: "rgba(0,0,0,0.60)"}}
+                            style={{background: "rgba(0,0,0,0.55)"}}
                         />
 
                         {/* Content */}
