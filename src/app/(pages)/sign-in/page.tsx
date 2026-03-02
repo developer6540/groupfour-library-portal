@@ -26,7 +26,7 @@ export default function SignInPage() {
                     {/* Dark Overlay */}
                     <div
                         className="position-absolute top-0 start-0 w-100 h-100"
-                        style={{background: "rgb(0 0 0 / 60%)"}}
+                        style={{background: "rgba(26,24,41,0.70)"}}
                     />
 
                     {/* Content */}
