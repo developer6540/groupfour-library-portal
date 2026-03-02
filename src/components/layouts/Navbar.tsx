@@ -1,7 +1,7 @@
 'use client';
 
-import React, {useEffect, useState} from "react";
-import {FirstNameOnly} from "@/lib/helper";
+import React, { useState } from "react";
+import { FirstNameOnly } from "@/lib/helper";
 
 interface User {
     U_NAME: string;
@@ -16,6 +16,13 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
+    // Local state to control icon change
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleToggle = () => {
+        setIsOpen(prev => !prev); // toggle the icon state
+        onToggle(); // call parent toggle
+    };
 
     return (
         <nav className="navbar navbar-expand navbar-light px-4 py-3">
@@ -23,9 +30,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
             <button
                 type="button"
                 className="btn btn-link link-dark p-0 me-auto"
-                onClick={onToggle}
+                onClick={handleToggle}
             >
-                <i className="bi bi-list fs-4"></i>
+                <i className={`bi ${isOpen ? "bi-text-indent-left fs-2" : "bi-text-indent-right fs-2"} `} style={{color:"rgba(104,104,104,0.81)"}}></i>
             </button>
 
             {/* Search Box */}
@@ -38,14 +45,13 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                         aria-label="Search"
                     />
                     <span className="input-group-text bg-light border-start-0 rounded-end-pill pe-3">
-                      <i className="bi bi-search text-muted"></i>
+                        <i className="bi bi-search text-muted"></i>
                     </span>
                 </div>
             </div>
 
             {/* Right-side items */}
             <div className="d-flex align-items-center gap-3">
-
                 {/* Theme Toggle Button */}
                 <button
                     className="btn btn-outline-light border rounded-circle p-2 d-flex align-items-center justify-content-center"
@@ -64,15 +70,12 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                     >
                         <i className="bi bi-bell text-dark fs-5"></i>
                     </button>
-
                     <div className="dropdown-menu dropdown-menu-end shadow border-0 p-0 mt-3 notification-dropdown">
                         <div className="p-3 d-flex justify-content-between align-items-center border-bottom">
                             <h6 className="mb-0 fw-bold">Notification</h6>
                             <button className="btn-close small" style={{ fontSize: '10px' }}></button>
                         </div>
-
                         <div className="notification-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            {/* Example Notification Items */}
                             {[1, 2, 3, 4].map((item) => (
                                 <a key={item} href="#" className="dropdown-item d-flex align-items-start gap-3 p-3 border-bottom">
                                     <div>
@@ -84,7 +87,6 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                                 </a>
                             ))}
                         </div>
-
                         <div className="p-2 text-center">
                             <a href="#" className="btn btn-link text-decoration-none text-dark fw-bold w-100 py-2 border rounded">
                                 View All Notification
@@ -114,7 +116,6 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                             <i className="bi bi-chevron-down ms-1 small"></i>
                         </div>
                     </a>
-
                     <ul className="dropdown-menu dropdown-menu-end shadow border-0 p-3 mt-3 user-profile-dropdown">
                         <li className="p-0 border-bottom mb-2">
                             <p className="mb-0 fw-bold small text-dark text-capitalize">{dataArr.user?.U_NAME.toLowerCase()}</p>
