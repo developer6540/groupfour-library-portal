@@ -1,0 +1,42 @@
+.stat-card {
+    border-radius: 20px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
+    }
+}
+
+.card-bg-blob {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    opacity: 0.05;
+    z-index: 0;
+    filter: blur(20px);
+}
+
+.stat-icon-wrapper {
+    transition: transform 0.3s ease;
+    .stat-card:hover & {
+        transform: rotate(-10deg) scale(1.1);
+    }
+}
+
+/* Light Badge Backgrounds */
+.bg-success-light {
+    background-color: rgba(45, 206, 137, 0.15) !important;
+}
+
+.bg-danger-light {
+    background-color: rgba(245, 54, 92, 0.15) !important;
+}
+
+.z-1 {
+    z-index: 1;
+}

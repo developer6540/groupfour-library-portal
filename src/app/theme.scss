@@ -1,0 +1,243 @@
+/* --- Layout Global --- */
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Wrapper (Content Area to the right of fixed sidebar) */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+
+    &.full-width {
+        margin-left: 0;
+    }
+}
+
+/* --- Sidebar (Full Height) --- */
+.sidebar {
+    width: 280px;
+    background: url("/img/ptn2.png") repeat center center #fff;
+    color: #212529;
+    transition: all 0.3s ease;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1060;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0px 11px 0px rgba(0, 0, 0, 0.05);
+
+    &.collapsed {
+        width: 0;
+        margin-left: -280px;
+    }
+
+    /* Sidebar Logo Area */
+    .sidebar-header {
+        height: 65px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 1rem;
+        flex-shrink: 0;
+        border-bottom: 1px solid #ebeef2;
+        background: inherit;
+        transition: all 0.3s ease;
+
+        .text-purple {
+            color: #6e5bd8;
+        }
+    }
+
+    /* Sidebar content scroll */
+    .sidebar-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+
+        .nav-label {
+            color: #61748f;
+            font-size: 14px;
+        }
+    }
+
+    /* --- Navigation Links --- */
+    .nav-link {
+        font-size: 14px;
+        color: #6c757d;
+        padding: 10px 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        border-radius: 5px;
+        margin: 5px 15px;
+        transition: all 0.2s;
+        background-color: rgba(234, 234, 234, 0.07);
+        border: rgba(236, 236, 236, 0.56) solid 1px;
+
+        &.active {
+            color: #ffffff !important;
+            background: #6e5bd8 !important;
+        }
+
+        &:hover:not(.active) {
+            color: #ffffff !important;
+            background: #6e5bd8 !important;
+            cursor: pointer;
+            transition: background-color 0.8s ease, color 0.2s ease;
+        }
+    }
+
+    /* --- Submenu Links --- */
+    .nav-submenu {
+        list-style: none;
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.35s ease, opacity 0.25s ease;
+
+        &.submenu-open {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .nav-link-sub {
+            color: #61748f;
+            padding: 8px 10px 8px 10px;
+            display: block;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 5px 15px;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                color: #6e5bd8;
+                background-color: rgba(115, 93, 255, 0.15);
+                cursor: pointer;
+            }
+        }
+    }
+
+    /* Highlight parent link when hovering over submenu */
+    .nav-item {
+        position: relative;
+
+        &:hover > .nav-link {
+            color: #ffffff;
+            background-color: #6e5bd8;
+        }
+    }
+}
+
+/* --- Navbar (Sticky within Content Area) --- */
+.navbar {
+    height: 65px;
+    background: url("/img/ptn2.png") repeat center center #fff;
+    border-bottom: 1px solid #ebeef2;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1050;
+    padding: 0 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+
+    .hide-caret::after {
+        display: none !important;
+    }
+
+    .btn-outline-light {
+        border-color: #ebeef2 !important;
+        color: #212529;
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: #f8f9fa;
+            border-color: #d1d5db !important;
+        }
+    }
+}
+
+/* --- Dropdowns --- */
+.dropdown-menu {
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #735dff1a !important;
+}
+
+.notification-dropdown {
+    width: 350px;
+    padding: 0 !important;
+    overflow: hidden;
+
+    .notification-list {
+        &::-webkit-scrollbar { width: 5px; }
+        &::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
+    }
+
+    .dropdown-item {
+        white-space: normal;
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 16px;
+
+        &:last-child { border-bottom: none; }
+    }
+}
+
+.user-profile-dropdown {
+    width: 280px;
+    padding: 1rem !important;
+
+    .dropdown-item {
+        border-radius: 8px;
+        font-weight: 500;
+        color: #4a5568;
+        padding: 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+
+        i {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        &:hover {
+            background: #735dff1a;
+            color: #6e5bd8;
+
+            i { color: #6e5bd8; }
+        }
+    }
+}
+
+/* --- Mobile / Responsive --- */
+@media (max-width: 992px) {
+    .wrapper { margin-left: 0 !important; }
+
+    .sidebar {
+        margin-left: -280px;
+        z-index: 1100;
+
+        &.mobile-show { margin-left: 0; }
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1090;
+        backdrop-filter: blur(2px);
+    }
+
+    .notification-dropdown { width: 90vw; }
+}
