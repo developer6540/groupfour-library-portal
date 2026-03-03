@@ -7,21 +7,20 @@ import StudentInfo from "@/components/pages/Dashboard/StudentInfo";
 import BookBorrowedList from "@/components/pages/Dashboard/BookBorrowedList";
 import PenaltyDetails from "@/components/pages/Dashboard/PenaltyDetails";
 import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
+import {getBaseUrl} from "@/lib/helper";
 
 export default async function DashboardPage() {
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     let user = null;
 
     try {
-        const response = await axios.get(`${baseUrl}/api/v1/user/00005`);
+        const response = await axios.get(`${getBaseUrl()}/api/v1/user/00005`);
         user = response.data.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
-            console.error("Dashboard data fetch failed:", error.message);
+            console.log("Dashboard data fetch failed:", error.message);
         } else {
-            console.error("An unknown error occurred", error);
+            console.log("An unknown error occurred", error);
         }
     }
 
