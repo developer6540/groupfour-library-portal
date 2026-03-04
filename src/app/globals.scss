@@ -31,6 +31,12 @@ hr {
     background: #6251ca!important;
 }
 
+.form-control:focus {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
