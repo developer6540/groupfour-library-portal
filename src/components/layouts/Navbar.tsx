@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                         aria-expanded="false"
                     >
                         <img
-                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jonh"
+                            src="/img/profile-image.jpg"
                             alt="User"
                             className="rounded-circle border"
                             width={35}

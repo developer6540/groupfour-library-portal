@@ -1,20 +1,29 @@
 .stat-card {
+    position: relative;
     border-radius: 20px !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background: #ffffff;
+    border-bottom: 4px solid #6e5bd8 !important;
+    overflow: hidden;
 
     &:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
     }
+
+    .card-body {
+        position: relative;
+        z-index: 1;
+        padding: 1.5rem 1.25rem; // consistent padding
+    }
 }
 
 .card-bg-blob {
     position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 100px;
-    height: 100px;
+    top: -15px;
+    right: -15px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     opacity: 0.05;
     z-index: 0;
@@ -28,7 +37,20 @@
     }
 }
 
-/* Light Badge Backgrounds */
+/* Text inside card */
+.text-muted {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.25rem;
+}
+
+h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* Badge Light Backgrounds */
 .bg-success-light {
     background-color: rgba(45, 206, 137, 0.15) !important;
 }
@@ -39,4 +61,34 @@
 
 .z-1 {
     z-index: 1;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 992px) {
+    .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .stat-icon-wrapper {
+        width: 45px;
+        height: 45px;
+    }
+
+    h3 {
+        font-size: 1.3rem;
+    }
+
+    .text-muted {
+        font-size: 0.65rem;
+    }
 }

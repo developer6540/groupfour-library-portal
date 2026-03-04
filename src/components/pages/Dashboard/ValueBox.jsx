@@ -48,10 +48,8 @@ export default function ValueBox() {
             {stats.map((item, index) => (
                 <div key={index} className="col-xl-3 col-md-6">
                     <div className="card stat-card border-0 shadow-sm h-100 overflow-hidden">
-                        {/* Decorative background gradient blob */}
                         <div className="card-bg-blob" style={{ backgroundColor: item.color }}></div>
-
-                        <div className="card-body position-relative z-1 pt-4 pb-2 px-4">
+                        <div className="card-body z-1 pt-4 pb-2 px-4">
                             <div className="d-flex justify-content-between align-items-start mb-3">
                                 <div>
                                     <p className="text-muted text-uppercase fw-bold mb-1" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>
@@ -72,7 +70,6 @@ export default function ValueBox() {
                                     <i className={`bi ${item.icon} text-white fs-4`}></i>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>

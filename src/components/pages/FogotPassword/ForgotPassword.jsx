@@ -56,7 +56,7 @@ export default function ForgotPassword() {
                     type="submit"
                     className="btn btn-purple w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                 >
-                    <FaLock size={16} />
+                    <FaKey size={16} />
                     Reset Password
                 </button>
             </form>

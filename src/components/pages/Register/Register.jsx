@@ -9,7 +9,7 @@ import {
     FaUser,
     FaPhone,
     FaMapMarkerAlt,
-    FaVenusMars,
+    FaVenusMars, FaLock,
 } from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
 import "./Register.scss"
@@ -189,6 +189,7 @@ export default function Register() {
                     type="submit"
                     className="btn btn-purple w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                 >
+                    <FaUser size={16} />
                     Create Account
                 </button>
             </form>

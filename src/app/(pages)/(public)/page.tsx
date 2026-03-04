@@ -3,11 +3,12 @@ import axios from "axios";
 import "./page.scss"
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
 import ValueBox from "@/components/pages/Dashboard/ValueBox";
-import StudentInfo from "@/components/pages/Dashboard/StudentInfo";
+import MemberInfo from "@/components/pages/Dashboard/MemberInfo";
 import BookBorrowedList from "@/components/pages/Dashboard/BookBorrowedList";
 import PenaltyDetails from "@/components/pages/Dashboard/PenaltyDetails";
 import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
 import {getBaseUrl} from "@/lib/helper";
+import PageTitleBar from "@/components/common/PageTitleBar";
 
 export default async function DashboardPage() {
 
@@ -29,6 +30,9 @@ export default async function DashboardPage() {
     return <>
         <MainLayoutContent dataArr={dataArr}>
             <div className="container-fluid p-4">
+
+                <PageTitleBar title="Dashboard" />
+
                 {/* Welcome Banner */}
                 <div className="row mb-4">
                     <div className="col-12">
@@ -43,8 +47,8 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="row">
-                    <div className="col-12">
-                        <StudentInfo />
+                    <div className="col-lg-12 mb-4 col-md-12">
+                        <MemberInfo user={user}  />
                     </div>
                 </div>
 
