@@ -1,4 +1,4 @@
-//export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 import type { Metadata } from "next";
 import { Quicksand, Inter } from "next/font/google";
