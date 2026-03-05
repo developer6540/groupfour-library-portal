@@ -1,5 +1,4 @@
 .book-catalog {
-    padding: 40px;
     .search-panel {
         border: 1px solid #eee;
         border-radius: 10px;
@@ -38,7 +37,7 @@
         position: relative;
         overflow: hidden;
         background: #fafafa;
-
+        padding: 0px;
         .book-image {
             width: 100%;
             height: 100%;

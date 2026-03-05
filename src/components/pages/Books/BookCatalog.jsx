@@ -44,7 +44,7 @@ export default function BookCatalog({ books = [] }) {
     };
 
     return (
-        <div className="book-catalog container py-4">
+        <div className="book-catalog container">
             {/* MULTIPLE SEARCH TEXTBOXES */}
             <div className="search-panel p-4 mb-3  bg-white">
                 <div className="row g-3 align-items-end">
@@ -124,11 +124,11 @@ export default function BookCatalog({ books = [] }) {
                                 <p className="book-author">by {book.author}</p>
 
                                 <div className="book-isbn">
-                                    <small className="isbn-label">ISBN</small>
-                                    <small className="isbn-number">{book.isbn}</small>
+                                    <small >ISBN</small>
+                                    <small >{book.isbn}</small>
                                 </div>
 
-                                <div className="book-isbn">
+                                <div >
                                     <small className="isbn-number">({book.category})</small>
                                 </div>
 
