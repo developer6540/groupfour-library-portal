@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     let user = null;
 
     try {
-        const response = await fetch(`${getBaseUrl()}/api/v1/user/00002`);
+        const response = await fetch(`${getBaseUrl()}/api/v1/user/00001`);
         if(response.status == 200){
             const data = await response.json();
             user = data.data;
