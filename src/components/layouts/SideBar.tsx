@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from "react";
-import { FaBookOpenReader } from "react-icons/fa6";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SideBarProps {
     isCollapsed: boolean;
@@ -10,6 +11,23 @@ interface SideBarProps {
     closeMobileSidebar: () => void;
 }
 
+const menuItems = [
+    {
+        title: "Dashboard",
+        icon: "bi-grid-3x3-gap-fill",
+        path: "/"
+    },
+    {
+        title: "Book Catalog",
+        icon: "bi-book",
+        key: "book-catalog",
+        children: [
+            { title: "Book List", path: "/books" },
+            { title: "Reserve Book", path: "/books/reserve" }
+        ]
+    }
+];
+
 const SideBar: React.FC<SideBarProps> = ({
                                              isCollapsed,
                                              isMobile,
@@ -17,18 +35,33 @@ const SideBar: React.FC<SideBarProps> = ({
                                              closeMobileSidebar,
                                          }) => {
 
+    const pathname = usePathname();
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-    const toggleMenu = (menuName: string) => {
-        setActiveMenu(activeMenu === menuName ? null : menuName);
+    const toggleMenu = (menuKey: string) => {
+        setActiveMenu(activeMenu === menuKey ? null : menuKey);
     };
+
+    const handleClick = () => {
+        if (isMobile) closeMobileSidebar();
+    };
+
+    useEffect(() => {
+        const parentMenu = menuItems.find(item =>
+            item.children?.some(child => pathname.startsWith(child.path))
+        );
+
+        if (parentMenu?.key) {
+            setActiveMenu(parentMenu.key);
+        }
+    }, [pathname]);
 
     return (
         <nav className={`sidebar 
             ${isCollapsed && !isMobile ? 'collapsed' : ''} 
             ${isMobile && mobileSidebar ? 'mobile-show' : ''}`}>
 
-            {/* BRAND LOGO */}
+            {/* LOGO */}
             <div className="sidebar-header d-flex align-items-center justify-content-center px-3">
                 <img src="/img/logo.png" width={170} alt="Library" />
             </div>
@@ -37,63 +70,70 @@ const SideBar: React.FC<SideBarProps> = ({
             <div className="sidebar-content">
                 <ul className="nav flex-column mb-4 pt-3">
 
-                    {/* DASHBOARD */}
-                    <li className="nav-item">
-                        <a href="#" className="nav-link active">
-                            <i className="bi bi-grid-3x3-gap-fill me-3"></i>
-                            {!isCollapsed && <span>Dashboard</span>}
-                        </a>
-                    </li>
+                    {menuItems.map((menu, index) => {
 
-                    {/* SAMPLE PAGE 1 */}
-                    <li className="nav-item">
-                        <div
-                            className="nav-link d-flex align-items-center cursor-pointer"
-                            onClick={() => toggleMenu('sample1')}
-                        >
-                            <i className="bi bi-grid-3x3-gap-fill me-3"></i>
-                            {!isCollapsed && <span>Sample Page 1</span>}
-                            <i
-                                className="bi bi-chevron-down ms-auto small"
-                                style={{
-                                    transition: "transform 0.3s ease",
-                                    transform: activeMenu === 'sample1' ? 'rotate(180deg)' : 'rotate(0deg)'
-                                }}
-                            ></i>
-                        </div>
-                        <ul className={`nav-submenu ${activeMenu === 'sample1' ? 'submenu-open' : ''}`}>
-                            <li>
-                                <a href="#" className="nav-link-sub">
-                                    <i className="bi bi-caret-right-fill me-1"></i> Sub Page 1
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                        if (!menu.children) {
+                            return (
+                                <li key={index} className="nav-item">
+                                    <Link
+                                        href={menu.path}
+                                        onClick={handleClick}
+                                        className={`nav-link ${pathname === menu.path ? "active" : ""}`}
+                                    >
+                                        <i className={`bi ${menu.icon} me-3`}></i>
+                                        {!isCollapsed && <span>{menu.title}</span>}
+                                    </Link>
+                                </li>
+                            );
+                        }
 
-                    {/* SAMPLE PAGE 2 */}
-                    <li className="nav-item">
-                        <div
-                            className="nav-link d-flex align-items-center cursor-pointer"
-                            onClick={() => toggleMenu('sample2')}
-                        >
-                            <i className="bi bi-grid-3x3-gap-fill me-3"></i>
-                            {!isCollapsed && <span>Sample Page 2</span>}
-                            <i
-                                className="bi bi-chevron-down ms-auto small"
-                                style={{
-                                    transition: "transform 0.3s ease",
-                                    transform: activeMenu === 'sample2' ? 'rotate(180deg)' : 'rotate(0deg)'
-                                }}
-                            ></i>
-                        </div>
-                        <ul className={`nav-submenu ${activeMenu === 'sample2' ? 'submenu-open' : ''}`}>
-                            <li>
-                                <a href="#" className="nav-link-sub">
-                                    <i className="bi bi-caret-right-fill me-1"></i> Sub Page 1
-                                </a>
+                        return (
+                            <li key={index} className="nav-item">
+
+                                <div
+                                    className={`nav-link d-flex align-items-center cursor-pointer ${
+                                        activeMenu === menu.key ? "active" : ""
+                                    }`}
+                                    onClick={() => toggleMenu(menu.key!)}
+                                >
+                                    <i className={`bi ${menu.icon} me-3`}></i>
+
+                                    {!isCollapsed && <span>{menu.title}</span>}
+
+                                    {!isCollapsed && (
+                                        <i
+                                            className="bi bi-chevron-down ms-auto small"
+                                            style={{
+                                                transition: "transform 0.3s",
+                                                transform: activeMenu === menu.key
+                                                    ? "rotate(180deg)"
+                                                    : "rotate(0deg)"
+                                            }}
+                                        />
+                                    )}
+                                </div>
+
+                                <ul className={`nav-submenu ${activeMenu === menu.key ? "submenu-open" : ""}`}>
+
+                                    {menu.children.map((sub, i) => (
+                                        <li key={i}>
+                                            <Link
+                                                href={sub.path}
+                                                onClick={handleClick}
+                                                className={`nav-link-sub ${
+                                                    pathname === sub.path ? "active" : ""
+                                                }`}
+                                            >
+                                                <i className="bi bi-caret-right-fill me-1"></i>
+                                                {sub.title}
+                                            </Link>
+                                        </li>
+                                    ))}
+
+                                </ul>
                             </li>
-                        </ul>
-                    </li>
+                        );
+                    })}
 
                 </ul>
             </div>

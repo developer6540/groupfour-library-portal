@@ -113,21 +113,37 @@
             font-weight: 600;
             margin: 5px 15px;
             border-radius: 10px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
 
-            &:hover {
+            &:hover,
+            &.active {
                 color: #6e5bd8;
                 background-color: rgba(115, 93, 255, 0.15);
+                transform: translateX(5px);
             }
         }
     }
 
     .nav-item {
         position: relative;
-
         &:hover > .nav-link {
             color: #ffffff;
             background-color: #6e5bd8;
+        }
+    }
+}
+
+.user-profile-dropdown{
+    .dropdown-item {
+        border-radius: 16px !important;
+        font-size: 14px !important;
+        color: #6c757d;
+        transition: all 0.2s ease;
+        padding: 8px 15px !important;
+        font-weight: bold;
+        &:hover {
+            background-color: rgba(115, 93, 255, 0.15);
+            color: #6e5bd8!important;
         }
     }
 }

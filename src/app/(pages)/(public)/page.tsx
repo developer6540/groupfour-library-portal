@@ -9,13 +9,14 @@ import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
 import {getBaseUrl} from "@/lib/utility";
 import PageTitleBar from "@/components/common/PageTitleBar";
 import Logger from "@/lib/logger";
+import {SetSession} from "@/components/session/NextSession";
 
 export default async function DashboardPage() {
 
     let user = null;
 
     try {
-        const response = await fetch(`${getBaseUrl()}/api/v1/user/00005`);
+        const response = await fetch(`${getBaseUrl()}/api/v1/user/00002`);
         if(response.status == 200){
             const data = await response.json();
             user = data.data;
@@ -24,10 +25,11 @@ export default async function DashboardPage() {
         Logger.error(error)
     }
 
-    const dataArr = { user };
-
     return <>
-        <MainLayoutContent dataArr={dataArr}>
+
+        <SetSession name="user-info" data={user} />
+
+        <MainLayoutContent user={user}>
             <div className="container-fluid p-4">
 
                 <PageTitleBar title="Dashboard" />

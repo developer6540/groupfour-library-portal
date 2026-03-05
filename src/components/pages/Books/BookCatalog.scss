@@ -1,0 +1,110 @@
+.book-catalog {
+    background-color: #fff;
+    border-radius: 25px;
+    padding: 40px;
+    .search-panel {
+        border: 1px solid #eee;
+        .search-btn {
+            background-color: #8677ed;
+            border: none;
+            padding: 10px;
+            border-radius: 35px!important;
+            font-weight: 600;
+            &:hover {
+                background-color: #6459b1;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
+            }
+        }
+    }
+
+    .book-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 4px; // Squarer corners like the image
+        transition: all 0.3s ease;
+        border: 1px solid #f0f0f0;
+        height: 100%;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            .book-overlay { opacity: 1; }
+        }
+    }
+
+    .book-image-container {
+        position: relative;
+        aspect-ratio: 2 / 3;
+        overflow: hidden;
+        background: #fafafa;
+
+        .book-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .book-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        opacity: 0;
+        background: rgba(0,0,0,0.02);
+        transition: opacity 0.3s ease;
+    }
+
+    .action-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &.cart-btn { background: #2ebef3; color: white; }
+        &.view-btn { background: white; color: #333; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    }
+
+    .book-info {
+        .book-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+        .book-author {
+            font-style: italic;
+            color: #777;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .book-price {
+            color: #2ebef3; // Blue price color
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        .book-isbn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            .isbn-number {
+                font-size: 13px;
+                font-weight: 600;
+                color: #444;
+            }
+        }
+    }
+}
+
+.custom-input, .custom-select {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    &:focus { border-color: #2ebef3; box-shadow: none; }
+}

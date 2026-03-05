@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {getUserByCode} from "@/services/user.service";
 import {errorResponse, successResponse} from "@/lib/response";
-
+import {setSession} from "@/lib/session";
 export async function GET(request: NextRequest, context: { params: Promise<{ code: string }> }) {
     const { code } = await context.params;
     try {
