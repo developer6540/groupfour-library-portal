@@ -19,3 +19,20 @@ export function TextLimit(txt: string, Limit: number = 10): string {
         return "";
     }
 }
+
+export function getCurrentTime(){
+    try{
+        const now = new Date();
+        return now.toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",  // e.g., Mar
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        });
+    }catch (e) {
+        return "";
+    }
+}

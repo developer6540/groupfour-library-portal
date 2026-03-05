@@ -1,10 +1,15 @@
 .borrowed-card {
   background: #fff;
   border-radius: 20px;
-  border-bottom: 4px solid #6e5bd8;
+  //border-bottom: 4px solid #6e5bd8;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   margin-bottom: 25px;
   overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
+  }
 
   .card-header {
     padding: 18px 25px;

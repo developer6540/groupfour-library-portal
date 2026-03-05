@@ -8,7 +8,7 @@ if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
 const logFile = path.join(logDir, "app.log");
 
-const logger = createLogger({
+const Logger = createLogger({
     level: "info",
     format: format.combine(
         format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
@@ -20,4 +20,4 @@ const logger = createLogger({
     ],
 });
 
-export default logger;
+export default Logger;

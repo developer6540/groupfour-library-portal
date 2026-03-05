@@ -1,6 +1,6 @@
 "use client";
 import "./WelcomeBanner.scss"
-import {FirstNameOnly} from "@/lib/helper";
+import {FirstNameOnly} from "@/lib/utility";
 
 export default function WelcomeBanner({ user }) {
     return (

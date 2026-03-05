@@ -1,20 +1,20 @@
-.student-card {
+.member-card {
   background-color: #ffffff;
   border-radius: 20px;
   overflow: hidden;
-  border-bottom: 4px solid #6e5bd8;
+  //border-bottom: 4px solid #6e5bd8;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
   }
 }
 
 /* Header */
 
-.student-card-header {
+.member-card-header {
   padding: 22px 30px;
   background: linear-gradient(135deg, #6e5bd8, #5a49c7);
 
@@ -29,7 +29,7 @@
 
 /* Body */
 
-.student-card-body {
+.member-card-body {
   padding: 35px 32px;
 }
 
@@ -98,7 +98,7 @@
   &:hover {
     background-color: #5a49c7;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(110, 91, 216, 0.3);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.39);
   }
 
   &:active {

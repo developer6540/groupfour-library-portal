@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import "./page.scss"
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
 import ValueBox from "@/components/pages/Dashboard/ValueBox";
@@ -7,22 +6,22 @@ import MemberInfo from "@/components/pages/Dashboard/MemberInfo";
 import BookBorrowedList from "@/components/pages/Dashboard/BookBorrowedList";
 import PenaltyDetails from "@/components/pages/Dashboard/PenaltyDetails";
 import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
-import {getBaseUrl} from "@/lib/helper";
+import {getBaseUrl} from "@/lib/utility";
 import PageTitleBar from "@/components/common/PageTitleBar";
+import Logger from "@/lib/logger";
 
 export default async function DashboardPage() {
 
     let user = null;
 
     try {
-        const response = await axios.get(`${getBaseUrl()}/api/v1/user/00005`);
-        user = response.data.data;
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            console.log("Dashboard data fetch failed:", error.message);
-        } else {
-            console.log("An unknown error occurred", error);
+        const response = await fetch(`${getBaseUrl()}/api/v1/user/00005`);
+        if(response.status == 200){
+            const data = await response.json();
+            user = data.data;
         }
+    } catch (error) {
+        Logger.error(error)
     }
 
     const dataArr = { user };

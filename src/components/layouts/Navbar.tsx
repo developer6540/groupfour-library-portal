@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import { FirstNameOnly } from "@/lib/helper";
+import { FirstNameOnly } from "@/lib/utility";
 import SearchBox from "@/components/layouts/SearchBox";
 
 interface User {
@@ -45,7 +45,6 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, dataArr }) => {
                 <SearchBox
                     onSearch={(value) => {
                         console.log("Search from Navbar:", value);
-                        // You can connect Laravel API here
                     }}
                 />
             </div>

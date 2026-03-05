@@ -15,12 +15,12 @@ export default function MemberInfo({ user }) {
         : "-";
 
     return (
-        <div className="student-card shadow-sm mb-4">
-            <div className="student-card-header">
+        <div className="member-card shadow-sm mb-1">
+            <div className="member-card-header">
                 <h5 className="mb-0">Member Information</h5>
             </div>
 
-            <div className="student-card-body">
+            <div className="member-card-body">
 
                 {/* Profile Section */}
                 <div className="profile-section">

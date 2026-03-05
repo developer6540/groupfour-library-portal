@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './PageTitleBar.scss';
+import {getCurrentTime} from "@/lib/utility";
 
 export default function PageTitleBar({ title }) {
 
@@ -9,17 +10,8 @@ export default function PageTitleBar({ title }) {
 
     useEffect(() => {
         const updateClock = () => {
-            const now = new Date();
-            const formatted = now.toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "short",  // e.g., Mar
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false
-            });
-            setCurrentTime(formatted);
+        const time = getCurrentTime()
+            setCurrentTime(time);
         };
 
         updateClock();

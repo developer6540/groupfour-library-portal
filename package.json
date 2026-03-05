@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "rm -rf .next && next dev",
+    "build": "rm -rf .next && next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "axios": "^1.13.5",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "mssql": "^12.2.0",
