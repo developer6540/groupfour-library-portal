@@ -1,18 +1,20 @@
 .book-catalog {
-    background-color: #fff;
-    border-radius: 25px;
     padding: 40px;
     .search-panel {
         border: 1px solid #eee;
+        border-radius: 10px;
+        &:hover {
+            transition: all 0.6s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
+        }
         .search-btn {
             background-color: #8677ed;
             border: none;
             padding: 10px;
-            border-radius: 35px!important;
             font-weight: 600;
             &:hover {
+                transition: all 0.6s ease;
                 background-color: #6459b1;
-                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
             }
         }
     }
@@ -20,21 +22,20 @@
     .book-card {
         background: #fff;
         padding: 20px;
-        border-radius: 4px; // Squarer corners like the image
+        border-radius: 4px;
         transition: all 0.3s ease;
         border: 1px solid #f0f0f0;
         height: 100%;
 
         &:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
             .book-overlay { opacity: 1; }
         }
     }
 
     .book-image-container {
         position: relative;
-        aspect-ratio: 2 / 3;
         overflow: hidden;
         background: #fafafa;
 
@@ -103,8 +104,8 @@
 }
 
 .custom-input, .custom-select {
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    border-radius: 10px;
+    border: 1px solid #e6e6e6;
     padding: 8px 12px;
     &:focus { border-color: #2ebef3; box-shadow: none; }
 }

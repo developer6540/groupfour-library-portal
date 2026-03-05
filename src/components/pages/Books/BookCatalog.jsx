@@ -124,9 +124,14 @@ export default function BookCatalog({ books = [] }) {
                                 <p className="book-author">by {book.author}</p>
 
                                 <div className="book-isbn">
-                                    <span className="isbn-label">ISBN</span>
-                                    <span className="isbn-number">{book.isbn}</span>
+                                    <small className="isbn-label">ISBN</small>
+                                    <small className="isbn-number">{book.isbn}</small>
                                 </div>
+
+                                <div className="book-isbn">
+                                    <small className="isbn-number">({book.category})</small>
+                                </div>
+
                             </div>
                         </div>
                     </div>
