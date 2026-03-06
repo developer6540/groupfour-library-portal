@@ -1,3 +1,6 @@
+
+export const dynamic = "force-dynamic";
+
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
