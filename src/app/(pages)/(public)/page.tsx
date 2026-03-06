@@ -1,5 +1,6 @@
 import React from "react";
 import "./page.scss"
+import Logger from "@/lib/logger";
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
 import ValueBox from "@/components/pages/Dashboard/ValueBox";
 import MemberInfo from "@/components/pages/Dashboard/MemberInfo";
@@ -8,7 +9,8 @@ import PenaltyDetails from "@/components/pages/Dashboard/PenaltyDetails";
 import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
 import {getBaseUrl} from "@/lib/utility";
 import PageTitleBar from "@/components/common/PageTitleBar";
-import Logger from "@/lib/logger";
+import BooksReadChart from "@/components/pages/Dashboard/ReadProgressChart";
+import BookStatusChart from "@/components/pages/Dashboard/BookStatusChart";
 
 export default async function DashboardPage() {
 
@@ -41,6 +43,15 @@ export default async function DashboardPage() {
                 <div className="row">
                     <div className="col-12">
                         <ValueBox />
+                    </div>
+                </div>
+
+                <div className="dashboard-row d-flex flex-wrap gap-4">
+                    <div className="dashboard-col flex-fill mb-4">
+                        <BooksReadChart />
+                    </div>
+                    <div className="dashboard-col flex-fill mb-4">
+                        <BookStatusChart />
                     </div>
                 </div>
 

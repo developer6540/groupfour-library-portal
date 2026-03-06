@@ -156,6 +156,18 @@ export default function ChangeAccountDetails() {
                 </div>
 
                 <div className="detail-row">
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        name="U_PASSWORD"
+                        value={formData.U_PASSWORD || ""}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="Enter Password"
+                    />
+                </div>
+
+                <div className="detail-row">
                     <label>Date of Birth</label>
                     {/*<input*/}
                     {/*    type="text"*/}
