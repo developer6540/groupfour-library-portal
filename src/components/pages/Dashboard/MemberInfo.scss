@@ -121,10 +121,11 @@
 
 .member-expire-box {
   text-align: center;
-  border: 2px solid #6755d2;
+  border-size: 2px;
+  border: solid;
   border-radius: 10px;
   padding: 16px 20px;
-  background: linear-gradient(180deg, rgba(103, 85, 210, 0.06), rgba(103, 85, 210, 0));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.03));
   display: inline-block;
   min-width: 220px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);

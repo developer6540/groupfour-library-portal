@@ -10,7 +10,7 @@ export default function WelcomeBanner({ user }) {
 
     useEffect(() => {
         if (!alertShown.current) {
-            alerts.info(`Hello ${user?.U_NAME}! 👋`, "Welcome back to the library.", 3000);
+            alerts.info(`Hello ${user?.U_NAME}! 👋`,'',  5000);
             alertShown.current = true; // stop alert from showing again on re-renders
         }
     }, []);

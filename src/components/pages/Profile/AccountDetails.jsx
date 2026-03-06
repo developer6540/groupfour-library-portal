@@ -76,7 +76,7 @@ export default function AccountDetails() {
                 <div className="stat-item">
                     <span className="stat-label">Membership Expiry Date:</span>
                     <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : ''}`}>
-                        {expiryDate ? getDateFormated(expiryDate) : 'N/A'}
+                        {expiryDate ? getDateFormated(expiryDate, "YYYY-MM-DD") : 'N/A'}
                     </span>
                 </div>
             </div>
@@ -93,7 +93,7 @@ export default function AccountDetails() {
                 </div>
                 <div className="detail-row">
                     <span>Date of Birth</span>
-                    <p className="mt-2">{getDateFormated(user?.U_DOB)}</p>
+                    <p className="mt-2">{getDateFormated(user?.U_DOB, "YYYY-MM-DD")}</p>
                 </div>
                 <div className="detail-row">
                     <span>Gender</span>
@@ -117,7 +117,7 @@ export default function AccountDetails() {
                 </div>
                 <div className="detail-row">
                     <span>Registration Date</span>
-                    <p className="mt-2">{user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE) : 'N/A'}</p>
+                    <p className="mt-2">{user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE, "YYYY-MM-DD") : 'N/A'}</p>
                 </div>
             </div>
 

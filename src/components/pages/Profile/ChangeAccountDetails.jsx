@@ -126,7 +126,7 @@ export default function ChangeAccountDetails() {
                 <div className="stat-item">
                     <span className="stat-label">Membership Expiry Date:</span>
                     <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : ''}`}>
-                        {expiryDate ? getDateFormated(expiryDate) : 'N/A'}
+                        {expiryDate ? getDateFormated(expiryDate,"YYYY-MM-DD") : 'N/A'}
                     </span>
                 </div>
             </div>

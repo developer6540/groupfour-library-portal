@@ -62,12 +62,12 @@
         align-items: center;
         gap: 20px;
         height: 100%;
-        border: 1px solid #e4e4e4;
+        //border: 1px solid #e4e4e4;
         transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 
         &:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4) !important;
             border-color: transparent;
             .book-overlay {
                 opacity: 1;
@@ -94,8 +94,8 @@
     .book-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(134, 119, 237, 0.15);
-        backdrop-filter: blur(1px);
+        background: rgba(16, 15, 15, 0.22);
+        backdrop-filter: blur(0.5px);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -113,7 +113,7 @@
         border-radius: 8px;
         overflow: hidden;
         flex-shrink: 0;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.13);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
 
         .book-image {
             width: 100%;

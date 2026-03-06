@@ -8,6 +8,9 @@ import React from "react";
 
 export default function MemberInfo({ user }) {
 
+    const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;
+    const isExpired = expiryDate ? expiryDate < new Date() : true;
+
     return (
         <div className="member-card shadow-sm mb-1">
             <div className="member-card-header">
@@ -40,11 +43,11 @@ export default function MemberInfo({ user }) {
                             </span>
                         </div>
                     </div>
-                    <div className="member-expire-box">
+                    <div className={`member-expire-box ${isExpired ? 'border-danger' : 'border-success'}`}>
                         <div className="member-expire">
-                            <div className="label">Membership Expire On</div>
-                            <div className="value">
-                                {getDateFormated(user?.U_EXPIREDDATE)}
+                            <div className={`label ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>Membership Expire On</div>
+                            <div className={`value ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>
+                                {getDateFormated(user?.U_EXPIREDDATE, "MMMM dd, yyyy")}
                             </div>
                         </div>
                     </div>
@@ -71,7 +74,7 @@ export default function MemberInfo({ user }) {
 
                     <div className="info-item">
                         <span className="label">Date of Birth</span>
-                        <span className="value">{getDateFormated(user?.U_DOB)}</span>
+                        <span className="value">{getDateFormated(user?.U_DOB, 'YYYY-MM-DD')}</span>
                     </div>
 
                     <div className="info-item">
