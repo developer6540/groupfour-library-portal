@@ -5,6 +5,7 @@ import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/utility";
 import SearchBox from "@/components/layouts/SearchBox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {alerts} from "@/lib/alerts";
 
 interface User {
     U_CODE: any;
@@ -30,8 +31,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
 
     const handleLogout = (e:any) => {
         e.preventDefault();
-        localStorage.removeItem("user-info");
+        localStorage.clear();
         router.push("/sign-in");
+        alerts.success("Logged out successfull", "You have been logged out.", 3000);
     };
 
     return (
@@ -116,7 +118,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
                     </a>
 
                     <ul className="dropdown-menu dropdown-menu-end shadow border-1 p-0 mt-3 user-profile-dropdown" style={{minWidth:"250px"}}>
-                        <li className="p-3 py-2 border-bottom ">
+                        <li className="p-3 py-3 border-bottom ">
                             <h6 className="mb-0 fw-bold text-dark text-wrap">{capitalizeFirstLetter(user?.U_NAME)}</h6>
                             <span style={{fontSize:"14px", color:"#888787"}} className="mt-3 small">Code: {user?.U_CODE}</span>
                         </li>
