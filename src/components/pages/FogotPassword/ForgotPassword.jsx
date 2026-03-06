@@ -26,14 +26,14 @@ export default function ForgotPassword() {
 
                 <h2 className="h4 fw-bold text-secondary mb-2">Forgot Password</h2>
                 <p className="text-muted mb-0">
-                    Enter your email address to receive password reset instructions
+                    Enter your user code to receive the password reset instructions
                 </p>
             </div>
             <form className="needs-validation" noValidate>
                 {/* Email Address */}
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label small fw-semibold text-secondary">
-                        Email Address
+                        User Code
                     </label>
                     <div className="position-relative">
                         <MdOutlineEmail
@@ -45,7 +45,7 @@ export default function ForgotPassword() {
                             type="email"
                             id="email"
                             className="form-control rounded-3 ps-5"
-                            placeholder="name@example.com"
+                            placeholder="xxxxxxxx"
                             required
                         />
                     </div>

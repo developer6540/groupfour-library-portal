@@ -33,7 +33,7 @@ export default function Login() {
                 {/* Email Address */}
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label small fw-semibold text-secondary">
-                        Email Address
+                        User Code
                     </label>
                     <div className="position-relative">
                         <MdOutlineEmail
@@ -45,7 +45,7 @@ export default function Login() {
                             type="email"
                             id="email"
                             className="form-control rounded-3 ps-5"
-                            placeholder="name@example.com"
+                            placeholder="xxxxxxxx"
                             required
                         />
                     </div>
