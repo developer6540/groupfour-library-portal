@@ -13,10 +13,8 @@ import BooksReserveLayout from "@/app/(pages)/books/reserve/layout";
 
 export default async function BooksReservePage() {
 
-    let user = null;
-
     return <>
-        <MainLayoutContent user={user}>
+        <MainLayoutContent>
             <div className="container-fluid p-4">
 
                 <PageTitleBar title="Reserve Books" />

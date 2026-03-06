@@ -2,7 +2,6 @@ import { createLogger, format, transports } from "winston";
 import fs from "fs";
 import path from "path";
 
-// Ensure logs folder exists
 const logDir = path.join(process.cwd(), "logs");
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 

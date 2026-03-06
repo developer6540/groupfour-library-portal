@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/utility";
 import SearchBox from "@/components/layouts/SearchBox";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface User {
     U_CODE: any;
@@ -22,6 +24,14 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
     const handleToggle = () => {
         setIsOpen(prev => !prev);
         onToggle();
+    };
+
+    const router = useRouter();
+
+    const handleLogout = (e:any) => {
+        e.preventDefault();
+        localStorage.removeItem("user-info");
+        router.push("/sign-in");
     };
 
     return (
@@ -96,28 +106,31 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
                             src="/img/profile-image.jpg"
                             alt="User"
                             className="rounded-circle border"
-                            width={35}
-                            height={35}
+                            width={33}
+                            height={33}
                         />
                         <div className="d-none d-md-block text-dark">
-                            <span className="fw-semibold text-capitalize">{FirstNameOnly(user?.U_NAME)}</span>
+                            <span className="fw-semibold small text-capitalize">{FirstNameOnly(user?.U_NAME)}</span>
                             <i className="bi bi-chevron-down ms-1 small"></i>
                         </div>
                     </a>
 
-                    <ul className="dropdown-menu dropdown-menu-end shadow border-0 p-3 mt-3 user-profile-dropdown" style={{minWidth:"250px"}}>
-                        <li className="px-2 pb-2 border-bottom mb-2">
+                    <ul className="dropdown-menu dropdown-menu-end shadow border-1 p-0 mt-3 user-profile-dropdown" style={{minWidth:"250px"}}>
+                        <li className="p-3 py-2 border-bottom ">
                             <h6 className="mb-0 fw-bold text-dark text-wrap">{capitalizeFirstLetter(user?.U_NAME)}</h6>
-                            <span style={{fontSize:"14px"}} className="mt-3 small">Code: {user?.U_CODE}</span>
+                            <span style={{fontSize:"14px", color:"#888787"}} className="mt-3 small">Code: {user?.U_CODE}</span>
                         </li>
-                        <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="#">
+                        <li className="p-2">
+                            <Link className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="/profile/change-account-details">
                                 <i className="bi bi-person"></i> Edit profile
-                            </a>
+                            </Link>
                         </li>
-                        <li><hr className="dropdown-divider mx-n2" /></li>
-                        <li>
-                            <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2 text-dark" href="#">
+                        <li className="p-2" style={{background:"#fafafa", borderRadius:"0px 0px 20px 20px"}}>
+                            <a
+                                className="dropdown-item logout d-flex align-items-center gap-3 py-2 px-2 text-dark"
+                                href="#"
+                                onClick={handleLogout}
+                            >
                                 <i className="bi bi-box-arrow-right"></i> Sign out
                             </a>
                         </li>

@@ -1,4 +1,5 @@
-import dynamic from "next/dynamic";
+import {getSession, setSession} from "@/lib/session";
+import moment from "moment";
 
 export function getBaseUrl(){
     return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -46,14 +47,48 @@ export function getCurrentTime(){
     }
 }
 
-export function getDateFormated(date: Date) {
+export function getDateFormated(date: string | Date, formatStr = "DD/MM/YYYY"): string {
+    if (!date) return "";
+    const m = moment(date);
+    return m.isValid() ? m.format(formatStr.toUpperCase()) : "";
+}
+
+export function getDateISO(date: string | Date): string {
+    if (!date) return "";
+    const m = moment(date, ["DD/MM/YYYY", moment.ISO_8601]);
+    return m.isValid() ? m.toISOString() : "";
+}
+
+export async function updateLoggedUser(user: any, id: string): Promise<any | null> {
     try {
-        return new Date(date).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
+        // Return session user if already provided
+        if (!user) {
+            const sessionUser = await getSession("user-info");
+            if (sessionUser) {
+                return JSON.parse(sessionUser);
+            }
+        }
+
+        // Fetch latest user from API
+        const response = await fetch(`${getBaseUrl()}/api/v1/user/${id}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
         });
-    } catch (e) {
-        return "";
+
+        if (!response.ok) {
+            console.error(`Failed to fetch user ${id}: ${response.status} ${response.statusText}`);
+            return null;
+        }
+
+        const data = await response.json();
+        const currentUser = data.data;
+
+        // Update session
+        await setSession("user-info", JSON.stringify(currentUser));
+
+        return currentUser;
+    } catch (error) {
+        console.error("Update Logged User error:", error);
+        return null;
     }
 }

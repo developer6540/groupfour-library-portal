@@ -22,9 +22,26 @@ hr {
     color: #735dff !important;
 }
 
-.btn-purple{
-    background: #6251ca!important;
+.btn-purple {
+    background-color: #6e5bd8!important;
     color: #fff!important;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+
+    &:hover {
+        transition: all 0.5s ease;
+        background-color: #5a49c7;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 5px rgba(0, 0, 0, 0.18);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
 }
 
 .bg-purple{

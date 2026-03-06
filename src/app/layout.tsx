@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className={quicksand.className}>
         <BootstrapClient/>
-        <Toaster position="bottom-right" expand={true} richColors closeButton/>
+        <Toaster position="top-right" expand={true} richColors closeButton/>
         <RootWrapper>{children}</RootWrapper>
         </body>
         </html>

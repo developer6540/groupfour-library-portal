@@ -3,6 +3,8 @@
 import './MemberInfo.scss';
 import Image from "next/image";
 import {getDateFormated} from "@/lib/utility";
+import Link from "next/link";
+import React from "react";
 
 export default function MemberInfo({ user }) {
 
@@ -46,11 +48,11 @@ export default function MemberInfo({ user }) {
                             </div>
                         </div>
                     </div>
-                    <div className="profile-view">
+                    <Link className="profile-view" href="/profile/change-account-details">
                         <button className="btn btn-sm btn-purple">
-                            Edit Profile Info
+                            Edit Profile Info &nbsp; <i className="bi bi-pencil-square"></i>
                         </button>
-                    </div>
+                    </Link>
 
                 </div>
 

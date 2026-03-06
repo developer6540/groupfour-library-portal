@@ -81,29 +81,10 @@
 
 .profile-view {
   display: flex;
-  align-items: center;   /* vertical center */
-  justify-content: center; /* horizontal center if needed */
-  height: 120px;          /* same as profile image for perfect vertical alignment */
-}
-
-.btn-purple {
-  background-color: #6e5bd8;
-  color: #fff;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 30px;
-  font-weight: 500;
-  transition: all 0.25s ease;
-
-  &:hover {
-    background-color: #5a49c7;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.39);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: none;
+  align-items: center;
+  justify-content: center;
+  button:hover{
+    box-shadow: 0 5px 10px rgba(21, 21, 21, 0.18);
   }
 }
 
@@ -136,31 +117,6 @@
   font-size: 15px;
   font-weight: 600;
   color: #333;
-}
-
-/* Badge styles */
-
-.badge {
-  display: inline-block;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-success {
-  background-color: #e8f8f0;
-  color: #1b9e63;
-}
-
-.badge-danger {
-  background-color: #fdecec;
-  color: #d64545;
-}
-
-.badge-primary {
-  background-color: #eef3ff;
-  color: #3b5bdb;
 }
 
 .member-expire-box {

@@ -16,7 +16,7 @@ export const alerts = {
             duration: duration,
             style: {
                 ...baseStyle,
-                borderLeft: '10px solid green'
+                border: '5px solid green',
             },
         });
     },
@@ -27,7 +27,7 @@ export const alerts = {
             duration: duration,
             style: {
                 ...baseStyle,
-                borderLeft: '10px solid red'
+                border: '5px solid red',
             },
         });
     },
@@ -38,7 +38,7 @@ export const alerts = {
             duration: duration,
             style: {
                 ...baseStyle,
-                borderLeft: '10px solid blue'
+                border: '5px solid blue',
             },
         });
     },
@@ -49,7 +49,7 @@ export const alerts = {
             duration: duration,
             style: {
                 ...baseStyle,
-                borderLeft: '10px solid yellow'
+                border: '5px solid yellow',
             },
         });
     },

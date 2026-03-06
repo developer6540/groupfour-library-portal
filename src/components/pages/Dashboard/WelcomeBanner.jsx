@@ -2,12 +2,17 @@
 import "./WelcomeBanner.scss"
 import {FirstNameOnly} from "@/lib/utility";
 import {alerts} from "@/lib/alerts";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 
 export default function WelcomeBanner({ user }) {
 
+    const alertShown = useRef(false);
+
     useEffect(() => {
-        alerts.info(`Hello ${user?.U_NAME}! 👋`, "Welcome back to the library.", 5000);
+        if (!alertShown.current) {
+            alerts.info(`Hello ${user?.U_NAME}! 👋`, "Welcome back to the library.", 3000);
+            alertShown.current = true; // stop alert from showing again on re-renders
+        }
     }, []);
 
     return (

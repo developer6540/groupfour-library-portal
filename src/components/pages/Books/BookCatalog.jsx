@@ -2,17 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import "./BookCatalog.scss";
+import Pagination from "@/components/common/Pagination";
 
-export default function BookCatalog({ books}) {
-    // Search Inputs
+export default function BookCatalog({ books }) {
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
     const [isbnInput, setIsbnInput] = useState("");
     const [categoryInput, setCategoryInput] = useState("");
 
-    // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const booksPerPage = 6; // Set how many books you want per page
+    const booksPerPage = 6;
 
     const [filters, setFilters] = useState({
         title: "",
@@ -21,7 +20,6 @@ export default function BookCatalog({ books}) {
         category: ""
     });
 
-    // Reset to page 1 whenever filters change
     useEffect(() => {
         setCurrentPage(1);
     }, [filters]);
@@ -44,11 +42,10 @@ export default function BookCatalog({ books}) {
         );
     });
 
-    // Logic for Pagination
     const indexOfLastBook = currentPage * booksPerPage;
     const indexOfFirstBook = indexOfLastBook - booksPerPage;
     const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-    const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+    const totalPages = 60; //Math.ceil(filteredBooks.length / booksPerPage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -114,6 +111,11 @@ export default function BookCatalog({ books}) {
                     currentBooks.map((book) => (
                         <div key={book.id} className="col-lg-4 col-md-6">
                             <div className="book-card">
+                                {/* ISBN BADGE - TOP RIGHT */}
+                                <div className="book-isbn">
+                                    ISBN: {book.isbn}
+                                </div>
+
                                 <div className="book-overlay">
                                     <button className="action-btn cart-btn">
                                         <i className="bi bi-cart-fill"></i>
@@ -134,7 +136,7 @@ export default function BookCatalog({ books}) {
                                 <div className="book-info">
                                     <h5 className="book-title">{book.title}</h5>
                                     <p className="book-author">{book.author}</p>
-                                    <div className="book-isbn">ISBN: {book.isbn}</div>
+                                    <span className="badge-category">{book.category}</span>
                                 </div>
                             </div>
                         </div>
@@ -147,31 +149,12 @@ export default function BookCatalog({ books}) {
             </div>
 
             {/* PAGINATION UI */}
-            {totalPages > 1 && (
-                <nav className="pagination-container mt-5">
-                    <ul className="pagination justify-content-center">
-                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                            <button className="page-link" onClick={() => paginate(currentPage - 1)}>
-                                <i className="bi bi-chevron-left"></i>
-                            </button>
-                        </li>
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
 
-                        {[...Array(totalPages)].map((_, index) => (
-                            <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                                <button className="page-link" onClick={() => paginate(index + 1)}>
-                                    {index + 1}
-                                </button>
-                            </li>
-                        ))}
-
-                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                            <button className="page-link" onClick={() => paginate(currentPage + 1)}>
-                                <i className="bi bi-chevron-right"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
-            )}
         </div>
     );
 }
