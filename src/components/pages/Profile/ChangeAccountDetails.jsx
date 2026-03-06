@@ -106,13 +106,13 @@ export default function ChangeAccountDetails() {
                     {formData?.U_ACTIVE && <span className="status-indicator active"></span>}
                 </div>
                 <h4 className="fw-bold mb-1 text-uppercase">{user?.U_NAME}</h4>
-                <p className="text-muted small fw-bold mb-3">
+                <p className="text-muted fw-bold mb-3" style={{fontSize:"14px"}}>
                     CODE: {user?.U_CODE} | {user?.U_NIC}
                 </p>
-                <div className="d-flex justify-content-center fw-bold mb-3">
-          <span className={`badge ${user?.U_ACTIVE ? "badge-success" : "badge-danger"}`}>
-            {user?.U_ACTIVE ? "Active" : "Inactive"}
-          </span>
+                <div className="d-flex justify-content-center fw-bold mb-0">
+                  <span className={`badge ${user?.U_ACTIVE ? "badge-success" : "badge-danger"}`}>
+                    {user?.U_ACTIVE ? "Active" : "Inactive"}
+                  </span>
                 </div>
             </div>
 
@@ -125,7 +125,7 @@ export default function ChangeAccountDetails() {
                 <div className="stat-divider"></div>
                 <div className="stat-item">
                     <span className="stat-label">Membership Expiry Date:</span>
-                    <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : ''}`}>
+                    <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>
                         {expiryDate ? getDateFormated(expiryDate,"YYYY-MM-DD") : 'N/A'}
                     </span>
                 </div>
@@ -135,7 +135,12 @@ export default function ChangeAccountDetails() {
             <div className="user-details">
                 <div className="detail-row">
                     <span>Code</span>
-                    <p className="mt-2">{user?.U_CODE}</p>
+                    <input
+                        type="text"
+                        disabled="disabled"
+                        value={formData.U_CODE || ""}
+                        className="disabled"
+                    />
                 </div>
 
                 <div className="detail-row">
@@ -235,7 +240,12 @@ export default function ChangeAccountDetails() {
                 </div>
                 <div className="detail-row">
                     <span>Registration Date</span>
-                    <p className="mt-2">{user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE, "YYYY-MM-DD") : 'N/A'}</p>
+                    <input
+                        type="text"
+                        disabled="disabled"
+                        value={user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE, "YYYY-MM-DD") : 'N/A'}
+                        className="disabled"
+                    />
                 </div>
             </div>
 

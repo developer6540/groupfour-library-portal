@@ -17,18 +17,17 @@ export default function DatePickerInput({ label, value, onChange, maxDate, forma
     const selectedDate = value ? new Date(value) : null;
 
     return (
-        <div className="detail-row mb-3">
-            <label className="form-label">{label}</label>
-            <DatePicker
-                selected={selectedDate}
-                onChange={onChange}
-                dateFormat={format}
-                className="form-control"
-                maxDate={maxDate}
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
-            />
-        </div>
+            <>
+                <DatePicker
+                    selected={selectedDate}
+                    onChange={onChange}
+                    dateFormat={format}
+                    className="form-control"
+                    maxDate={maxDate}
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                />
+            </>
     );
 }

@@ -42,7 +42,7 @@ export default function AccountDetails() {
                 {/* Name */}
                 <h4 className="fw-bold mb-1 text-uppercase">{user?.U_NAME}</h4>
 
-                <p className="text-muted small  fw-bold mb-3">
+                <p className="text-muted small  fw-bold mb-3" style={{fontSize:"14px"}}>
                     CODE: {user?.U_CODE} | {user?.U_NIC}
                 </p>
 
@@ -54,7 +54,7 @@ export default function AccountDetails() {
                 </div>
 
                 {/* Edit Button */}
-                <div className="mb-3 profile-view">
+                <div className="mb-0 profile-view">
                     <Link
                         href="/profile/change-account-details"
                         className="btn btn-sm btn-purple"
@@ -75,7 +75,7 @@ export default function AccountDetails() {
 
                 <div className="stat-item">
                     <span className="stat-label">Membership Expiry Date:</span>
-                    <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : ''}`}>
+                    <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>
                         {expiryDate ? getDateFormated(expiryDate, "YYYY-MM-DD") : 'N/A'}
                     </span>
                 </div>

@@ -137,6 +137,13 @@
     gap: 25px 40px;
     text-align: left;
 
+    .disabled{
+      background-color: #f1f5f9!important;
+      border-color: #e2e8f0!important;
+      color: #94a3b8!important;
+      cursor: not-allowed!important;
+    }
+
     .detail-row {
       display: flex;
       flex-direction: column;

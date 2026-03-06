@@ -125,24 +125,25 @@
   border: solid;
   border-radius: 10px;
   padding: 16px 20px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.03));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0));
   display: inline-block;
   min-width: 220px;
+  font-size: 14px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.member-expire .label {
-  font-size: 13px;
-  color: #505359;
-  font-weight: 600;
+.member-expire{
+  .label {
+    font-size: 12px;
+    color: #505359;
+    font-weight: 600;
+  }
+  .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #6755d2;
+  }
 }
-
-.member-expire .value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #6755d2;
-}
-
 
 /* Responsive */
 
