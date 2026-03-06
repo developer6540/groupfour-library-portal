@@ -50,7 +50,7 @@
 }
 
 .profile-image {
-  border-radius: 50%;
+  border-radius: 10%;
   object-fit: cover;
   border: 4px solid #f3f0ff;
   transition: all 0.3s ease;
@@ -162,6 +162,30 @@
   background-color: #eef3ff;
   color: #3b5bdb;
 }
+
+.member-expire-box {
+  text-align: center;
+  border: 2px solid #6755d2;
+  border-radius: 10px;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(103, 85, 210, 0.06), rgba(103, 85, 210, 0));
+  display: inline-block;
+  min-width: 220px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.member-expire .label {
+  font-size: 13px;
+  color: #505359;
+  font-weight: 600;
+}
+
+.member-expire .value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #6755d2;
+}
+
 
 /* Responsive */
 

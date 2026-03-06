@@ -18,6 +18,15 @@ const menuItems = [
         path: "/"
     },
     {
+        title: "Profile",
+        icon: "bi bi-person",
+        key: "profile",
+        children: [
+            { title: "View Account", path: "/profile/account-details" },
+            { title: "Edit Account", path: "/profile/change-account-details" },
+        ]
+    },
+    {
         title: "Book Catalog",
         icon: "bi-book",
         key: "book-catalog",

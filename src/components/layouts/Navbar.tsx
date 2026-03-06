@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from "react";
-import { FirstNameOnly } from "@/lib/utility";
+import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/utility";
 import SearchBox from "@/components/layouts/SearchBox";
 
 interface User {
+    U_CODE: any;
     U_NAME: string;
     U_EMAIL: string;
 }
@@ -106,8 +107,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
 
                     <ul className="dropdown-menu dropdown-menu-end shadow border-0 p-3 mt-3 user-profile-dropdown" style={{minWidth:"250px"}}>
                         <li className="px-2 pb-2 border-bottom mb-2">
-                            <h6 className="mb-0 fw-bold text-dark text-capitalize text-wrap">{user?.U_NAME.toLowerCase()}</h6>
-                            <span style={{fontSize:"14px"}} className="mt-3">{user?.U_EMAIL.toLowerCase()}</span>
+                            <h6 className="mb-0 fw-bold text-dark text-wrap">{capitalizeFirstLetter(user?.U_NAME)}</h6>
+                            <span style={{fontSize:"14px"}} className="mt-3 small">Code: {user?.U_CODE}</span>
                         </li>
                         <li>
                             <a className="dropdown-item d-flex align-items-center gap-3 py-2 px-2" href="#">

@@ -1,43 +1,146 @@
 .book-catalog {
     .search-panel {
-        border: 1px solid #eee;
-        border-radius: 10px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+
         &:hover {
-            transition: all 0.6s ease;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
+            box-shadow: 0 15px 15px rgba(134, 119, 237, 0.12);
         }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .custom-input, .custom-select {
+            background-color: #f8fafc;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+
+            &:focus {
+                background-color: #ffffff;
+                border-color: #8677ed;
+                box-shadow: 0 0 0 4px rgba(134, 119, 237, 0.1);
+                outline: none;
+            }
+        }
+
         .search-btn {
-            background-color: #8677ed;
-            border: none;
-            padding: 10px;
-            font-weight: 600;
+            background: linear-gradient(135deg, #8677ed 0%, #6459b1 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(134, 119, 237, 0.3);
+            transition: all 0.3s ease;
+
             &:hover {
-                transition: all 0.6s ease;
-                background-color: #6459b1;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(134, 119, 237, 0.4);
+                filter: brightness(1.1);
+            }
+        }
+
+        .pagination-container {
+            .pagination {
+                gap: 8px;
+
+                .page-item {
+                    .page-link {
+                        border: none;
+                        border-radius: 8px;
+                        padding: 8px 16px;
+                        color: #6b7280;
+                        font-weight: 600;
+                        background-color: #f3f4f6;
+                        transition: all 0.3s ease;
+
+                        &:hover {
+                            background-color: #e5e7eb;
+                            color: #111827;
+                        }
+
+                        &:focus {
+                            box-shadow: 0 0 0 3px rgba(134, 119, 237, 0.2);
+                        }
+                    }
+
+                    &.active .page-link {
+                        background-color: #8677ed; // Your purple color
+                        color: white;
+                        box-shadow: 0 4px 12px rgba(134, 119, 237, 0.3);
+                    }
+
+                    &.disabled .page-link {
+                        background-color: #f9fafb;
+                        color: #d1d5db;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+
+    }
+
+    .book-card {
+        position: relative;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        height: 100%;
+        border: 1px solid #e4e4e4;
+        transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+        &:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.42) !important;
+            border: none!important;
+            .book-overlay {
+                opacity: 1;
+                visibility: visible;
             }
         }
     }
 
-    .book-card {
-        background: #fff;
-        padding: 20px;
-        border-radius: 4px;
-        transition: all 0.3s ease;
-        border: 1px solid #f0f0f0;
-        height: 100%;
-
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
-            .book-overlay { opacity: 1; }
-        }
+    .book-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.19);
+        //backdrop-filter: blur(1px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        border-radius: 15px;
+        border: none;
+        z-index: 10;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.5s ease;
     }
 
     .book-image-container {
-        position: relative;
+        width: 85px;
+        height: 120px;
+        border-radius: 8px;
         overflow: hidden;
-        background: #fafafa;
-        padding: 0px;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.13);
+
         .book-image {
             width: 100%;
             height: 100%;
@@ -45,66 +148,56 @@
         }
     }
 
-    .book-overlay {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        opacity: 0;
-        background: rgba(0,0,0,0.02);
-        transition: opacity 0.3s ease;
-    }
-
     .action-btn {
-        width: 45px;
-        height: 45px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        border: none;
+        border: none!important;
         display: flex;
         align-items: center;
         justify-content: center;
-        &.cart-btn { background: #2ebef3; color: white; }
-        &.view-btn { background: white; color: #333; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        &.cart-btn {
+            background: #8677ed;
+            color: white;
+        }
+
+        &.view-btn {
+            background: white;
+            color: #35305a;
+        }
+
+        i {
+            font-size: 1.3rem;
+        }
     }
 
     .book-info {
         .book-title {
-            font-family: 'Playfair Display', serif;
             font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 2px;
+            font-size: 1.15rem;
+            color: #1e293b;
+            margin-bottom: 4px;
+            line-height: 1.3;
         }
         .book-author {
-            font-style: italic;
-            color: #777;
+            color: #94a3b8;
             font-size: 0.9rem;
             margin-bottom: 10px;
         }
-        .book-price {
-            color: #2ebef3; // Blue price color
-            font-weight: 700;
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-        }
         .book-isbn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 6px;
-            .isbn-number {
-                font-size: 13px;
-                font-weight: 600;
-                color: #444;
-            }
+            display: inline-block;
+            background: #8677ed;
+            color: #ffffff;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
         }
     }
-}
-
-.custom-input, .custom-select {
-    border-radius: 10px;
-    border: 1px solid #e6e6e6;
-    padding: 8px 12px;
-    &:focus { border-color: #2ebef3; box-shadow: none; }
 }

@@ -12,6 +12,15 @@ export function FirstNameOnly(fullName: string): string {
     }
 }
 
+export function capitalizeFirstLetter(text?: string) {
+    try{
+        if (!text) return "";
+        return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    }catch (e) {
+        return "";
+    }
+}
+
 export function TextLimit(txt: string, Limit: number = 10): string {
     try{
         return txt.length > 10 ? txt.substring(0, Limit) + "..." : txt;
@@ -33,6 +42,18 @@ export function getCurrentTime(){
             hour12: false
         });
     }catch (e) {
+        return "";
+    }
+}
+
+export function getDateFormated(date: Date) {
+    try {
+        return new Date(date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        });
+    } catch (e) {
         return "";
     }
 }

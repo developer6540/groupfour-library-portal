@@ -1,8 +1,15 @@
 "use client";
 import "./WelcomeBanner.scss"
 import {FirstNameOnly} from "@/lib/utility";
+import {alerts} from "@/lib/alerts";
+import {useEffect} from "react";
 
 export default function WelcomeBanner({ user }) {
+
+    useEffect(() => {
+        alerts.info(`Hello ${user?.U_NAME}! 👋`, "Welcome back to the library.", 5000);
+    }, []);
+
     return (
         <div className="card welcome-banner text-white border-0">
             <div className="card-body d-flex align-items-center">

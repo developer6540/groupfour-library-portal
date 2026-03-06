@@ -1,11 +1,8 @@
 import React from "react";
 import "./page.scss"
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
-import {getBaseUrl} from "@/lib/utility";
 import PageTitleBar from "@/components/common/PageTitleBar";
-import Logger from "@/lib/logger";
 import BookCatalog from "@/components/pages/Books/BookCatalog";
-import {getSession} from "@/lib/session";
 
 export default async function BooksPage() {
 
@@ -72,9 +69,8 @@ export default async function BooksPage() {
         }
     ];
 
-    let user;
     return <>
-        <MainLayoutContent user={user}>
+        <MainLayoutContent>
             <div className="container-fluid p-4">
 
                 <PageTitleBar title="Our Books Store" />

@@ -9,6 +9,7 @@ export default function PageTitleBar({ title }) {
     const [currentTime, setCurrentTime] = useState("");
 
     useEffect(() => {
+
         const updateClock = () => {
         const time = getCurrentTime()
             setCurrentTime(time);

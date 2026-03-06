@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import SideBar from "./SideBar";
+import {getSession, setSession} from "@/lib/session";
 
-export default function MainLayoutContent({ children, user }) {
+export default function MainLayoutContent({ children, user = "" }) {
 
     const [currentUser, setCurrentUser] = useState(user);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -13,10 +14,11 @@ export default function MainLayoutContent({ children, user }) {
 
     useEffect(() => {
         if (!currentUser) {
-            const storedUser = localStorage.getItem("user-info");
-            if (storedUser) {
-                setCurrentUser(JSON.parse(storedUser));
-            }
+            getSession("user-info").then(res => {
+               setCurrentUser(JSON.parse(res));
+            });
+        }else{
+            setSession("user-info", JSON.stringify(currentUser));
         }
         const handleResize = () => setIsMobile(window.innerWidth <= 992);
         handleResize();

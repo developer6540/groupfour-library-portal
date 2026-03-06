@@ -2,17 +2,9 @@
 
 import './MemberInfo.scss';
 import Image from "next/image";
+import {getDateFormated} from "@/lib/utility";
 
 export default function MemberInfo({ user }) {
-
-    // Format DOB
-    const formattedDOB = user?.U_DOB
-        ? new Date(user.U_DOB).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        })
-        : "-";
 
     return (
         <div className="member-card shadow-sm mb-1">
@@ -46,7 +38,14 @@ export default function MemberInfo({ user }) {
                             </span>
                         </div>
                     </div>
-
+                    <div className="member-expire-box">
+                        <div className="member-expire">
+                            <div className="label">Membership Expire On</div>
+                            <div className="value">
+                                {getDateFormated(user?.U_EXPIREDDATE)}
+                            </div>
+                        </div>
+                    </div>
                     <div className="profile-view">
                         <button className="btn btn-sm btn-purple">
                             Edit Profile Info
@@ -70,7 +69,7 @@ export default function MemberInfo({ user }) {
 
                     <div className="info-item">
                         <span className="label">Date of Birth</span>
-                        <span className="value">{formattedDOB}</span>
+                        <span className="value">{getDateFormated(user?.U_DOB)}</span>
                     </div>
 
                     <div className="info-item">
