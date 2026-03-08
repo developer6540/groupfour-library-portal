@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Metadata } from "next";
-import {SearchProvider} from "@/lib/DataProviderContext";
 
 export const metadata: Metadata = {
     title: "Books Catalog | GroupFour",
