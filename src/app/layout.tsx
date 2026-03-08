@@ -1,4 +1,3 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import { Toaster } from 'sonner';
@@ -16,7 +15,8 @@ import './theme.scss';
 
 import RootWrapper from "@/components/layouts/RootWrapper";
 import BootstrapClient from "@/components/layouts/BootstrapClient";
-import {DataContextProvider} from "@/lib/DataContext";
+import {DataContextProvider} from "@/lib/dataContext";
+import Chatbot from "@/components/common/Chatbot";
 
 export const metadata: Metadata = {
     title: "Create Next App",

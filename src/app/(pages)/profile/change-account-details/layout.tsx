@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from "next";
+import Chatbot from "@/components/common/Chatbot";
 
 export const metadata: Metadata = {
     title: "Change Account Details | GroupFour",

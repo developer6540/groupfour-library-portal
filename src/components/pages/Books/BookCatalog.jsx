@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
-import { useDataContext } from "@/lib/DataContext";
+import {useDataContext} from "@/lib/dataContext";
 
 export default function BookCatalog() {
 
@@ -410,7 +410,13 @@ export default function BookCatalog() {
         }
     ];
 
-    const { globalData } = useDataContext();
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.$ = window.jQuery = require('jquery');
+        }
+    }, []);
+
+    const {globalData} = useDataContext();
 
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
@@ -430,7 +436,7 @@ export default function BookCatalog() {
     useEffect(() => {
         if (globalData) {
             setTitleInput(globalData);
-            setFilters(prev => ({ ...prev, title: globalData.toLowerCase() }));
+            setFilters(prev => ({...prev, title: globalData.toLowerCase()}));
         }
     }, [globalData]);
 
@@ -460,6 +466,13 @@ export default function BookCatalog() {
             isbn: "",
             category: ""
         });
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        $('html, body').animate({
+            scrollTop: 0
+        }, 800);
     };
 
     const hasFilters =
@@ -496,7 +509,7 @@ export default function BookCatalog() {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setTitleInput(value);
-                                setFilters(prev => ({ ...prev, title: value.toLowerCase() }));
+                                setFilters(prev => ({...prev, title: value.toLowerCase()}));
                             }}
                         />
                     </div>
@@ -511,7 +524,7 @@ export default function BookCatalog() {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setAuthorInput(value);
-                                setFilters(prev => ({ ...prev, author: value.toLowerCase() }));
+                                setFilters(prev => ({...prev, author: value.toLowerCase()}));
                             }}
                         />
                     </div>
@@ -526,7 +539,7 @@ export default function BookCatalog() {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setIsbnInput(value);
-                                setFilters(prev => ({ ...prev, isbn: value.toLowerCase() }));
+                                setFilters(prev => ({...prev, isbn: value.toLowerCase()}));
                             }}
                         />
                     </div>
@@ -539,7 +552,7 @@ export default function BookCatalog() {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setCategoryInput(value);
-                                setFilters(prev => ({ ...prev, category: value }));
+                                setFilters(prev => ({...prev, category: value}));
                             }}
                         >
                             <option value="">All</option>
@@ -590,7 +603,7 @@ export default function BookCatalog() {
 
                                     <div
                                         className="book-image-container category-icon-container"
-                                        style={{ backgroundImage: `url(${coverImage})` }}
+                                        style={{backgroundImage: `url(${coverImage})`}}
                                     >
                                         <div className="inner-cover-content">
                                             <div className="top-title-container">
@@ -627,7 +640,7 @@ export default function BookCatalog() {
             <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
             />
 
         </div>
