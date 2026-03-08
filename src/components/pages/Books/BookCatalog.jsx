@@ -416,16 +416,13 @@ export default function BookCatalog() {
     const [authorInput, setAuthorInput] = useState("");
     const [isbnInput, setIsbnInput] = useState("");
     const [categoryInput, setCategoryInput] = useState("");
-
     const [filters, setFilters] = useState({
         title: "",
         author: "",
         isbn: "",
         category: ""
     });
-
     const [debouncedFilters, setDebouncedFilters] = useState(filters);
-
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 12;
 
