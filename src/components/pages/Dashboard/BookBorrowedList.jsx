@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-// Import Swiper React components
-{  }
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay } from 'swiper/modules';
 
-// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
 import './BookBorrowedList.scss';
@@ -16,63 +14,103 @@ export default function BookBorrowedList() {
     const bookBorrowed = [
         {
             id: 1,
-            title: "Clean Code",
-            author: "Robert C. Martin",
-            isbn: "9780132",
+            title: "Eloquent JavaScript",
+            author: "Marijn Haverbeke",
+            isbn: "9781593279509",
             category: "Programming",
-            description: "A handbook of agile software craftsmanship teaching principles of writing clean and maintainable code.",
+            description: "Modern introduction to JavaScript covering language fundamentals and advanced topics.",
             image: "/img/book.jpg",
             available: true
         },
         {
             id: 2,
-            title: "The Pragmatic Programmer",
-            author: "Andrew Hunt",
-            isbn: "9780201",
-            category: "Programming",
-            description: "A classic book for software developers covering practical techniques and best practices.",
+            title: "The Mythical Man-Month",
+            author: "Frederick P. Brooks Jr.",
+            isbn: "9780201835953",
+            category: "Software Engineering",
+            description: "Classic essays on software project management and development challenges.",
             image: "/img/book.jpg",
             available: true
         },
         {
             id: 3,
-            title: "Introduction to Algorithms",
-            author: "Thomas H. Cormen",
-            isbn: "978026",
-            category: "Computer Science",
-            description: "Widely used textbook covering algorithms, data structures, and computational complexity.",
+            title: "Don't Make Me Think",
+            author: "Steve Krug",
+            isbn: "9780321965516",
+            category: "UX Design",
+            description: "Practical guide to web usability and intuitive user interface design.",
             image: "/img/book.jpg",
-            available: false
+            available: true
         },
         {
             id: 4,
-            title: "Atomic Habits",
-            author: "James Clear",
-            isbn: "978073",
-            category: "Self Development",
-            description: "A guide on how small habits can lead to remarkable personal and professional results.",
+            title: "Hooked on UX",
+            author: "David Travis",
+            isbn: "9780993336334",
+            category: "UX Design",
+            description: "Explains the importance of user experience in building engaging products.",
             image: "/img/book.jpg",
             available: true
         },
         {
             id: 5,
-            title: "Rich Dad Poor Dad",
-            author: "Robert Kiyosaki",
-            isbn: "978169",
-            category: "Business",
-            description: "A personal finance classic explaining financial education and wealth building.",
+            title: "The Intelligent Investor",
+            author: "Benjamin Graham",
+            isbn: "9780060555665",
+            category: "Finance",
+            description: "Classic investment guide focusing on long-term value investing strategies.",
+            image: "/img/book.jpg",
+            available: false
+        },
+        {
+            id: 6,
+            title: "Sapiens",
+            author: "Yuval Noah Harari",
+            isbn: "9780062316097",
+            category: "History",
+            description: "Explores the history of humankind from the Stone Age to the modern era.",
             image: "/img/book.jpg",
             available: true
         },
         {
-            id: 6,
-            title: "Deep Learning",
-            author: "Ian Goodfellow",
-            isbn: "978026",
-            category: "Artificial Intelligence",
-            description: "Comprehensive introduction to deep learning concepts, neural networks, and machine learning.",
+            id: 7,
+            title: "Homo Deus",
+            author: "Yuval Noah Harari",
+            isbn: "9780062464316",
+            category: "History",
+            description: "Discusses the future of humanity in the age of artificial intelligence and biotechnology.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 8,
+            title: "The Alchemist",
+            author: "Paulo Coelho",
+            isbn: "9780061122415",
+            category: "Fiction",
+            description: "A philosophical novel about following dreams and listening to one's heart.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 9,
+            title: "To Kill a Mockingbird",
+            author: "Harper Lee",
+            isbn: "9780060935467",
+            category: "Fiction",
+            description: "A timeless novel addressing racial injustice and moral growth.",
             image: "/img/book.jpg",
             available: false
+        },
+        {
+            id: 10,
+            title: "1984",
+            author: "George Orwell",
+            isbn: "9780451524935",
+            category: "Fiction",
+            description: "Dystopian novel depicting a totalitarian society under constant surveillance.",
+            image: "/img/book.jpg",
+            available: true
         }
     ];
 
@@ -104,7 +142,9 @@ export default function BookBorrowedList() {
                             const coverImage = `/img/book-covers/book-cover-${coverNum}.png`;
 
                             return (
-                                <SwiperSlide key={book.id}>
+                                <SwiperSlide
+                                    speed={1000}
+                                    key={book.id}>
                                     <div className="book-card">
                                         <div className="book-isbn">ISBN: {book.isbn}</div>
 
