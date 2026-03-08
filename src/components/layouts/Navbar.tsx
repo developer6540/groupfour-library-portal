@@ -6,6 +6,7 @@ import SearchBox from "@/components/layouts/SearchBox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {alerts} from "@/lib/alerts";
+import {useDataContext} from "@/lib/DataContext";
 
 interface User {
     U_CODE: any;
@@ -27,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
         onToggle();
     };
 
+    const { setGlobalData } = useDataContext();
     const router = useRouter();
 
     const handleLogout = (e:any) => {
@@ -53,9 +55,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
 
             {/* 🔍 Search Component */}
             <div className="ms-3 flex-grow-1 d-none d-md-flex justify-content-start me-4">
-                <SearchBox
-                    onSearch={(value) => {
-                        console.log("Search from Navbar:", value);
+                <SearchBox onSearch={(value) => {
+                        setGlobalData(value);
+                        router.push("/books");
                     }}
                 />
             </div>

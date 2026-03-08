@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from "next";
+import {SearchProvider} from "@/lib/DataProviderContext";
 
 export const metadata: Metadata = {
     title: "Books Catalog | GroupFour",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function BooksLayout({ children }: { children: React.ReactNode }) {
     return (
         <>
-            {children}
+           {children}
         </>
     );
 }

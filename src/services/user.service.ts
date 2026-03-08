@@ -1,5 +1,5 @@
-import { getDbConnection } from "../lib/db";
-import {throwException} from "../lib/exceptions";
+import { getDbConnection } from "@/lib/db";
+import {throwException} from "@/lib/exceptions";
 
 export async function getUserByCode(code: string) {
     const userCode = code;

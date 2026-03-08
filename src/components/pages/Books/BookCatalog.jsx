@@ -3,8 +3,76 @@
 import React, { useState, useEffect } from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
+import { useDataContext } from "@/lib/DataContext";
 
-export default function BookCatalog({ books }) {
+export default function BookCatalog() {
+
+    const books = [
+        {
+            id: 1,
+            title: "Clean Code",
+            author: "Robert C. Martin",
+            isbn: "9780132",
+            category: "Programming",
+            description: "A handbook of agile software craftsmanship teaching principles of writing clean and maintainable code.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 2,
+            title: "The Pragmatic Programmer",
+            author: "Andrew Hunt",
+            isbn: "9780201",
+            category: "Programming",
+            description: "A classic book for software developers covering practical techniques and best practices.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 3,
+            title: "Introduction to Algorithms",
+            author: "Thomas H. Cormen",
+            isbn: "978026",
+            category: "Computer Science",
+            description: "Widely used textbook covering algorithms, data structures, and computational complexity.",
+            image: "/img/book.jpg",
+            available: false
+        },
+        {
+            id: 4,
+            title: "Atomic Habits",
+            author: "James Clear",
+            isbn: "978073",
+            category: "Self Development",
+            description: "A guide on how small habits can lead to remarkable personal and professional results.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 5,
+            title: "Rich Dad Poor Dad",
+            author: "Robert Kiyosaki",
+            isbn: "978169",
+            category: "Business",
+            description: "A personal finance classic explaining financial education and wealth building.",
+            image: "/img/book.jpg",
+            available: true
+        },
+        {
+            id: 6,
+            title: "Deep Learning",
+            author: "Ian Goodfellow",
+            isbn: "978026",
+            category: "Artificial Intelligence",
+            description: "Comprehensive introduction to deep learning concepts, neural networks, and machine learning.",
+            image: "/img/book.jpg",
+            available: false
+        }
+    ];
+
+
+    const { globalData } = useDataContext();
+
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
     const [isbnInput, setIsbnInput] = useState("");
@@ -19,6 +87,13 @@ export default function BookCatalog({ books }) {
         isbn: "",
         category: ""
     });
+
+    useEffect(() => {
+        if (globalData) {
+            setTitleInput(globalData);
+            setFilters(prev => ({ ...prev, title: globalData.toLowerCase() }));
+        }
+    }, [globalData]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -45,9 +120,7 @@ export default function BookCatalog({ books }) {
     const indexOfLastBook = currentPage * booksPerPage;
     const indexOfFirstBook = indexOfLastBook - booksPerPage;
     const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-    const totalPages = 60; //Math.ceil(filteredBooks.length / booksPerPage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const totalPages = Math.ceil(filteredBooks.length / booksPerPage) || 1;
 
     return (
         <div className="book-catalog container py-4">
@@ -108,39 +181,53 @@ export default function BookCatalog({ books }) {
             {/* BOOK GRID */}
             <div className="row g-4">
                 {currentBooks.length > 0 ? (
-                    currentBooks.map((book) => (
-                        <div key={book.id} className="col-lg-4 col-md-6">
-                            <div className="book-card">
-                                {/* ISBN BADGE - TOP RIGHT */}
-                                <div className="book-isbn">
-                                    ISBN: {book.isbn}
-                                </div>
+                    currentBooks.map((book) => {
+                        const iconClass = "bi bi-book";
 
-                                <div className="book-overlay">
-                                    <button className="action-btn cart-btn">
-                                        <i className="bi bi-cart-fill"></i>
-                                    </button>
-                                    <button className="action-btn view-btn">
-                                        <i className="bi bi-eye-fill"></i>
-                                    </button>
-                                </div>
+                        const coverNum = (Number(book.id) % 3) + 1;
+                        const coverImage = `/img/book-covers/book-cover-${coverNum}.png`;
 
-                                <div className="book-image-container">
-                                    <img
-                                        src={book.image || "/img/book-placeholder.png"}
-                                        alt={book.title}
-                                        className="book-image"
-                                    />
-                                </div>
+                        return (
+                            <div key={book.id} className="col-lg-4 col-md-6">
+                                <div className="book-card">
+                                    <div className="book-isbn">
+                                        ISBN: {book.isbn}
+                                    </div>
 
-                                <div className="book-info">
-                                    <h5 className="book-title">{book.title}</h5>
-                                    <p className="book-author">{book.author}</p>
-                                    <span className="badge-category">{book.category}</span>
+                                    <div className="book-overlay">
+                                        <button className="action-btn cart-btn">
+                                            <i className="bi bi-cart-fill"></i>
+                                        </button>
+                                        <button className="action-btn view-btn">
+                                            <i className="bi bi-eye-fill"></i>
+                                        </button>
+                                    </div>
+
+                                    <div className="book-image-container category-icon-container" style={{ backgroundImage: `url(${coverImage})` }}>
+                                        <div className="inner-cover-content">
+                                            <div className="top-title-container">
+                                                <div className="top-title">{book.title}</div>
+                                            </div>
+
+                                            <div className="mid-icon">
+                                                <i className={iconClass}></i>
+                                            </div>
+
+                                            <div className="bottom-label">
+                                                {book.author}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="book-info">
+                                        <p className="book-title">{book.title}</p>
+                                        <p className="book-author">{book.author}</p>
+                                        <span className="badge-category">{book.category}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 ) : (
                     <div className="col-12 text-center py-5">
                         <p className="text-muted">No books found.</p>
@@ -148,13 +235,11 @@ export default function BookCatalog({ books }) {
                 )}
             </div>
 
-            {/* PAGINATION UI */}
             <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
             />
-
         </div>
     );
 }

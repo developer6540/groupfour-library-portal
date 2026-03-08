@@ -59,6 +59,27 @@ export function getDateISO(date: string | Date): string {
     return m.isValid() ? m.toISOString() : "";
 }
 
+export function setCookie(name: string, value: string, days: number){
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+};
+
+export function getCookie(name: string){
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+        const [key, value] = cookie.split("=");
+        if (key === name) {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+};
+
+export function deleteCookie(name: string){
+    document.cookie = `${name}=; Max-Age=0; path=/`;
+};
+
 export async function updateLoggedUser(user: any, id: string): Promise<any | null> {
     try {
         // Return session user if already provided

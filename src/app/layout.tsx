@@ -1,6 +1,3 @@
-
-export const dynamic = "force-dynamic";
-
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
@@ -19,6 +16,7 @@ import './theme.scss';
 
 import RootWrapper from "@/components/layouts/RootWrapper";
 import BootstrapClient from "@/components/layouts/BootstrapClient";
+import {DataContextProvider} from "@/lib/DataContext";
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -32,9 +30,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
         <body className={quicksand.className}>
-        <BootstrapClient/>
-        <Toaster position="top-right" expand={true} richColors closeButton/>
-        <RootWrapper>{children}</RootWrapper>
+            <BootstrapClient/>
+            <Toaster position="top-right" expand={true} richColors closeButton/>
+            <DataContextProvider>
+                <RootWrapper>
+                    {children}
+                </RootWrapper>
+            </DataContextProvider>
         </body>
         </html>
     );

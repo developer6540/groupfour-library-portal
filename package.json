@@ -28,6 +28,7 @@
     "recharts": "^3.7.0",
     "sass": "^1.97.3",
     "sonner": "^2.0.7",
+    "swiper": "^12.1.2",
     "winston": "^3.19.0"
   },
   "devDependencies": {

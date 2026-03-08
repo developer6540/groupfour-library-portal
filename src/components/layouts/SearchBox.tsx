@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
+import {deleteCookie, getCookie, setCookie} from "@/lib/utility";
 
 interface SearchBoxProps {
     placeholder?: string;
     onSearch?: (value: string) => void;
 }
-
-const COOKIE_NAME = "SearchHistory";
 
 const SearchBox: React.FC<SearchBoxProps> = ({
                                                  placeholder = "Enter book name to quick search...",
@@ -18,33 +17,10 @@ const SearchBox: React.FC<SearchBoxProps> = ({
     const [showHistory, setShowHistory] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
 
-    /* ---------------- Cookie Helpers ---------------- */
-
-    const setCookie = (name: string, value: string, days: number) => {
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
-    };
-
-    const getCookie = (name: string) => {
-        const cookies = document.cookie.split("; ");
-        for (let cookie of cookies) {
-            const [key, value] = cookie.split("=");
-            if (key === name) {
-                return decodeURIComponent(value);
-            }
-        }
-        return null;
-    };
-
-    const deleteCookie = (name: string) => {
-        document.cookie = `${name}=; Max-Age=0; path=/`;
-    };
-
     /* ---------------- Load Cookie ---------------- */
 
     useEffect(() => {
-        const stored = getCookie(COOKIE_NAME);
+        const stored = getCookie("search-history");
         if (stored) {
             try {
                 setHistory(JSON.parse(stored));
@@ -58,29 +34,26 @@ const SearchBox: React.FC<SearchBoxProps> = ({
 
     const saveHistory = (newHistory: string[]) => {
         setHistory(newHistory);
-        setCookie(COOKIE_NAME, JSON.stringify(newHistory), 7);
+        setCookie("search-history", JSON.stringify(newHistory), 7);
     };
 
     const handleSearch = (value: string) => {
-        if (!value.trim()) {
-            alert("Please enter a search term.");
-            return;
-        }
+        const trimmedValue = value.trim();
+        if (!trimmedValue) return;
 
-        let updatedHistory = history.filter(item => item !== value);
-        updatedHistory.unshift(value);
+        // Update history: remove duplicates and add to front
+        const updatedHistory = [
+            trimmedValue,
+            ...history.filter(item => item !== trimmedValue)
+        ].slice(0, 10);
 
-        if (updatedHistory.length > 10) {
-            updatedHistory = updatedHistory.slice(0, 10);
-        }
-
-        saveHistory(updatedHistory);
+        setHistory(updatedHistory);
+        setCookie("search-history", JSON.stringify(updatedHistory), 7);
         setShowHistory(false);
+        setSearchTerm(trimmedValue); // Sync the input field
 
         if (onSearch) {
-            onSearch(value);
-        } else {
-            alert("Searching for: " + value);
+            onSearch(trimmedValue);
         }
     };
 
@@ -89,7 +62,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({
     );
 
     const clearHistory = () => {
-        deleteCookie(COOKIE_NAME);
+        deleteCookie("search-history");
         setHistory([]);
     };
 
