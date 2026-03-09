@@ -4,7 +4,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Chtast.scss';
 import {quickSpeak} from "@/lib/textToSpeach";
 
-export default function Chtast() {
+export default function ChatAssist() {
+
+    if (process.env.NEXT_PUBLIC_CHATBOT_ON !== "true") {
+        return null;
+    }
+    const display = "block";
+
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [open, setOpen] = useState(false);
@@ -49,7 +55,7 @@ export default function Chtast() {
     };
 
     return (
-        <div className={`chatbot-wrapper ${open ? 'is-open' : ''}`}>
+        <div style={{ display: display }} className={`chatbot-wrapper ${open ? 'is-open' : ''}`}>
             <button
                 className="btn btn-purple rounded-circle shadow-lg chat-trigger"
                 onClick={() => {

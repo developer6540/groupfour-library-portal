@@ -6,11 +6,10 @@ import Logger from "@/lib/logger";
 export async function GET(request: NextRequest, context: { params: Promise<{ code: string }> }) {
     const { code } = await context.params;
     try {
-        console.log(code);
         const user = await getUserByCode(code);
         return NextResponse.json(successResponse(user, "User retrieved successfully"));
     } catch (error: any) {
-        Logger.error("API Error  : ", error);
+        Logger.error("API Error (getUserByCode): ", error);
         return NextResponse.json(errorResponse(error.message, error.status || 500), {
             status: error.status || 500,
         });

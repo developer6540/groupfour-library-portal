@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Image from 'next/image';
 import './ChangeAccountDetails.scss';
 import {getBaseUrl, getDateFormated} from "@/lib/utility";
@@ -12,6 +12,7 @@ import moment from "moment";
 
 export default function ChangeAccountDetails() {
     const [user, setUser] = useState(null);
+    const [isSaving, setIsSaving] = useState(false); // [NEW] Loading state
     const [formData, setFormData] = useState({
         U_NAME: "",
         U_DOB: "",
@@ -23,36 +24,81 @@ export default function ChangeAccountDetails() {
         U_CODE: "",
     });
 
-    // Load user session on mount
+    const [errors, setErrors] = useState({});
+
     useEffect(() => {
         getSession("user-info").then(res => {
             if (!res) return;
             const data = JSON.parse(res);
             setUser(data);
             setFormData({
-                U_NAME: data.U_NAME,
-                U_DOB: data.U_DOB,
-                U_GENDER: data.U_GENDER,
-                U_ADDRESS: data.U_ADDRESS,
-                U_MOBILE: data.U_MOBILE,
-                U_NIC: data.U_NIC,
-                U_EMAIL: data.U_EMAIL,
-                U_CODE: data.U_CODE,
+                U_NAME: data.U_NAME || "",
+                U_DOB: data.U_DOB || "",
+                U_GENDER: data.U_GENDER || "",
+                U_ADDRESS: data.U_ADDRESS || "",
+                U_MOBILE: data.U_MOBILE || "",
+                U_EMAIL: data.U_EMAIL || "",
+                U_CODE: data.U_CODE || "",
             });
         });
     }, []);
 
-    // input change handler for all fields
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+    const validateField = (name, value) => {
+        let error = "";
+        switch (name) {
+            case "U_NAME":
+                if (!value || value.trim().length < 3) error = "Name must be at least 3 characters";
+                break;
+            case "U_EMAIL":
+                if (!value || !/^\S+@\S+\.\S+$/.test(value)) error = "Valid email is required";
+                break;
+            case "U_MOBILE":
+                if (!value || !/^\+?\d{10,15}$/.test(value)) error = "Mobile must be 10-15 digits";
+                break;
+            case "U_ADDRESS":
+                if (!value || value.trim().length < 5) error = "Address must be at least 5 characters";
+                break;
+            case "U_GENDER":
+                if (!value) error = "Please select gender";
+                break;
+            case "U_DOB":
+                if (!value) error = "Date of Birth is required";
+                else if (new Date(value) > new Date()) error = "Date of Birth cannot be in the future";
+                break;
+            default:
+                break;
+        }
+        setErrors(prev => ({...prev, [name]: error}));
+        return error === "";
     };
 
-    // Save changes handler
+    const handleChange = (e) => {
+        const {name, value} = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
+        validateField(name, value);
+    };
+
+    const handleDateChange = (date) => {
+        const isoDate = date ? moment(date).toISOString() : null;
+        setFormData(prev => ({...prev, U_DOB: isoDate}));
+        validateField("U_DOB", isoDate);
+    };
+
+    const hasErrors = Object.values(errors).some(err => err);
+    const isSaveDisabled = hasErrors || isSaving;
+
     const handleSave = async () => {
+        let isValid = true;
+        ["U_NAME", "U_EMAIL", "U_MOBILE", "U_ADDRESS", "U_GENDER", "U_DOB"].forEach(field => {
+            if (!validateField(field, formData[field])) isValid = false;
+        });
+
+        if (!isValid) {
+            alerts.error("Please fix validation errors before saving!");
+            return;
+        }
+
+        setIsSaving(true); // [NEW] Start loading
         try {
             const editableFields = {
                 U_NAME: formData.U_NAME,
@@ -60,29 +106,29 @@ export default function ChangeAccountDetails() {
                 U_GENDER: formData.U_GENDER,
                 U_ADDRESS: formData.U_ADDRESS,
                 U_MOBILE: formData.U_MOBILE,
-                U_NIC: formData.U_NIC,
                 U_EMAIL: formData.U_EMAIL,
             };
 
-            // Make API call to update user details
             const response = await fetch(`${getBaseUrl()}api/v1/user/${formData.U_CODE}/edit`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(editableFields),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alerts.success(response.message || "Changes saved successfully!");
-                setUser(prev => ({ ...prev, ...editableFields }));
-                setFormData(prev => ({ ...prev, ...editableFields }));
-                setSession('user-info', JSON.stringify({ ...user, ...editableFields }));
+                alerts.success(data.message || "Changes saved successfully!");
+                const updatedUser = {...user, ...editableFields};
+                setUser(updatedUser);
+                setSession('user-info', JSON.stringify(updatedUser));
             } else {
                 alerts.error(`Error: ${data.message}`);
             }
         } catch (error) {
             alerts.error(`Error saving changes: ${error.message || error}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -91,8 +137,7 @@ export default function ChangeAccountDetails() {
 
     return (
         <div className="profile-card p-4 shadow-sm h-100">
-
-            {/* Profile Header */}
+            {/* Header and Stats blocks remain unchanged... */}
             <div className="text-center profile-short-info">
                 <div className="profile-image-wrapper mb-3">
                     <Image
@@ -106,7 +151,7 @@ export default function ChangeAccountDetails() {
                     {formData?.U_ACTIVE && <span className="status-indicator active"></span>}
                 </div>
                 <h4 className="fw-bold mb-1 text-uppercase">{user?.U_NAME}</h4>
-                <p className="text-muted fw-bold mb-3" style={{fontSize:"14px"}}>
+                <p className="text-muted fw-bold mb-3" style={{fontSize: "14px"}}>
                     CODE: {user?.U_CODE} | {user?.U_NIC}
                 </p>
                 <div className="d-flex justify-content-center fw-bold mb-0">
@@ -116,7 +161,6 @@ export default function ChangeAccountDetails() {
                 </div>
             </div>
 
-            {/* Stats */}
             <div className="stats-container mt-4 mb-4 p-3 d-flex justify-content-around align-items-center">
                 <div className="stat-item">
                     <span className="stat-label">Maximum Books Borrow Limit:</span>
@@ -126,21 +170,28 @@ export default function ChangeAccountDetails() {
                 <div className="stat-item">
                     <span className="stat-label">Membership Expiry Date:</span>
                     <span className={`stat-value ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>
-                        {expiryDate ? getDateFormated(expiryDate,"YYYY-MM-DD") : 'N/A'}
+                        {expiryDate ? getDateFormated(expiryDate, "YYYY-MM-DD") : 'N/A'}
                     </span>
                 </div>
             </div>
 
-            {/* Editable Fields */}
             <div className="user-details">
+
                 <div className="detail-row">
                     <span>Code</span>
-                    <input
-                        type="text"
-                        disabled="disabled"
-                        value={formData.U_CODE || ""}
-                        className="disabled"
-                    />
+                    <input type="text" disabled value={formData.U_CODE || ""} className="disabled"/>
+                </div>
+
+                <div className="detail-row">
+                    <label>NIC Number</label>
+                    <input type="text" disabled value={formData.U_NIC || ""} className="disabled"/>
+                </div>
+
+                <div className="detail-row">
+                    <span>Registration Date</span>
+                    <input type="text" disabled
+                           value={user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE, "YYYY-MM-DD") : 'N/A'}
+                           className="disabled"/>
                 </div>
 
                 <div className="detail-row">
@@ -150,43 +201,19 @@ export default function ChangeAccountDetails() {
                         name="U_NAME"
                         value={formData.U_NAME || ""}
                         onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter full name"
+                        className={`form-control ${errors.U_NAME ? 'is-invalid' : ''}`}
                     />
-                </div>
-
-                <div className="detail-row">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="U_PASSWORD"
-                        value={formData.U_PASSWORD || ""}
-                        onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter Password"
-                    />
+                    {errors.U_NAME && <div className="invalid-feedback">{errors.U_NAME}</div>}
                 </div>
 
                 <div className="detail-row">
                     <label>Date of Birth</label>
-                    {/*<input*/}
-                    {/*    type="text"*/}
-                    {/*    name="U_DOB"*/}
-                    {/*    value={getDateFormated(formData.U_DOB, "DD MMM YYYY") || ""}*/}
-                    {/*    onChange={handleChange}*/}
-                    {/*    className="form-control"*/}
-                    {/*    placeholder="DD-MMM-YYYY"*/}
-                    {/*/>*/}
                     <DatePickerInput
                         value={formData.U_DOB}
                         maxDate={new Date()}
-                        onChange={(date) =>
-                            setFormData(prev => ({
-                                ...prev,
-                                U_DOB: date ? moment(date).toISOString() : null, // store ISO string for API
-                            }))
-                        }
+                        onChange={handleDateChange}
                     />
+                    {errors.U_DOB && <div className="invalid-feedback d-block">{errors.U_DOB}</div>}
                 </div>
 
                 <div className="detail-row">
@@ -196,9 +223,9 @@ export default function ChangeAccountDetails() {
                         name="U_ADDRESS"
                         value={formData.U_ADDRESS || ""}
                         onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter address"
+                        className={`form-control ${errors.U_ADDRESS ? 'is-invalid' : ''}`}
                     />
+                    {errors.U_ADDRESS && <div className="invalid-feedback">{errors.U_ADDRESS}</div>}
                 </div>
 
                 <div className="detail-row">
@@ -208,21 +235,9 @@ export default function ChangeAccountDetails() {
                         name="U_MOBILE"
                         value={formData.U_MOBILE || ""}
                         onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter mobile number"
+                        className={`form-control ${errors.U_MOBILE ? 'is-invalid' : ''}`}
                     />
-                </div>
-
-                <div className="detail-row">
-                    <label>NIC Number</label>
-                    <input
-                        type="text"
-                        name="U_NIC"
-                        value={formData.U_NIC || ""}
-                        onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter NIC"
-                    />
+                    {errors.U_MOBILE && <div className="invalid-feedback">{errors.U_MOBILE}</div>}
                 </div>
 
                 <div className="detail-row">
@@ -232,9 +247,9 @@ export default function ChangeAccountDetails() {
                         name="U_EMAIL"
                         value={formData.U_EMAIL || ""}
                         onChange={handleChange}
-                        className="form-control"
-                        placeholder="Enter email"
+                        className={`form-control ${errors.U_EMAIL ? 'is-invalid' : ''}`}
                     />
+                    {errors.U_EMAIL && <div className="invalid-feedback">{errors.U_EMAIL}</div>}
                 </div>
 
                 <div className="detail-row">
@@ -243,30 +258,35 @@ export default function ChangeAccountDetails() {
                         name="U_GENDER"
                         value={formData?.U_GENDER || ""}
                         onChange={handleChange}
-                        className="form-control"
+                        className={`form-control ${errors.U_GENDER ? 'is-invalid' : ''}`}
                     >
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
-                </div>
-                <div className="detail-row">
-                    <span>Registration Date</span>
-                    <input
-                        type="text"
-                        disabled="disabled"
-                        value={user?.U_REGISTEREDATE ? getDateFormated(user.U_REGISTEREDATE, "YYYY-MM-DD") : 'N/A'}
-                        className="disabled"
-                    />
+                    {errors.U_GENDER && <div className="invalid-feedback">{errors.U_GENDER}</div>}
                 </div>
             </div>
 
-            {/* Buttons */}
             <div className="d-flex justify-content-end mt-4">
                 <Link href="/profile/account-details">
-                    <button className="btn btn-dark m-2">Back</button>
+                    <button className="btn btn-dark m-2" disabled={isSaving}>Back</button>
                 </Link>
-                <button className="btn btn-purple m-2" onClick={handleSave}>Save Changes</button>
+                {/* [UPDATED] Button logic with spinner */}
+                <button
+                    className="btn btn-purple m-2"
+                    onClick={handleSave}
+                    disabled={isSaveDisabled}
+                >
+                    {isSaving ? (
+                        <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Saving...
+                        </>
+                    ) : (
+                        "Save Changes"
+                    )}
+                </button>
             </div>
         </div>
     );

@@ -13,27 +13,27 @@ export const quickSpeak = (text: string, options: QuickSpeakOptions = {}) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
 
-    const voices = window.speechSynthesis.getVoices();
+    const setVoiceAndSpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = voices.find(voice =>
+            /Female|Google UK English Female|Zira|Samantha/i.test(voice.name)
+        );
 
-    const femaleVoice = voices.find(voice =>
-        voice.name.includes('Female') ||
-        voice.name.includes('Google UK English Female') ||
-        voice.name.includes('Zira') ||  // Windows
-        voice.name.includes('Samantha') // macOS/iOS
-    );
+        if (femaleVoice) utterance.voice = femaleVoice;
 
-    if (femaleVoice) {
-        utterance.voice = femaleVoice;
-    }
+        utterance.rate = options.rate ?? 0.7;
+        utterance.pitch = options.pitch ?? 1.8;
+        utterance.volume = options.volume ?? 1;
+        utterance.lang = options.lang ?? 'en-US';
 
-    utterance.rate = options.rate ?? 0.7;
-    utterance.pitch = options.pitch ?? 1.8;
-    utterance.volume = options.volume ?? 1;
-    utterance.lang = options.lang ?? 'en-US';
+        if (options.onEnd) utterance.onend = options.onEnd;
 
-    utterance.onend = () => {
-        if (options.onEnd) options.onEnd();
+        window.speechSynthesis.speak(utterance);
     };
 
-    window.speechSynthesis.speak(utterance);
+    if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+    } else {
+        setVoiceAndSpeak();
+    }
 };
