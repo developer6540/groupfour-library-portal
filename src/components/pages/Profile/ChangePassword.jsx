@@ -194,20 +194,26 @@ export default function ChangeAccountDetails() {
 
                 <div className="d-flex justify-content-end mt-4">
                     <Link href="/profile/account-details">
-                        <button className="btn btn-dark me-2" disabled={isSaving}>Cancel</button>
+                        <button className="btn btn-dark m-2" disabled={isSaving}>Back</button>
                     </Link>
+                    {/* [UPDATED] Button logic with spinner */}
                     <button
-                        className="btn btn-purple"
+                        className="btn btn-purple m-2"
                         onClick={handleSave}
                         disabled={isSaving}
                     >
-                        {isSaving && <span className="spinner-border spinner-border-sm me-2"></span>}
-                        {isSaving ? "Updating..." : "Update Password"}
+                        {isSaving ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Saving...
+                            </>
+                        ) : (
+                            "Save Changes"
+                        )}
                     </button>
                 </div>
             </div>
         </div>
-
 
     );
 }
