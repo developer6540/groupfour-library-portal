@@ -16,7 +16,7 @@ import './theme.scss';
 import RootWrapper from "@/components/layouts/RootWrapper";
 import BootstrapClient from "@/components/layouts/BootstrapClient";
 import {DataContextProvider} from "@/lib/dataContext";
-import Chatbot from "@/components/common/Chatbot";
+import Chtast from "@/components/common/Chtast";
 
 export const metadata: Metadata = {
     title: "Create Next App",

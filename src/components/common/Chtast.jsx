@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import './Chatbot.scss';
+import './Chtast.scss';
 import {quickSpeak} from "@/lib/textToSpeach";
 
-export default function Chatbot() {
+export default function Chtast() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [open, setOpen] = useState(false);
@@ -28,7 +28,7 @@ export default function Chatbot() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`/api/v1/chatbot`, {
+            const response = await fetch(`/api/v1/chtast`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: currentInput }),
