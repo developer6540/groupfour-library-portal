@@ -7,7 +7,6 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {alerts} from "@/lib/alerts";
 import {useDataContext} from "@/lib/dataContext";
-import ChatAssist from "@/components/common/Chtast";
 
 interface User {
     U_CODE: any;
@@ -155,7 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({onToggle, user}) => {
                 </div>
 
             </nav>
-            <ChatAssist />
+
         </>
 
 

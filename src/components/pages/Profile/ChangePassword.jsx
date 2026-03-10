@@ -182,10 +182,6 @@ export default function ChangeAccountDetails() {
                             priority
                         />
 
-                        {user?.U_ACTIVE && (
-                            <span className="status-indicator active"></span>
-                        )}
-
                     </div>
 
                     <h4 className="fw-bold text-uppercase">
@@ -221,7 +217,6 @@ export default function ChangeAccountDetails() {
                             alt={user?.U_NAME || "Profile"}
                             width={150}
                             height={150}
-                            className="profile-image"
                             priority
                             style={{ width: '100%', height: 'auto' }}
                         />
