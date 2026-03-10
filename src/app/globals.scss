@@ -4,6 +4,7 @@ html, body {
     background-color: #f9faff!important;
     color: #212529;
     overflow-x: hidden;
+    scroll-behavior: smooth !important;
 }
 
 hr {
@@ -54,7 +55,10 @@ hr {
     outline: none !important;
 }
 
-/* Custom Scrollbar */
+input::placeholder {
+    color: #c3c3c3 !important;
+}
+
 ::-webkit-scrollbar {
     width: 8px;
 }

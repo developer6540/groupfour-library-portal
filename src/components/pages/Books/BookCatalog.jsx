@@ -1,414 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
-import { useDataContext } from "@/lib/DataContext";
+import { useDataContext } from "@/lib/dataContext";
+import { capitalizeFirstLetter } from "@/lib/utility";
+
+const loadBootstrap = async () => {
+    if (typeof window !== "undefined" && !window.bootstrap) {
+        const bootstrap = await import("bootstrap/dist/js/bootstrap.bundle.min.js");
+        window.bootstrap = bootstrap;
+    }
+    return window.bootstrap;
+};
 
 export default function BookCatalog() {
-
-    const books = [
-        {
-            id: 1,
-            title: "You Don't Know JS",
-            author: "Kyle Simpson",
-            isbn: "9781491904244",
-            category: "Programming",
-            description: "A deep dive into JavaScript core mechanisms including scope, closures, and async behavior.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 2,
-            title: "JavaScript: The Good Parts",
-            author: "Douglas Crockford",
-            isbn: "9780596517748",
-            category: "Programming",
-            description: "Highlights the elegant features of JavaScript and explains how to use the language effectively.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 3,
-            title: "Design Patterns",
-            author: "Erich Gamma",
-            isbn: "9780201633610",
-            category: "Programming",
-            description: "Classic book describing reusable object-oriented software design patterns.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 4,
-            title: "Refactoring",
-            author: "Martin Fowler",
-            isbn: "9780201485677",
-            category: "Programming",
-            description: "Improving the design of existing code with practical refactoring techniques.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 5,
-            title: "The Clean Coder",
-            author: "Robert C. Martin",
-            isbn: "9780137081073",
-            category: "Programming",
-            description: "A code of conduct for professional programmers covering discipline and responsibility.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 6,
-            title: "Head First Design Patterns",
-            author: "Eric Freeman",
-            isbn: "9780596007126",
-            category: "Programming",
-            description: "An engaging introduction to design patterns using real-world examples.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 7,
-            title: "Effective Java",
-            author: "Joshua Bloch",
-            isbn: "9780134685991",
-            category: "Programming",
-            description: "Best practices and patterns for writing high-quality Java code.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 8,
-            title: "Cracking the Coding Interview",
-            author: "Gayle Laakmann McDowell",
-            isbn: "9780984782857",
-            category: "Computer Science",
-            description: "Popular preparation guide for technical interviews with coding questions.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 9,
-            title: "Computer Networking: A Top-Down Approach",
-            author: "James Kurose",
-            isbn: "9780133594140",
-            category: "Computer Science",
-            description: "Explains networking concepts from application layer to physical layer.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 10,
-            title: "Operating System Concepts",
-            author: "Abraham Silberschatz",
-            isbn: "9781118063330",
-            category: "Computer Science",
-            description: "Comprehensive guide to operating system structures and concepts.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 11,
-            title: "Soft Skills",
-            author: "John Sonmez",
-            isbn: "9781617292392",
-            category: "Career",
-            description: "Career development advice for software developers including productivity and personal branding.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 12,
-            title: "The Phoenix Project",
-            author: "Gene Kim",
-            isbn: "9780988262591",
-            category: "Business",
-            description: "A novel about IT, DevOps, and helping your business win.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 13,
-            title: "The Lean Startup",
-            author: "Eric Ries",
-            isbn: "9780307887894",
-            category: "Business",
-            description: "Startup methodology focusing on rapid experimentation and validated learning.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 14,
-            title: "Start With Why",
-            author: "Simon Sinek",
-            isbn: "9781591846444",
-            category: "Business",
-            description: "Explains how great leaders inspire action by focusing on purpose.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 15,
-            title: "Think and Grow Rich",
-            author: "Napoleon Hill",
-            isbn: "9781585424337",
-            category: "Self Development",
-            description: "Classic motivational book about achieving success and wealth.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 16,
-            title: "The 7 Habits of Highly Effective People",
-            author: "Stephen Covey",
-            isbn: "9780743269513",
-            category: "Self Development",
-            description: "Personal development framework based on seven powerful habits.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 17,
-            title: "Mindset",
-            author: "Carol S. Dweck",
-            isbn: "9780345472328",
-            category: "Self Development",
-            description: "Explains fixed vs growth mindset and how mindset affects success.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 18,
-            title: "Grit",
-            author: "Angela Duckworth",
-            isbn: "9781501111105",
-            category: "Self Development",
-            description: "The power of passion and perseverance in achieving long-term goals.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 19,
-            title: "Zero to One",
-            author: "Peter Thiel",
-            isbn: "9780804139298",
-            category: "Business",
-            description: "Insights on building innovative startups that create new markets.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 20,
-            title: "Deep Work",
-            author: "Cal Newport",
-            isbn: "9781455586691",
-            category: "Self Development",
-            description: "Focus on deep, distraction-free work to produce high value results.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 21,
-            title: "Digital Minimalism",
-            author: "Cal Newport",
-            isbn: "9780525536512",
-            category: "Self Development",
-            description: "Guide to living better with less digital distraction.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 22,
-            title: "Artificial Intelligence: A Modern Approach",
-            author: "Stuart Russell",
-            isbn: "9780134610993",
-            category: "Artificial Intelligence",
-            description: "Comprehensive textbook covering modern AI concepts.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 23,
-            title: "Pattern Recognition and Machine Learning",
-            author: "Christopher Bishop",
-            isbn: "9780387310732",
-            category: "Artificial Intelligence",
-            description: "Mathematical approach to machine learning and pattern recognition.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 24,
-            title: "Hands-On Machine Learning",
-            author: "Aurélien Géron",
-            isbn: "9781492032649",
-            category: "Artificial Intelligence",
-            description: "Practical machine learning with Scikit-Learn, Keras, and TensorFlow.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 25,
-            title: "Python Crash Course",
-            author: "Eric Matthes",
-            isbn: "9781593279288",
-            category: "Programming",
-            description: "Fast-paced introduction to Python programming.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 26,
-            title: "Learning React",
-            author: "Alex Banks",
-            isbn: "9781492051725",
-            category: "Programming",
-            description: "Modern guide to building applications using React.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 27,
-            title: "Node.js Design Patterns",
-            author: "Mario Casciaro",
-            isbn: "9781839214110",
-            category: "Programming",
-            description: "Best practices and patterns for scalable Node.js applications.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 28,
-            title: "Laravel Up & Running",
-            author: "Matt Stauffer",
-            isbn: "9781492041214",
-            category: "Programming",
-            description: "Comprehensive guide to building modern PHP applications with Laravel.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 29,
-            title: "Fullstack Vue",
-            author: "Hassan Djirdeh",
-            isbn: "9781985083914",
-            category: "Programming",
-            description: "Guide to building Vue.js applications with modern tooling.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 30,
-            title: "The DevOps Handbook",
-            author: "Gene Kim",
-            isbn: "9781942788003",
-            category: "Technology",
-            description: "Practices for improving IT performance using DevOps principles.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 31,
-            title: "Site Reliability Engineering",
-            author: "Betsy Beyer",
-            isbn: "9781491929124",
-            category: "Technology",
-            description: "Google's approach to building reliable and scalable systems.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 32,
-            title: "Hooked",
-            author: "Nir Eyal",
-            isbn: "9781591847786",
-            category: "Business",
-            description: "How to build habit-forming products.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 33,
-            title: "Measure What Matters",
-            author: "John Doerr",
-            isbn: "9780525536222",
-            category: "Business",
-            description: "Explains the OKR goal-setting framework used by leading companies.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 34,
-            title: "The Psychology of Money",
-            author: "Morgan Housel",
-            isbn: "9780857197689",
-            category: "Finance",
-            description: "Timeless lessons on wealth, greed, and happiness.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 35,
-            title: "Make Time",
-            author: "Jake Knapp",
-            isbn: "9780525572428",
-            category: "Self Development",
-            description: "Practical tips to focus on what matters every day.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 36,
-            title: "Rework",
-            author: "Jason Fried",
-            isbn: "9780307463746",
-            category: "Business",
-            description: "Fresh perspective on building businesses and startups.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 37,
-            title: "Algorithms to Live By",
-            author: "Brian Christian",
-            isbn: "9781627790369",
-            category: "Computer Science",
-            description: "Applies computer science algorithms to everyday decision making.",
-            image: "/img/book.jpg",
-            available: true
-        },
-        {
-            id: 38,
-            title: "The Art of Computer Programming",
-            author: "Donald Knuth",
-            isbn: "9780201896831",
-            category: "Computer Science",
-            description: "Legendary multi-volume work on algorithms and programming theory.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 39,
-            title: "Structure and Interpretation of Computer Programs",
-            author: "Harold Abelson",
-            isbn: "9780262510875",
-            category: "Computer Science",
-            description: "Influential textbook teaching fundamental programming concepts.",
-            image: "/img/book.jpg",
-            available: false
-        },
-        {
-            id: 40,
-            title: "Code Complete",
-            author: "Steve McConnell",
-            isbn: "9780735619678",
-            category: "Programming",
-            description: "Comprehensive guide to software construction best practices.",
-            image: "/img/book.jpg",
-            available: true
-        }
-    ];
+    const [books, setBooks] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [totalBooks, setTotalBooks] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedBook, setSelectedBook] = useState(null);
 
     const { globalData } = useDataContext();
 
@@ -416,220 +27,262 @@ export default function BookCatalog() {
     const [authorInput, setAuthorInput] = useState("");
     const [isbnInput, setIsbnInput] = useState("");
     const [categoryInput, setCategoryInput] = useState("");
-    const [filters, setFilters] = useState({
-        title: "",
-        author: "",
-        isbn: "",
-        category: ""
-    });
+
+    const [filters, setFilters] = useState({ title: "", author: "", isbn: "", category: "" });
     const [debouncedFilters, setDebouncedFilters] = useState(filters);
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 12;
 
-    /* Apply global search */
+    const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
+
+    // Helper to get dynamic cover image logic in one place
+    const getCoverData = (bookCode) => {
+        const coverNum = (Math.abs(parseInt(bookCode)) % 3) + 1;
+        return `/img/book-covers/book-cover-${coverNum}.png`;
+    };
+
     useEffect(() => {
-        if (globalData) {
-            setTitleInput(globalData);
-            setFilters(prev => ({ ...prev, title: globalData.toLowerCase() }));
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("/api/v1/category/list");
+                const result = await response.json();
+                if (response.ok && result.data) setCategories(result.data || []);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    const fetchBooks = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const queryParams = new URLSearchParams({
+                title: debouncedFilters.title,
+                author: debouncedFilters.author,
+                isbn: debouncedFilters.isbn,
+                category: debouncedFilters.category,
+                page: currentPage.toString(),
+                pageSize: booksPerPage.toString(),
+            });
+            const response = await fetch(`/api/v1/book/list?${queryParams.toString()}`);
+            const result = await response.json();
+            if (response.ok && result.data) {
+                setBooks(result.data.data || []);
+                setTotalBooks(result.data.total || 0);
+            } else {
+                setBooks([]);
+                setTotalBooks(0);
+            }
+        } catch (error) {
+            console.error("Error fetching books:", error);
+        } finally {
+            setIsLoading(false);
         }
-    }, [globalData]);
+    }, [debouncedFilters, currentPage]);
 
-    /* Debounce filter (500ms delay) */
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedFilters(filters);
-        }, 500);
+        fetchBooks();
+    }, [fetchBooks]);
 
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedFilters(filters), 500);
         return () => clearTimeout(handler);
     }, [filters]);
 
-    /* Reset page when filters change */
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedFilters]);
+    useEffect(() => setCurrentPage(1), [debouncedFilters]);
 
     const clearFilters = () => {
         setTitleInput("");
         setAuthorInput("");
         setIsbnInput("");
         setCategoryInput("");
-
-        setFilters({
-            title: "",
-            author: "",
-            isbn: "",
-            category: ""
-        });
+        setFilters({ title: "", author: "", isbn: "", category: "" });
     };
 
-    const hasFilters =
-        titleInput || authorInput || isbnInput || categoryInput;
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
-    const filteredBooks = books.filter((book) => {
-        return (
-            book.title.toLowerCase().includes(debouncedFilters.title) &&
-            book.author.toLowerCase().includes(debouncedFilters.author) &&
-            book.isbn.toLowerCase().includes(debouncedFilters.isbn) &&
-            (debouncedFilters.category === "" || book.category === debouncedFilters.category)
-        );
-    });
+    const handleViewBook = async (book) => {
+        setSelectedBook(book);
+        const modalEl = document.getElementById("bookDetailModal");
+        if (!modalEl) return;
 
-    const indexOfLastBook = currentPage * booksPerPage;
-    const indexOfFirstBook = indexOfLastBook - booksPerPage;
-    const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-    const totalPages = Math.ceil(filteredBooks.length / booksPerPage) || 1;
+        try {
+            const bootstrap = await loadBootstrap();
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInstance.show();
+        } catch (err) {
+            console.error("Error showing Bootstrap modal", err);
+        }
+    };
+
+    const hasFilters = titleInput || authorInput || isbnInput || categoryInput;
+    const totalPages = Math.ceil(totalBooks / booksPerPage) || 1;
 
     return (
         <div className="book-catalog container py-4">
-
             {/* SEARCH PANEL */}
-            <div className="search-panel p-4 mb-5 bg-white">
+            <div className="search-panel p-4 mb-5 bg-white shadow-sm rounded">
                 <div className="row g-3 align-items-end">
-
                     <div className="col-md-3">
                         <label className="form-label small fw-bold">Title</label>
-                        <input
-                            type="text"
-                            className="form-control custom-input"
-                            placeholder="Book title..."
-                            value={titleInput}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setTitleInput(value);
-                                setFilters(prev => ({ ...prev, title: value.toLowerCase() }));
-                            }}
-                        />
+                        <input type="text" className="form-control custom-input" placeholder="Book title..."
+                               value={titleInput} onChange={(e) => {
+                            setTitleInput(e.target.value);
+                            setFilters(prev => ({ ...prev, title: e.target.value }));
+                        }} />
                     </div>
-
                     <div className="col-md-3">
                         <label className="form-label small fw-bold">Author</label>
-                        <input
-                            type="text"
-                            className="form-control custom-input"
-                            placeholder="Author name..."
-                            value={authorInput}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setAuthorInput(value);
-                                setFilters(prev => ({ ...prev, author: value.toLowerCase() }));
-                            }}
-                        />
+                        <input type="text" className="form-control custom-input" placeholder="Author name..."
+                               value={authorInput} onChange={(e) => {
+                            setAuthorInput(e.target.value);
+                            setFilters(prev => ({ ...prev, author: e.target.value }));
+                        }} />
                     </div>
-
                     <div className="col-md-2">
                         <label className="form-label small fw-bold">ISBN</label>
-                        <input
-                            type="text"
-                            className="form-control custom-input"
-                            placeholder="ISBN..."
-                            value={isbnInput}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setIsbnInput(value);
-                                setFilters(prev => ({ ...prev, isbn: value.toLowerCase() }));
-                            }}
-                        />
+                        <input type="text" className="form-control custom-input" placeholder="ISBN..." value={isbnInput}
+                               onChange={(e) => {
+                                   setIsbnInput(e.target.value);
+                                   setFilters(prev => ({ ...prev, isbn: e.target.value }));
+                               }} />
                     </div>
-
                     <div className="col-md-2">
                         <label className="form-label small fw-bold">Category</label>
-                        <select
-                            className="form-select custom-select"
-                            value={categoryInput}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setCategoryInput(value);
-                                setFilters(prev => ({ ...prev, category: value }));
-                            }}
-                        >
+                        <select className="form-select custom-select" value={categoryInput} onChange={(e) => {
+                            setCategoryInput(e.target.value);
+                            setFilters(prev => ({ ...prev, category: e.target.value }));
+                        }}>
                             <option value="">All</option>
-                            <option value="Programming">Programming</option>
-                            <option value="Computer Science">Computer Science</option>
-                            <option value="Business">Business</option>
+                            {categories.map(cat => <option key={cat.BC_CODE} value={cat.BC_CODE}>{cat.BC_NAME}</option>)}
                         </select>
                     </div>
-
                     <div className="col-md-2">
-                        <button
-                            className="btn btn-danger w-100 search-btn"
-                            onClick={clearFilters}
-                            disabled={!hasFilters}
-                        >
-                            <i className="bi bi-eraser"></i>&nbsp;Clear All
+                        <button className="btn btn-danger w-100 search-btn" onClick={clearFilters} disabled={!hasFilters}>
+                            <i className="bi bi-eraser"></i>&nbsp;Clear
                         </button>
                     </div>
-
                 </div>
             </div>
 
             {/* BOOK GRID */}
             <div className="row g-4">
-                {currentBooks.length > 0 ? (
-                    currentBooks.map((book) => {
-
-                        const iconClass = "bi bi-book";
-                        const coverNum = (Number(book.id) % 3) + 1;
-                        const coverImage = `/img/book-covers/book-cover-${coverNum}.png`;
-
-                        return (
-                            <div key={book.id} className="col-lg-4 col-md-6">
-                                <div className="book-card">
-
-                                    <div className="book-isbn">
-                                        ISBN: {book.isbn}
-                                    </div>
-
-                                    <div className="book-overlay">
-                                        <button className="action-btn cart-btn">
-                                            <i className="bi bi-cart-fill"></i>
-                                        </button>
-                                        <button className="action-btn view-btn">
-                                            <i className="bi bi-eye-fill"></i>
-                                        </button>
-                                    </div>
-
-                                    <div
-                                        className="book-image-container category-icon-container"
-                                        style={{ backgroundImage: `url(${coverImage})` }}
-                                    >
-                                        <div className="inner-cover-content">
-                                            <div className="top-title-container">
-                                                <div className="top-title">{book.title}</div>
-                                            </div>
-
-                                            <div className="mid-icon">
-                                                <i className={iconClass}></i>
-                                            </div>
-
-                                            <div className="bottom-label">
-                                                {book.author}
-                                            </div>
+                {isLoading ? (
+                    <div className="col-12 text-center py-5">
+                        <div className="spinner-border text-purple" role="status"></div>
+                    </div>
+                ) : books.length > 0 ? (
+                    books.map(book => (
+                        <div key={book.B_CODE} className="col-lg-4 col-md-6">
+                            <div className="book-card">
+                                <div className="book-isbn">ISBN: {book.B_ISBN}</div>
+                                <div className="book-overlay">
+                                    <button className="action-btn cart-btn"><i className="bi bi-cart-fill"></i></button>
+                                    <button className="action-btn view-btn" onClick={() => handleViewBook(book)}>
+                                        <i className="bi bi-eye-fill"></i>
+                                    </button>
+                                </div>
+                                <div className="book-image-container category-icon-container"
+                                     style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
+                                    <div className="inner-cover-content">
+                                        <div className="top-title-container">
+                                            <div className="top-title">{safeCap(book.B_TITLE)}</div>
                                         </div>
+                                        <div className="mid-icon"><i className="bi bi-book"></i></div>
+                                        <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
-
-                                    <div className="book-info">
-                                        <p className="book-title">{book.title}</p>
-                                        <p className="book-author">{book.author}</p>
-                                        <span className="badge-category">{book.category}</span>
-                                    </div>
-
+                                </div>
+                                <div className="book-info">
+                                    <p className="book-title">{safeCap(book.B_TITLE)}</p>
+                                    <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
+                                    <span className="badge-category">{safeCap(book.B_CATEGORY)}</span>
                                 </div>
                             </div>
-                        );
-                    })
+                        </div>
+                    ))
                 ) : (
                     <div className="col-12 text-center py-5">
-                        <p className="text-muted">No books found.</p>
+                        <i className="bi bi-search text-muted mb-3" style={{ fontSize: "30px", display: "block" }}></i>
+                        <h4 className="fw-bold m-3 text-muted">No books found</h4>
+                        <button className="btn btn-outline-dark btn-sm" onClick={clearFilters}>Clear filters</button>
                     </div>
                 )}
             </div>
 
-            <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-            />
+            {books.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
 
+            {/* MODAL */}
+            <div className="modal fade" id="bookDetailModal" tabIndex="-1" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content border-0 shadow">
+                        <div className="modal-header bg-purple">
+                            <h5 className="modal-title text-white fw-bold">Book Details</h5>
+                        </div>
+                        <div className="modal-body p-4">
+                            {selectedBook && (
+                                <div className="row align-items-center">
+                                    <div className="col-md-4 text-center mb-3 mb-md-0">
+                                        <div className="book-image-container category-icon-container"
+                                             style={{ backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
+                                            <div className="inner-cover-content">
+                                                <div className="top-title-container">
+                                                    <div className="top-title">{safeCap(selectedBook.B_TITLE)}</div>
+                                                </div>
+                                                <div className="mid-icon"><i className="bi bi-book"></i></div>
+                                                <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-8">
+                                        <h3 className="fw-bold text-purple">{safeCap(selectedBook.B_TITLE)}</h3>
+                                        <p className="text-muted mb-4">By {safeCap(selectedBook.B_AUTHOR)}</p>
+                                        <table className="table table-sm table-borderless">
+                                            <tbody>
+                                            <tr>
+                                                <td className="fw-bold" style={{ width: "100px" }}>ISBN:</td>
+                                                <td>{selectedBook.B_ISBN}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="fw-bold">Category:</td>
+                                                <td><span className="badge bg-info text-dark">{safeCap(selectedBook.B_CATEGORY)}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td className="fw-bold">Publisher:</td>
+                                                <td>{safeCap(selectedBook.B_PUBLISHER) || "N/A"}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <div className="row g-2 mt-4">
+                                            <div className="col-6">
+                                                <button
+                                                    className="btn btn-purple text-white shadow-sm py-2 w-100"
+                                                    style={{ backgroundColor: '#6f42c1', fontWeight: '600' }}
+                                                >
+                                                    <i className="bi bi-cart-plus-fill me-2"></i> Add to Cart
+                                                </button>
+                                            </div>
+                                            <div className="col-6">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary py-2 w-100"
+                                                    data-bs-dismiss="modal"
+                                                    style={{ fontWeight: '500' }}
+                                                >
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

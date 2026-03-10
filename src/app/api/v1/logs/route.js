@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import {errorResponse, successResponse} from "../../../lib/response";
+import {errorResponse, successResponse} from "../../../../lib/response";
 
 export async function GET(req) {
 

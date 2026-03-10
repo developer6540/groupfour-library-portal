@@ -1,13 +1,12 @@
 import React from 'react';
 import type { Metadata } from "next";
-import Chtast from "@/components/common/Chtast";
 
 export const metadata: Metadata = {
-    title: "Account Details | GroupFour",
+    title: "Change Password Details | GroupFour",
     description: "",
 };
 
-export default function AccountDetailsLayout({ children }: { children: React.ReactNode }) {
+export default function ChangePasswordLayout({ children }: { children: React.ReactNode }) {
     return (
         <>
             {children}

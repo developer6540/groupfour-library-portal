@@ -9,10 +9,9 @@ interface DatePickerInputProps {
     value?: string | Date | null;
     onChange: (date: Date | null) => void;
     maxDate?: Date;
-    format?: string;
 }
 
-export default function DatePickerInput({ label, value, onChange, maxDate, format="yyyy-mm-dd" }: DatePickerInputProps) {
+export default function DatePickerInput({ label, value, onChange, maxDate}: DatePickerInputProps) {
 
     const selectedDate = value ? new Date(value) : null;
 
@@ -21,7 +20,7 @@ export default function DatePickerInput({ label, value, onChange, maxDate, forma
                 <DatePicker
                     selected={selectedDate}
                     onChange={onChange}
-                    dateFormat={format}
+                    dateFormat="yyyy-MM-dd"
                     className="form-control"
                     maxDate={maxDate}
                     showMonthDropdown

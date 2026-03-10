@@ -24,6 +24,7 @@ const menuItems = [
         children: [
             { title: "View Account", path: "/profile/account-details" },
             { title: "Edit Account", path: "/profile/change-account-details" },
+            { title: "Edit Passeord", path: "/profile/change-password" },
         ]
     },
     {
@@ -37,31 +38,36 @@ const menuItems = [
     }
 ];
 
-const SideBar: React.FC<SideBarProps> = ({
-                                             isCollapsed,
-                                             isMobile,
-                                             mobileSidebar,
-                                             closeMobileSidebar,
-                                         }) => {
-
+const SideBar: React.FC<SideBarProps> = ({ isCollapsed, isMobile, mobileSidebar, closeMobileSidebar }) => {
     const pathname = usePathname();
-    const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
+    // Use an array to track multiple open menu keys simultaneously
+    const [openMenus, setOpenMenus] = useState<string[]>([]);
+
+    // Add to array if not present, remove if it is
     const toggleMenu = (menuKey: string) => {
-        setActiveMenu(activeMenu === menuKey ? null : menuKey);
+        setOpenMenus(prev =>
+            prev.includes(menuKey)
+                ? prev.filter(key => key !== menuKey)
+                : [...prev, menuKey]
+        );
     };
 
+    // Close sidebar on mobile after clicking a link
     const handleClick = () => {
         if (isMobile) closeMobileSidebar();
     };
 
+    // Ensure the parent menu is open if a child route is active
     useEffect(() => {
         const parentMenu = menuItems.find(item =>
             item.children?.some(child => pathname.startsWith(child.path))
         );
 
         if (parentMenu?.key) {
-            setActiveMenu(parentMenu.key);
+            setOpenMenus(prev =>
+                prev.includes(parentMenu!.key!) ? prev : [...prev, parentMenu!.key!]
+            );
         }
     }, [pathname]);
 
@@ -78,9 +84,9 @@ const SideBar: React.FC<SideBarProps> = ({
             {/* NAVIGATION */}
             <div className="sidebar-content">
                 <ul className="nav flex-column mb-4 pt-3">
-
                     {menuItems.map((menu, index) => {
 
+                        // Simple menu without children
                         if (!menu.children) {
                             return (
                                 <li key={index} className="nav-item">
@@ -96,17 +102,16 @@ const SideBar: React.FC<SideBarProps> = ({
                             );
                         }
 
+                        // Determine if this specific submenu should be visible
+                        const isOpen = openMenus.includes(menu.key!);
+
                         return (
                             <li key={index} className="nav-item">
-
                                 <div
-                                    className={`nav-link d-flex align-items-center cursor-pointer ${
-                                        activeMenu === menu.key ? "active" : ""
-                                    }`}
+                                    className={`nav-link d-flex align-items-center cursor-pointer ${isOpen ? "active" : ""}`}
                                     onClick={() => toggleMenu(menu.key!)}
                                 >
                                     <i className={`bi ${menu.icon} me-3`}></i>
-
                                     {!isCollapsed && <span>{menu.title}</span>}
 
                                     {!isCollapsed && (
@@ -114,36 +119,30 @@ const SideBar: React.FC<SideBarProps> = ({
                                             className="bi bi-chevron-down ms-auto small"
                                             style={{
                                                 transition: "transform 0.3s",
-                                                transform: activeMenu === menu.key
-                                                    ? "rotate(180deg)"
-                                                    : "rotate(0deg)"
+                                                transform: isOpen ? "rotate(180deg)" : "rotate(0deg)"
                                             }}
                                         />
                                     )}
                                 </div>
 
-                                <ul className={`nav-submenu ${activeMenu === menu.key ? "submenu-open" : ""}`}>
-
+                                {/* Submenu - Visibility controlled by isOpen boolean */}
+                                <ul className={`nav-submenu ${isOpen ? "submenu-open" : ""}`}>
                                     {menu.children.map((sub, i) => (
                                         <li key={i}>
                                             <Link
                                                 href={sub.path}
                                                 onClick={handleClick}
-                                                className={`nav-link-sub ${
-                                                    pathname === sub.path ? "active" : ""
-                                                }`}
+                                                className={`nav-link-sub ${pathname === sub.path ? "active" : ""}`}
                                             >
                                                 <i className="bi bi-caret-right-fill me-1"></i>
                                                 {sub.title}
                                             </Link>
                                         </li>
                                     ))}
-
                                 </ul>
                             </li>
                         );
                     })}
-
                 </ul>
             </div>
         </nav>

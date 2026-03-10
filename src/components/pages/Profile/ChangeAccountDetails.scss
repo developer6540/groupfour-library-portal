@@ -54,6 +54,32 @@
     }
   }
 
+  .form-control {
+    background-color: #f8fafc;
+    border: 2px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 12px 48px 12px 16px;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+
+    &:focus {
+      background-color: #fff;
+      border-color: #6e5bd8;
+      box-shadow: 0 0 0 4px rgba(110, 91, 216, 0.1);
+      outline: none;
+    }
+
+    &.is-invalid {
+      border-color: #f87171;
+      background-color: #fffafa;
+      background-image: none !important;
+
+      &:focus {
+        box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+      }
+    }
+  }
+
   .detail-row {
     display: flex;
     flex-direction: column;
@@ -90,7 +116,6 @@
     }
   }
 
-  // --- Stats Bar with Background ---
   .stats-container {
     background-color: #f8fafc;
     border-radius: 12px;
@@ -129,7 +154,6 @@
     }
   }
 
-  // --- Grid User Details ---
   .user-details {
     margin-top: 30px;
     display: grid;
@@ -161,7 +185,7 @@
       span:last-child {
         font-weight: 600;
         color: #111827;
-        font-size: 15px; // Slightly increased for readability
+        font-size: 15px;
         word-break: break-all;
       }
     }
@@ -182,6 +206,16 @@
         box-shadow: 0 5px 15px rgba(110, 91, 216, 0.3);
       }
     }
+  }
+
+  .error-text {
+    font-size: 0.85rem;
+    color: #dc2626;
+    margin-top: 8px;
+    font-weight: 400;
+    padding-left: 4px;
+    display: block;
+    animation: slideDown 0.2s ease-out;
   }
 }
 
