@@ -37,7 +37,7 @@
     .profile-image-wrapper {
       .profile-image {
         border-radius: 50%;
-        border: 4px solid rgba(255, 255, 255, 0.3); // Semi-transparent white ring
+        border: 4px solid rgba(255, 255, 255, 0.3);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
       }
     }
@@ -50,13 +50,12 @@
     }
 
     .text-muted {
-      color: #cbd5e1 !important; // Light slate for visibility on dark overlay
+      color: #cbd5e1 !important;
     }
   }
 
-  // --- Stats Bar with Background ---
   .stats-container {
-    background-color: #f8fafc; // Soft light-blue/gray background
+    background-color: #f8fafc;
     border: 1px solid #f1f5f9;
     border-radius: 12px;
     margin: 1.5rem 0;
@@ -94,7 +93,6 @@
     }
   }
 
-  // --- Grid User Details ---
   .user-details {
     margin-top: 30px;
     display: grid;
@@ -120,7 +118,7 @@
       span:last-child {
         font-weight: 600;
         color: #111827;
-        font-size: 15px; // Slightly increased for readability
+        font-size: 15px;
         word-break: break-all;
       }
     }

@@ -199,7 +199,7 @@ export default function BookCatalog() {
                                 <div className="book-info">
                                     <p className="book-title">{safeCap(book.B_TITLE)}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
-                                    <span className="badge-category">{safeCap(book.CATEGORY)}</span>
+                                    <span className="badge-category">{safeCap(book.B_CATEGORY)}</span>
                                 </div>
                             </div>
                         </div>
@@ -248,7 +248,7 @@ export default function BookCatalog() {
                                             </tr>
                                             <tr>
                                                 <td className="fw-bold">Category:</td>
-                                                <td><span className="badge bg-info text-dark">{safeCap(selectedBook.CATEGORY)}</span></td>
+                                                <td><span className="badge bg-info text-dark">{safeCap(selectedBook.B_CATEGORY)}</span></td>
                                             </tr>
                                             <tr>
                                                 <td className="fw-bold">Publisher:</td>
