@@ -140,3 +140,84 @@ export async function changePassword(code: string, data: { currentPassword?: str
         throwException(error.message || "Failed to change password", error.status || 500);
     }
 }
+
+interface ReservationInput {
+    BR_USERCODE: string | number;
+    BR_BOOKCODE: string;
+    BR_QTY: number;
+    BR_HOLD_DAYS: number;
+    BR_REMARK?: string;
+    BR_BORROW_LINENO: number;
+}
+
+export async function reserveBook(reservations: ReservationInput[]) {
+
+    if (!reservations || reservations.length === 0) {
+        throwException("No reservation data provided", 400);
+    }
+
+    const pool = await getDbConnection();
+
+    const transaction = pool.transaction();
+
+    try {
+        await transaction.begin();
+
+        for (const item of reservations) {
+            // Validate hold days (max 3 as per your requirement)
+            const holdDays = Math.min(item.BR_HOLD_DAYS, 3);
+
+            // Calculate expiry date (Request Date + Hold Days)
+            const expiresOn = new Date();
+            expiresOn.setDate(expiresOn.getDate() + holdDays);
+
+            const request = transaction.request();
+
+            request.input('userCode', item.BR_USERCODE);
+            request.input('bookCode', item.BR_BOOKCODE);
+            request.input('qty', item.BR_QTY);
+            request.input('holdDays', holdDays);
+            request.input('expiresOn', expiresOn);
+            request.input('remark', item.BR_REMARK || "");
+            request.input('lineNo', item.BR_BORROW_LINENO);
+
+            const query = `
+                INSERT INTO T_TBLBOOKRESERVATIONS (
+                    BR_USERCODE, 
+                    BR_BOOKCODE,
+                    BR_LOCCODE,
+                    BR_QTY, 
+                    BR_HOLD_DAYS, 
+                    BR_REQ_DATE, 
+                    BR_REMARK, 
+                    M_DATE, 
+                    BR_PROC_BY, 
+                    BR_PROC_AT, 
+                    BR_BORROW_LINENO
+                )
+                VALUES (
+                    @userCode, 
+                    @bookCode,
+                    '00001', 
+                    @qty, 
+                    @holdDays, 
+                    GETDATE(), 
+                    @remark, 
+                    GETDATE(), 
+                    @userCode, 
+                    GETDATE(), 
+                    @lineNo
+                )
+            `;
+
+            await request.query(query);
+        }
+
+        await transaction.commit();
+        return { success: true, message: "Reservations created successfully" };
+
+    } catch (error: any) {
+        if (transaction) await transaction.rollback();
+        throwException(error.message || "Failed to process reservations", 500);
+    }
+}

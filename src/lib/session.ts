@@ -1,8 +1,12 @@
-
-export async function setSession(name: any, data: any) {
-    localStorage.setItem(name, data);
+export async function setSession(name: string, data: any) {
+    if (typeof window !== "undefined") {
+        localStorage.setItem(name, data);
+    }
 }
 
-export async function getSession(name: any) {
-    return localStorage.getItem(name);
+export async function getSession(name: string) {
+    if (typeof window !== "undefined") {
+        return localStorage.getItem(name);
+    }
+    return null;
 }

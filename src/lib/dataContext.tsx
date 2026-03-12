@@ -3,17 +3,25 @@
 import React, { createContext, useContext, useState } from 'react';
 
 interface DataContextType {
-    globalData: string;
-    setGlobalData: (value: string) => void;
+    getGlobalData: any;
+    setGlobalData: (value: any) => void;
+    getGlobalDataCart: any;
+    setGlobalDataCart: (value: any) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataContextProvider = ({ children }: { children: React.ReactNode }) => {
-    const [globalData, setGlobalData] = useState("");
+    const [getGlobalData, setGlobalData] = useState(""); // for search input/global data
+    const [getGlobalDataCart, setGlobalDataCart] = useState<any[]>([]); // for cart items
 
     return (
-        <DataContext.Provider value={{ globalData, setGlobalData }}>
+        <DataContext.Provider value={{
+            getGlobalData,
+            setGlobalData,
+            getGlobalDataCart,
+            setGlobalDataCart
+        }}>
             {children}
         </DataContext.Provider>
     );
