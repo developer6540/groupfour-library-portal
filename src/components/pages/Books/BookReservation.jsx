@@ -107,8 +107,8 @@ export default function BookReservation() {
             const payload = cartItems.map((book, index) => ({
                 BR_USERCODE: userData?.U_CODE,
                 BR_BOOKCODE: book.B_CODE,
-                BR_QTY: book.BR_QTY,
-                BR_HOLD_DAYS: book.BR_HOLD_DAYS,
+                BR_QTY: 1, //book.BR_QTY,
+                BR_HOLD_DAYS: 3, //book.BR_HOLD_DAYS,
                 BR_REMARK: book.BR_REMARK,
                 BR_BORROW_LINENO: index + 1
             }));
@@ -214,23 +214,23 @@ export default function BookReservation() {
                                     <tr className="reservation-form-row">
                                         <td colSpan="5">
                                             <div className="row mt-1 g-3">
-                                                <div className="col-lg-2 col-md-3">
-                                                    <label className="form-label-custom">Quantity</label>
-                                                    <div className="input-group input-group-sm custom-stepper">
-                                                        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_QTY", -1)}>-</button>
-                                                        <input type="text" className="form-control text-center" value={book.BR_QTY} readOnly />
-                                                        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_QTY", 1)}>+</button>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-2 col-md-3">
-                                                    <label className="form-label-custom">Hold Duration (Days)</label>
-                                                    <div className="input-group input-group-sm custom-stepper">
-                                                        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_HOLD_DAYS", -1)}>-</button>
-                                                        <input type="text" className="form-control text-center" value={book.BR_HOLD_DAYS} readOnly />
-                                                        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_HOLD_DAYS", 1)}>+</button>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-8 col-md-6">
+                                                {/*<div className="col-lg-2 col-md-3">*/}
+                                                {/*    <label className="form-label-custom">Quantity</label>*/}
+                                                {/*    <div className="input-group input-group-sm custom-stepper">*/}
+                                                {/*        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_QTY", -1)}>-</button>*/}
+                                                {/*        <input type="text" className="form-control text-center" value={book.BR_QTY} readOnly />*/}
+                                                {/*        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_QTY", 1)}>+</button>*/}
+                                                {/*    </div>*/}
+                                                {/*</div>*/}
+                                                {/*<div className="col-lg-2 col-md-3">*/}
+                                                {/*    <label className="form-label-custom">Hold Duration (Days)</label>*/}
+                                                {/*    <div className="input-group input-group-sm custom-stepper">*/}
+                                                {/*        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_HOLD_DAYS", -1)}>-</button>*/}
+                                                {/*        <input type="text" className="form-control text-center" value={book.BR_HOLD_DAYS} readOnly />*/}
+                                                {/*        <button type="button" className="btn" onClick={() => updateField(book.B_CODE, "BR_HOLD_DAYS", 1)}>+</button>*/}
+                                                {/*    </div>*/}
+                                                {/*</div>*/}
+                                                <div className="col-lg-12 col-md-6">
                                                     <label className="form-label-custom">Special Remarks</label>
                                                     <input
                                                         type="text"

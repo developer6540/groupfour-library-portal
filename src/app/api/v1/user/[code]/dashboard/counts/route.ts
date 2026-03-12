@@ -1,0 +1,17 @@
+import { NextRequest, NextResponse } from "next/server";
+import {errorResponse, successResponse} from "@/lib/response";
+import Logger from "@/lib/logger";
+import {getDashboardCounts} from "@/services/dashboard.service";
+
+export async function GET(request: NextRequest, context: { params: Promise<{ code: string }> }) {
+    const { code } = await context.params;
+    try {
+        const user = await getDashboardCounts(code);
+        return NextResponse.json(successResponse(user, "User retrieved successfully"));
+    } catch (error: any) {
+        Logger.error("API Error (getUserByCode): ", error);
+        return NextResponse.json(errorResponse(error.message, error.status || 500), {
+            status: error.status || 500,
+        });
+    }
+}

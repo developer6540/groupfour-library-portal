@@ -15,19 +15,29 @@ import BookStatusChart from "@/components/pages/Dashboard/BookStatusChart";
 export default async function DashboardPage() {
 
     let user = null;
+    let dashboardStats = null;
+    const userCode = "0005";
 
     try {
-        const response = await fetch(`${getBaseUrl()}/api/v1/user/00005`);
-        if(response.status == 200){
-            const data = await response.json();
-            user = data.data;
+        // Fetch User Profile/Info (Existing)
+        const userRes = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}`, { cache: 'no-store' });
+        if(userRes.ok){
+            const userData = await userRes.json();
+            user = userData.data;
         }
+
+        // Fetch Dashboard Counts (New)
+        const statsRes = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}/dashboard/counts`, { cache: 'no-store' });
+        if(statsRes.ok){
+            const statsData = await statsRes.json();
+            dashboardStats = statsData.data;
+        }
+
     } catch (error) {
-        Logger.error(error)
+        Logger.error("Dashboard Fetch Error:", error);
     }
 
     return <>
-
         <MainLayoutContent user={user}>
             <div className="container-fluid p-4">
 
@@ -42,7 +52,8 @@ export default async function DashboardPage() {
 
                 <div className="row">
                     <div className="col-12">
-                        <ValueBox />
+                        {/* Pass the new stats to ValueBox */}
+                        <ValueBox data={dashboardStats} />
                     </div>
                 </div>
 
