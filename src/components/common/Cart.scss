@@ -1,0 +1,16 @@
+.cart-card{
+  .btn-action-delete {
+    color: #fff;
+    background: #a30824;
+    border: 1px solid #a30824;
+    padding: 5px 8px;
+    border-radius: 50%;
+    transition: 0.2s;
+    font-size: 13px;
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      color: #a80809;
+      border: 1px solid #a30824;
+    }
+  }
+}

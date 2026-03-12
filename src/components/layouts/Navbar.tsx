@@ -3,10 +3,11 @@
 import React, {useState} from "react";
 import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/utility";
 import SearchBox from "@/components/layouts/SearchBox";
-import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {alerts} from "@/lib/alerts";
 import {useDataContext} from "@/lib/dataContext";
+import Link from "next/link";
+import Cart from "@/components/common/Cart";
 
 interface User {
     U_CODE: any;
@@ -66,12 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({onToggle, user}) => {
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-3">
 
-                    <button
-                        className="btn btn-outline-light border rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{width: "35px", height: "35px"}}
-                    >
-                        <i className="bi bi-cart text-dark"></i>
-                    </button>
+                    <Cart />
 
                     {/* Notification Dropdown */}
                     <div className="dropdown">
@@ -85,16 +81,20 @@ const Navbar: React.FC<NavbarProps> = ({onToggle, user}) => {
                                 <h6 className="mb-0 fw-bold">Notification</h6>
                                 <button className="btn-close small" style={{fontSize: '10px'}}></button>
                             </div>
-                            <div className="notification-list" style={{maxHeight: '300px', overflowY: 'auto'}}>
-                                {[1, 2, 3, 4].map((item) => (
-                                    <a key={item} href="#"
-                                       className="dropdown-item d-flex align-items-start gap-3 p-3 border-bottom">
-                                        <div>
-                                            <p className="mb-0 small text-dark">Your membership will expire soon</p>
-                                            <small className="text-muted">5 min ago</small>
-                                        </div>
-                                    </a>
-                                ))}
+                            <div className="notification-list" style={{maxHeight: '300px', minWidth:'300px', overflowY: 'auto'}}>
+                                <div className="dropdown-item d-flex align-items-start gap-3 p-3 border-bottom">
+                                    <div>
+                                        <p className="mb-0 small text-dark text-muted">No new notification</p>
+                                    </div>
+                                </div>
+                                {/*{[1, 2, 3, 4].map((item) => (*/}
+                                {/*    <div key={item} className="dropdown-item d-flex align-items-start gap-3 p-3 border-bottom">*/}
+                                {/*        <div>*/}
+                                {/*            <p className="mb-0 small text-dark">Your membership will expire soon</p>*/}
+                                {/*            <small className="text-muted">5 min ago</small>*/}
+                                {/*        </div>*/}
+                                {/*    </div>*/}
+                                {/*))}*/}
                             </div>
                             <div className="p-2 text-center">
                                 <a href="#"
@@ -127,7 +127,7 @@ const Navbar: React.FC<NavbarProps> = ({onToggle, user}) => {
                         </a>
 
                         <ul className="dropdown-menu dropdown-menu-end shadow border-1 p-0 mt-3 user-profile-dropdown"
-                            style={{minWidth: "250px"}}>
+                            style={{minWidth: "250px", borderRadius: "0px 0px 20px 20px"}}>
                             <li className="p-3 py-3 border-bottom ">
                                 <h6 className="mb-0 fw-bold text-dark text-wrap">{capitalizeFirstLetter(user?.U_NAME)}</h6>
                                 <span style={{fontSize: "14px", color: "#888787"}}

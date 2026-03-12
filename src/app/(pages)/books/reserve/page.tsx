@@ -1,15 +1,8 @@
 import React from "react";
 import "./page.scss"
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
-import ValueBox from "@/components/pages/Dashboard/ValueBox";
-import MemberInfo from "@/components/pages/Dashboard/MemberInfo";
-import BookBorrowedList from "@/components/pages/Dashboard/BookBorrowedList";
-import PenaltyDetails from "@/components/pages/Dashboard/PenaltyDetails";
-import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
-import {getBaseUrl} from "@/lib/utility";
 import PageTitleBar from "@/components/common/PageTitleBar";
-import Logger from "@/lib/logger";
-import BooksReserveLayout from "@/app/(pages)/books/reserve/layout";
+import BookReservation from "@/components/pages/Books/BookReservation";
 
 export default async function BooksReservePage() {
 
@@ -21,7 +14,7 @@ export default async function BooksReservePage() {
 
                 <div className="row mb-4">
                     <div className="col-12">
-
+                        <BookReservation />
                     </div>
                 </div>
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
 import { useDataContext } from "@/lib/dataContext";
-import { capitalizeFirstLetter } from "@/lib/utility";
+import {capitalizeFirstLetter, getBaseUrl} from "@/lib/utility";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -21,7 +21,7 @@ export default function BookCatalog() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedBook, setSelectedBook] = useState(null);
 
-    const { globalData } = useDataContext();
+    const { getGlobalData, setGlobalDataCart } = useDataContext();
 
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
@@ -42,17 +42,14 @@ export default function BookCatalog() {
     };
 
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch("/api/v1/category/list");
-                const result = await response.json();
-                if (response.ok && result.data) setCategories(result.data || []);
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            }
-        };
-        fetchCategories();
-    }, []);
+        if (getGlobalData) {
+            setTitleInput(getGlobalData);
+            setFilters(prev => ({
+                ...prev,
+                title: getGlobalData
+            }));
+        }
+    }, [getGlobalData]);
 
     const fetchBooks = useCallback(async () => {
         setIsLoading(true);
@@ -65,7 +62,7 @@ export default function BookCatalog() {
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
-            const response = await fetch(`/api/v1/book/list?${queryParams.toString()}`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/book/list?${queryParams.toString()}`);
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);
@@ -76,6 +73,8 @@ export default function BookCatalog() {
             }
         } catch (error) {
             console.error("Error fetching books:", error);
+            setBooks([]);
+            setTotalBooks(0);
         } finally {
             setIsLoading(false);
         }
@@ -117,6 +116,17 @@ export default function BookCatalog() {
         } catch (err) {
             console.error("Error showing Bootstrap modal", err);
         }
+    };
+
+    const handleAddToCart = (book) => {
+        setGlobalDataCart((prev) => {
+            // if prev is falsy or not an array, initialize as empty array
+            const currentCart = Array.isArray(prev) ? prev : [];
+            // prevent duplicates
+            const exists = currentCart.some(item => item.B_CODE === book.B_CODE);
+            if (exists) return currentCart;
+            return [...currentCart, book];
+        });
     };
 
     const hasFilters = titleInput || authorInput || isbnInput || categoryInput;
@@ -181,7 +191,9 @@ export default function BookCatalog() {
                             <div className="book-card">
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
                                 <div className="book-overlay">
-                                    <button className="action-btn cart-btn"><i className="bi bi-cart-fill"></i></button>
+                                    <button className="action-btn cart-btn" onClick={() => handleAddToCart(book)}>
+                                        <i className="bi bi-cart-fill"></i>
+                                    </button>
                                     <button className="action-btn view-btn" onClick={() => handleViewBook(book)}>
                                         <i className="bi bi-eye-fill"></i>
                                     </button>
