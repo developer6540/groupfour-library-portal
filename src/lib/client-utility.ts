@@ -1,4 +1,3 @@
-import {getSession, setSession} from "@/lib/session";
 import moment from "moment";
 
 export function getBaseUrl(){
@@ -79,37 +78,3 @@ export function getCookie(name: string){
 export function deleteCookie(name: string){
     document.cookie = `${name}=; Max-Age=0; path=/`;
 };
-
-export async function updateLoggedUser(user: any, id: string): Promise<any | null> {
-    try {
-        // Return session user if already provided
-        if (!user) {
-            const sessionUser = await getSession("user-info");
-            if (sessionUser) {
-                return JSON.parse(sessionUser);
-            }
-        }
-
-        // Fetch latest user from API
-        const response = await fetch(`${getBaseUrl()}/api/v1/user/${id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
-
-        if (!response.ok) {
-            console.error(`Failed to fetch user ${id}: ${response.status} ${response.statusText}`);
-            return null;
-        }
-
-        const data = await response.json();
-        const currentUser = data.data;
-
-        // Update session
-        await setSession("user-info", JSON.stringify(currentUser));
-
-        return currentUser;
-    } catch (error) {
-        console.error("Update Logged User error:", error);
-        return null;
-    }
-}

@@ -4,28 +4,35 @@ import React, { useEffect } from "react";
 import "./Cart.scss";
 import { useDataContext } from "@/lib/dataContext";
 import Link from "next/link";
-import { getSession, setSession } from "@/lib/session";
+import { getSession, setSession } from "@/lib/session-client";
 
 const Cart = () => {
 
     const { getGlobalDataCart, setGlobalDataCart } = useDataContext();
 
+    // Pull from Session on Mount
     useEffect(() => {
-        const initCart = async () => {
-            const saved = await getSession("cart");
-            if (saved) {
-                const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
-                setGlobalDataCart(parsed);
+        const ctDta = getSession("cart-items");
+        if (ctDta) {
+            try {
+                const parsed = typeof ctDta === 'string' ? JSON.parse(ctDta) : ctDta;
+                // Only update if state is currently empty to avoid overwriting newer changes
+                if (parsed && Array.isArray(parsed)) {
+                    setGlobalDataCart(parsed);
+                }
+            } catch (error) {
+                console.error("Cart parsing error:", error);
             }
-        };
-        initCart();
-    }, [setGlobalDataCart]);
+        }
+    }, []); // Empty dependency array = runs only ONCE when page loads
 
+    // Push to Session whenever state changes
     useEffect(() => {
-        if (getGlobalDataCart) {
+        // We only save if the cart actually exists (even if empty array)
+        if (getGlobalDataCart !== undefined) {
             setSession("cart-items", JSON.stringify(getGlobalDataCart));
         }
-    }, [getGlobalDataCart]);
+    }, [getGlobalDataCart]); // Runs whenever getGlobalDataCart is updated
 
     const items = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './PageTitleBar.scss';
-import {getCurrentTime} from "@/lib/utility";
+import {getCurrentTime} from "@/lib/client-utility";
 
 export default function PageTitleBar({ title }) {
 

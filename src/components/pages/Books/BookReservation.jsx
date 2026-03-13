@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import "./BookReservation.scss";
-import { getSession, setSession } from "@/lib/session";
-import { capitalizeFirstLetter } from "@/lib/utility";
+import { getSession, setSession } from "@/lib/session-client";
+import { capitalizeFirstLetter } from "@/lib/client-utility";
 import { useDataContext } from "@/lib/dataContext";
 import Link from "next/link";
 import {alerts} from "@/lib/alerts";
@@ -13,15 +13,16 @@ export default function BookReservation() {
     const { getGlobalDataCart, setGlobalDataCart } = useDataContext();
     const [isHydrated, setIsHydrated] = useState(false);
 
+    // Use the global context as the single source of truth
     const cartItems = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
 
-    // fetch from localStorage
+    // 1. LOAD: Fetch from Session on Mount
     const loadCart = useCallback(async () => {
         try {
             const saved = await getSession("cart-items");
             if (saved) {
                 const parsed = typeof saved === "string" ? JSON.parse(saved) : saved;
-                if (Array.isArray(parsed)) {
+                if (Array.isArray(parsed) && parsed.length > 0) {
                     const formatted = parsed.map(book => ({
                         ...book,
                         BR_QTY: book.BR_QTY ?? 1,
@@ -34,7 +35,6 @@ export default function BookReservation() {
         } catch (error) {
             console.error("Failed to load cart:", error);
         } finally {
-            // Must set true even if empty to unlock the Save effect
             setIsHydrated(true);
         }
     }, [setGlobalDataCart]);
@@ -43,7 +43,7 @@ export default function BookReservation() {
         loadCart();
     }, [loadCart]);
 
-    // 2. sync context to session ONLY AFTER hydration
+    // 2. SAVE: Sync Context to Session whenever cartItems change
     useEffect(() => {
         if (!isHydrated) return;
         setSession("cart-items", JSON.stringify(cartItems));
@@ -87,11 +87,7 @@ export default function BookReservation() {
         if (!cartItems.length) return;
 
         try {
-            const user = await getSession("user-info");
-            if (!user) {
-                alerts.error("User session not found. Please log in.");
-                return;
-            }
+            const user = getSession("user-info");
             const userData = typeof user === "string" ? JSON.parse(user) : user;
 
             // Calculate total quantity in the cart

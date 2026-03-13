@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState} from "react";
-import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/utility";
+import {capitalizeFirstLetter, FirstNameOnly} from "@/lib/client-utility";
 import SearchBox from "@/components/layouts/SearchBox";
 import {useRouter} from "next/navigation";
 import {alerts} from "@/lib/alerts";

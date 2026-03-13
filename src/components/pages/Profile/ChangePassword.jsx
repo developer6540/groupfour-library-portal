@@ -3,8 +3,8 @@
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import "./ChangePassword.scss";
-import {getBaseUrl} from "@/lib/utility";
-import {getSession} from "@/lib/session";
+import {getBaseUrl} from "@/lib/client-utility";
+import {getSession} from "@/lib/session-client";
 import Link from "next/link";
 import {alerts} from "@/lib/alerts";
 
@@ -26,10 +26,9 @@ export default function ChangeAccountDetails() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        getSession("user-info").then(res => {
-            if (!res) return;
-            setUser(JSON.parse(res));
-        });
+        const res = getSession("user-info")
+        if (!res) return;
+        setUser(JSON.parse(res));
     }, []);
 
     const validate = (name, value, allValues) => {

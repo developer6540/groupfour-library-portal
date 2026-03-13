@@ -2,7 +2,7 @@
 
 import './MemberInfo.scss';
 import Image from "next/image";
-import {getDateFormated} from "@/lib/utility";
+import {getDateFormated} from "@/lib/client-utility";
 import Link from "next/link";
 import React from "react";
 

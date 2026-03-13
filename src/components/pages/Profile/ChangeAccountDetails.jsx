@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import './ChangeAccountDetails.scss';
-import { getBaseUrl, getDateFormated } from "@/lib/utility";
-import { getSession, setSession } from "@/lib/session";
+import { getBaseUrl, getDateFormated } from "@/lib/client-utility";
+import { getSession, setSession } from "@/lib/session-client";
 import Link from "next/link";
 import { alerts } from "@/lib/alerts";
 import DatePickerInput from "@/components/common/DatePicker";
@@ -29,26 +29,26 @@ export default function ChangeAccountDetails() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        getSession("user-info").then(res => {
 
-            if (!res) return;
+        const res = getSession("user-info")
 
-            const data = JSON.parse(res);
+        if (!res) return;
 
-            setUser(data);
+        const data = JSON.parse(res);
 
-            setFormData({
-                U_NAME: data.U_NAME || "",
-                U_DOB: data.U_DOB || "",
-                U_GENDER: data.U_GENDER || "",
-                U_ADDRESS: data.U_ADDRESS || "",
-                U_MOBILE: data.U_MOBILE || "",
-                U_EMAIL: data.U_EMAIL || "",
-                U_CODE: data.U_CODE || "",
-                U_NIC: data.U_NIC || "",
-            });
+        setUser(data);
 
+        setFormData({
+            U_NAME: data.U_NAME || "",
+            U_DOB: data.U_DOB || "",
+            U_GENDER: data.U_GENDER || "",
+            U_ADDRESS: data.U_ADDRESS || "",
+            U_MOBILE: data.U_MOBILE || "",
+            U_EMAIL: data.U_EMAIL || "",
+            U_CODE: data.U_CODE || "",
+            U_NIC: data.U_NIC || "",
         });
+
     }, []);
 
     const validate = (name, value, allValues) => {

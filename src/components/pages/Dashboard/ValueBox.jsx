@@ -1,13 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './ValueBox.scss';
 
+// Helper to get base URL (ensure this matches your environment setup)
+const getBaseUrl = () => window.location.origin;
+
 export default function ValueBox({ data }) {
-    // Map your SQL result fields to the UI cards
+
     const stats = [
         {
-            title: "Reserved book",
+            title: "Reserved Books",
             value: data?.TotalReservedBooks ?? "0",
             icon: "bi-bookmark-check",
             color: "#5e72e4",
@@ -26,7 +29,8 @@ export default function ValueBox({ data }) {
         },
         {
             title: "Total Fines",
-            value: data?.TotalFines ?? "0",
+            // Mapping to the SQL alias 'TotalOverdueFines'
+            value: data?.TotalOverdueFines ? `Rs. ${Number(data.TotalOverdueFines).toLocaleString()}` : "Rs. 0.00",
             icon: "bi-currency-dollar",
             color: "#2dce89",
         },

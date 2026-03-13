@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import {deleteCookie, getCookie, setCookie} from "@/lib/utility";
+import {deleteCookie, getCookie, setCookie} from "@/lib/client-utility";
 
 interface SearchBoxProps {
     placeholder?: string;

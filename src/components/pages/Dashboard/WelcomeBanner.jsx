@@ -1,6 +1,6 @@
 "use client";
 import "./WelcomeBanner.scss"
-import {FirstNameOnly} from "@/lib/utility";
+import {FirstNameOnly} from "@/lib/client-utility";
 import {alerts} from "@/lib/alerts";
 import {useEffect, useRef} from "react";
 
@@ -10,7 +10,7 @@ export default function WelcomeBanner({ user }) {
 
     useEffect(() => {
         if (!alertShown.current) {
-            alerts.info(`Hello ${user?.U_NAME}! 👋`,'',  5000);
+            alerts.info(`Hello ${user?.U_NAME}! 👋`,'',  3000);
             alertShown.current = true; // stop alert from showing again on re-renders
         }
     }, []);
