@@ -3,27 +3,32 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import SideBar from "./SideBar";
-import { updateLoggedUser } from "@/lib/utility";
-import { setSession } from "@/lib/session";
+import { getSession, setSession } from "@/lib/session-client";
+import { alerts } from "@/lib/alerts";
 
-export default function MainLayoutContent({ children, user = "" }) {
+export default function MainLayoutContent({ children, user = null }) {
 
     const [currentUser, setCurrentUser] = useState(user);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileSidebar, setMobileSidebar] = useState(false);
 
-    // Load user on mount if not passed
     useEffect(() => {
+
         const loadUser = async () => {
             try {
                 if (!user) {
-                    const updatedUser = await updateLoggedUser(null, '00005'); // pass null to fetch from session/API
-                    setCurrentUser(updatedUser);
-                    await setSession("user-info", JSON.stringify(updatedUser));
+                    const sessionData = getSession("user-info");
+                    if (!sessionData) {
+                        alerts.error("Unauthorized Access", "User session expired, Please log in again", 401);
+                        setTimeout(() => { window.location.href = '/sign-in'; }, 2000);
+                    } else {
+                        const parsedUser = typeof sessionData === 'string' ? JSON.parse(sessionData) : sessionData;
+                        setCurrentUser(parsedUser);
+                    }
                 } else {
-                    // Ensure session is synced
-                    await setSession("user-info", JSON.stringify(user));
+                    setSession("user-info", JSON.stringify(user));
+                    setCurrentUser(user);
                 }
             } catch (error) {
                 console.error("Error loading user:", error);

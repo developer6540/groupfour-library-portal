@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import './AccountDetails.scss';
-import { getDateFormated } from "@/lib/utility";
-import { getSession } from "@/lib/session";
+import { getDateFormated } from "@/lib/client-utility";
+import { getSession } from "@/lib/session-client";
 import Link from "next/link";
 
 export default function AccountDetails() {
@@ -12,9 +12,8 @@ export default function AccountDetails() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        getSession("user-info").then(res => {
-            setUser(JSON.parse(res));
-        });
+        const res = getSession("user-info")
+        setUser(JSON.parse(res));
     }, []);
 
     const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;

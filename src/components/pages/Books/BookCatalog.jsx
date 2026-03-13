@@ -4,7 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
 import { useDataContext } from "@/lib/dataContext";
-import {capitalizeFirstLetter, getBaseUrl} from "@/lib/utility";
+import {capitalizeFirstLetter, getBaseUrl} from "@/lib/client-utility";
+import {alerts} from "@/lib/alerts";
+import {getSession} from "@/lib/session-client";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -21,7 +23,7 @@ export default function BookCatalog() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedBook, setSelectedBook] = useState(null);
 
-    const { getGlobalData, setGlobalDataCart } = useDataContext();
+    const { getGlobalData, getGlobalDataCart, setGlobalDataCart } = useDataContext();
 
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
@@ -118,15 +120,30 @@ export default function BookCatalog() {
         }
     };
 
-    const handleAddToCart = (book) => {
-        setGlobalDataCart((prev) => {
-            // if prev is falsy or not an array, initialize as empty array
-            const currentCart = Array.isArray(prev) ? prev : [];
-            // prevent duplicates
-            const exists = currentCart.some(item => item.B_CODE === book.B_CODE);
-            if (exists) return currentCart;
-            return [...currentCart, book];
-        });
+    const handleAddToCart = async (book) => {
+        // Get User Data
+        const user = getSession("user-info");
+        const userData = typeof user === "string" ? JSON.parse(user) : user;
+        const maxBorrow = userData.U_MAXBORROW || 2; // Fallback to 2 if not set
+
+        // Check current cart length from your context state
+        const currentCart = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
+
+        // Validation: Duplicates
+        const exists = currentCart.some(item => item.B_CODE === book.B_CODE);
+        if (exists) {
+            alerts.warning("This book is already in your cart.");
+            return;
+        }
+
+        // Validation: Max Borrow Limit
+        if (currentCart.length >= maxBorrow) {
+            alerts.error(`Limit reached! You can only borrow a maximum of ${maxBorrow} books.`);
+            return;
+        }
+
+        // Success: Update State
+        setGlobalDataCart([...currentCart, book]);
     };
 
     const hasFilters = titleInput || authorInput || isbnInput || categoryInput;
@@ -270,7 +287,7 @@ export default function BookCatalog() {
                                         </table>
                                         <div className="row g-2 mt-4">
                                             <div className="col-6">
-                                                <button
+                                                <button onClick={() => handleAddToCart(selectedBook)}
                                                     className="btn btn-purple text-white shadow-sm py-2 w-100"
                                                     style={{ backgroundColor: '#6f42c1', fontWeight: '600' }}
                                                 >

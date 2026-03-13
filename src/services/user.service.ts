@@ -25,7 +25,6 @@ export async function getUserByCode(code: string) {
 
     } catch (error: unknown) {
         if (error instanceof Error) {
-            // Optional: if your Error has a custom status property
             const status = (error as any).status || 500;
             throwException(error.message, status);
         } else if (typeof error === "string") {
