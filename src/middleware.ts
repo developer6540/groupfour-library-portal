@@ -1,39 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import logger from "@/lib/logger";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "fallback-secret");
 
 export async function middleware(req: NextRequest) {
-
     const { pathname } = req.nextUrl;
+
+    // 1. Extract values
     const token = req.cookies.get('auth-session')?.value;
     const csrfCookie = req.cookies.get('X-CSRF-Token')?.value;
+    const isApiRequest = pathname.startsWith("/api/");
+    const isWriteMethod = ["POST", "PUT", "DELETE", "PATCH"].includes(req.method);
 
-    // Redirect logged-in users away from sign-in
+    // 2. CSRF Validation for Write Methods
+    if (isApiRequest && isWriteMethod) {
+        const headerToken = req.headers.get("X-CSRF-Token");
+
+        // Error 1111: Either missing header, missing cookie, or mismatch
+        if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
+            return NextResponse.json(
+                { message: "Unauthorized Access 1111", debug: !csrfCookie ? "Missing Cookie" : "Mismatch" },
+                { status: 403 }
+            );
+        }
+    }
+
+    // 3. Auth Logic: Redirect logged-in users away from sign-in
     if (pathname === "/sign-in" && token) {
         try {
             await jwtVerify(token, JWT_SECRET);
             return NextResponse.redirect(new URL("/", req.url));
-        } catch {
-
+        } catch (e) {
+            // Invalid token, allow sign-in
         }
     }
 
-    // CSRF Validation for all POST/PUT/DELETE/PATCH
-    const isApiRequest = pathname.startsWith("/api/");
-    const isWriteMethod = ["POST", "PUT", "DELETE", "PATCH"].includes(req.method);
-
-    console.log(isApiRequest, isWriteMethod);
-
-    if (isApiRequest && isWriteMethod) {
-        const headerToken = req.headers.get("X-CSRF-Token");
-        if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
-            return NextResponse.json({ message: "Unauthorized Access 1111" }, { status: 403 });
-        }
-    }
-
-    // Auth Protection
+    // 4. Auth Protection for Private Routes
     const publicRoutes = ["/sign-in", "/api/v1/auth/login", "/api/v1/auth/register"];
     const isPublicRoute = publicRoutes.some(route => pathname === route);
 
@@ -44,7 +46,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    // Token verification for protected routes
+    // 5. Token verification
     if (token && !isPublicRoute) {
         try {
             await jwtVerify(token, JWT_SECRET);
@@ -55,13 +57,14 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // Generate CSRF Cookie if missing
+    // 6. Generate Response and Set CSRF if missing
     const response = NextResponse.next();
+
     if (!csrfCookie) {
         response.cookies.set("X-CSRF-Token", crypto.randomUUID(), {
             path: "/",
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
+            httpOnly: false, // Must be false so Frontend JS can read it
+            secure: true,    // Required for HTTPS (Railway)
             sameSite: "lax",
         });
     }
@@ -71,7 +74,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        //Match all request paths except for the ones starting with:
         '/((?!_next/static|_next/image|img|vdo|favicon.ico|sign-in|register|forgot-password).*)',
     ],
 };
