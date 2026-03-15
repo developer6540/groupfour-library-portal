@@ -27,7 +27,6 @@ export async function middleware(req: NextRequest) {
     if (isApiRequest && isWriteMethod) {
         const headerToken = req.headers.get("X-CSRF-Token");
         if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
-            logger.error("CSRF Validation Failed Unauthorized access");
             return NextResponse.json({ message: "Unauthorized Access" }, { status: 403 });
         }
     }
