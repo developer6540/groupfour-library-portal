@@ -4,6 +4,7 @@ import { jwtVerify } from "jose";
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function middleware(req: NextRequest) {
+
     const { pathname } = req.nextUrl;
 
     const token = req.cookies.get("auth-session")?.value;
@@ -67,9 +68,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    // -----------------------------
-    // 5. Verify JWT
-    // -----------------------------
+    // Verify JWT
     if (token && !isPublicRoute) {
         try {
             await jwtVerify(token, JWT_SECRET);
@@ -85,9 +84,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         Run middleware on all routes except static files
-        */
+        // Run middleware on all routes except static files
         "/((?!_next/static|_next/image|favicon.ico|img|vdo).*)",
     ],
 };
