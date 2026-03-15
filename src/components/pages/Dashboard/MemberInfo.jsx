@@ -4,9 +4,27 @@ import './MemberInfo.scss';
 import Image from "next/image";
 import {getDateFormated} from "@/lib/client-utility";
 import Link from "next/link";
-import React from "react";
+import React, {useEffect, useState} from "react";
+import {getUserInfo} from "@/lib/server-utility";
 
-export default function MemberInfo({ user }) {
+export default function MemberInfo() {
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const data = await getUserInfo();
+                if (data) {
+                    const parsedUser = typeof data === 'string' ? JSON.parse(data) : data;
+                    setUser(parsedUser);
+                }
+            } catch (error) {
+                console.error("Error fetching member info:", error);
+            }
+        };
+        fetchUser();
+    }, []);
 
     const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;
     const isExpired = expiryDate ? expiryDate < new Date() : true;

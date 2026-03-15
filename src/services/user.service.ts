@@ -1,6 +1,7 @@
 import {getDbConnection} from "@/lib/db";
 import {throwException} from "@/lib/exceptions";
 import { hashPassword, verifyPassword } from "@/lib/passwordHasher";
+import {getDateISO} from "@/lib/server-utility";
 
 export async function getUserByCode(code: string) {
     const userCode = code;
@@ -52,7 +53,7 @@ export async function updateUserByCode(code: string, data: UpdateUserInput) {
         const pool = await getDbConnection();
 
         const uName = data.U_NAME ? `'${data.U_NAME.replace(/'/g, "''")}'` : "NULL";
-        const uDob = data.U_DOB ? `'${new Date(data.U_DOB).toISOString()}'` : "NULL";
+        const uDob = data.U_DOB ? `'${await getDateISO(data.U_DOB)}'` : "NULL";
         const uGender = data.U_GENDER ? `'${data.U_GENDER}'` : "NULL";
         const uAddress = data.U_ADDRESS ? `'${data.U_ADDRESS.replace(/'/g, "''")}'` : "NULL";
         const uMobile = data.U_MOBILE ? `'${data.U_MOBILE}'` : "NULL";
@@ -65,7 +66,6 @@ export async function updateUserByCode(code: string, data: UpdateUserInput) {
                            U_GENDER  = ${uGender},
                            U_ADDRESS = ${uAddress},
                            U_MOBILE  = ${uMobile},
-                           U_NIC     = ${uNic},
                            U_EMAIL   = ${uEmail},
                            M_DATE    = GETDATE()
                        WHERE U_CODE = '${code}'

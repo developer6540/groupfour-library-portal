@@ -211,188 +211,109 @@
             transform: scale(1.1);
         }
     }
+
+    .star-rating {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-bottom: 8px;
+
+        i {
+            // The color of the filled stars
+            color: #ffc107;
+            font-size: 0.85rem;
+
+            &.bi-star {
+                // The color of the empty stars
+                color: #e2e8f0;
+            }
+        }
+
+        .rating-text {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+    }
 }
 
-/* --- Book Detail Modal Styles --- */
 #bookDetailModal {
-    .modal-content {
-        border-radius: 12px;
-        overflow: hidden;
+
+    .top-title {
+        font-size: 18px;
+    }
+
+    .mid-icon {
+        font-size: 80px;
+    }
+
+    .bottom-label {
+        font-size: 15px;
+    }
+
+    .bg-light-purple {
+        background-color: #fcfaff; // Very soft tint
+        border-right: 1px solid #f1f1f1;
+    }
+
+    .badge-minimal {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8677ed;
+        background: rgba(134, 119, 237, 0.1);
+        padding: 4px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .spec-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f9fa;
+
+        .label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .value {
+            color: #1e293b;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        &:last-child { border-bottom: none; }
+    }
+
+    .btn-dark-minimal {
+        background: #1e1e1e;
+        color: white;
         border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header {
-        background-color: #6f42c1; // Updated to match your "bg-purple" header
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 1.25rem 1.5rem;
-
-        .modal-title {
-            color: #ffffff; // White text for the purple header
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .btn-close {
-            filter: brightness(0) invert(1); // Makes the close button white
-        }
-    }
-
-    .modal-body {
-        padding: 1.5rem !important; // Smaller padding for mobile
-
-        @media (min-width: 768px) {
-            padding: 2.5rem !important;
-        }
-
-        // --- MOBILE CENTERING LOGIC ---
-        .row.align-items-center {
-            display: flex;
-            flex-direction: column;
-            text-align: center; // Centers title and author text
-
-            @media (min-width: 768px) {
-                flex-direction: row;
-                text-align: left; // Reverts to left-aligned for desktop
-            }
-        }
-    }
-
-    .book-image-container {
-        width: 210px;
-        height: 310px;
         border-radius: 10px;
-        flex-shrink: 0;
-        padding: 6px;
-        box-shadow: 2px 2px 6px 1px #28215161;
-
-        // Center the image container on mobile
-        margin: 0 auto 1.5rem auto;
-
-        @media (min-width: 768px) {
-            margin: 0;
-        }
-
-        &.category-icon-container {
-            background-color: #8677ed;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-
-            .inner-cover-content {
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
-                height: 100%;
-                text-align: center;
-                color: #ffffff;
-                border: 1.5px solid rgba(255, 255, 255, 0.25);
-                border-radius: 10px;
-                overflow: hidden;
-
-                .top-title-container {
-                    padding: 10px 4px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.25);
-                    margin-top: 5px;
-                    width: calc(100% - 10px);
-                    min-height: 55px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 5px;
-                }
-
-                .top-title {
-                    font-size: 16px;
-                    font-weight: 700;
-                    line-height: 1.2;
-                    text-transform: uppercase;
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                }
-
-                .mid-icon {
-                    font-size: 66px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-grow: 1;
-                    opacity: 0.95;
-                }
-
-                .bottom-label {
-                    width: 100%;
-                    padding: 6px 4px;
-                    font-size: 12px;
-                    font-weight: 600;
-                    letter-spacing: 0.5px;
-                    text-transform: capitalize;
-                }
-            }
-        }
-    }
-
-    /* --- Book Information Table --- */
-    .text-purple {
-        color: #6f42c1;
-        font-size: 1.75rem;
-        line-height: 1.2;
-        margin-top: 0.5rem; // Space for mobile centering
-    }
-
-    .table {
-        margin-top: 1.5rem;
-        // Keep table labels readable even when centered
-        margin-left: auto;
-        margin-right: auto;
-
-        tr {
-            border-bottom: 1px solid #eeeeee;
-
-            &:last-child {
-                border-bottom: none;
-            }
-        }
-
-        td {
-            padding: 12px 0;
-            font-size: 0.95rem;
-            vertical-align: middle;
-
-            &.fw-bold {
-                color: #6c757d;
-                width: 110px;
-                font-weight: 600 !important;
-                text-align: left; // Labels stay left for tabular data
-            }
-        }
-    }
-
-    /* --- Buttons --- */
-    .btn-purple {
-        background-color: #6f42c1;
-        border: none;
         font-weight: 600;
-        font-size: 1rem;
-        padding: 14px;
-        border-radius: 8px;
-        transition: all 0.25s ease-in-out;
-        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.2);
-
-        &:hover {
-            background-color: #59359a;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(111, 66, 193, 0.3);
-        }
+        font-size: 0.95rem;
+        transition: transform 0.2s;
+        &:hover { background: #000; transform: translateY(-1px); }
     }
 
-    .btn-secondary {
-        border-radius: 8px;
-        padding: 14px;
+    .btn-outline-minimal {
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        &:hover { background: #f8fafc; color: #1e293b; }
+    }
+
+    .star-rating i {
+        color: #ffc107;
+        font-size: 1rem;
+        &.bi-star { color: #e2e8f0; }
     }
 }

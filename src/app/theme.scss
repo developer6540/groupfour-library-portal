@@ -305,67 +305,7 @@
     }
   }
 
-  .notification-dropdown {
-    border-radius: 12px;
-    overflow: hidden;
-    min-width: 340px;
-    animation: slideDown 0.25s ease-out;
-    transform-origin: top right;
 
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-
-    .notification-list {
-      &::-webkit-scrollbar {
-        width: 5px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 10px;
-      }
-
-      .dropdown-item {
-        transition: background 0.2s ease;
-        white-space: normal;
-        padding: 12px 16px;
-
-        &:hover {
-          background-color: #fbfaff;
-
-          .btn-outline-danger {
-            background-color: #dc3545;
-            color: white;
-          }
-        }
-
-        .fw-bold {
-          color: #2d3436;
-          font-size: 0.9rem;
-        }
-
-        .text-muted {
-          font-size: 0.75rem;
-        }
-      }
-    }
-
-    .btn-link {
-      font-size: 0.85rem;
-      transition: all 0.2s;
-      background-color: #6f42c1;
-      color: white !important;
-      border-color: #6f42c1 !important;
-      &:hover {
-        background-color: #5a30a6;
-        color: white !important;
-        border-color: #3c1f71 !important;
-      }
-    }
-  }
 }
 
 @keyframes slideDown {

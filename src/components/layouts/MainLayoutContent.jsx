@@ -3,39 +3,32 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import SideBar from "./SideBar";
-import { getSession, setSession } from "@/lib/session-client";
-import { alerts } from "@/lib/alerts";
+import {alerts} from "@/lib/alerts";
+import {getUserInfo} from "@/lib/server-utility";
 
-export default function MainLayoutContent({ children, user = null }) {
+export default function MainLayoutContent({ children }) {
 
-    const [currentUser, setCurrentUser] = useState(user);
+    const [currentUser, setCurrentUser] = useState(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [mobileSidebar, setMobileSidebar] = useState(false);
 
     useEffect(() => {
-
         const loadUser = async () => {
             try {
-                if (!user) {
-                    const sessionData = getSession("user-info");
-                    if (!sessionData) {
-                        alerts.error("Unauthorized Access", "User session expired, Please log in again", 401);
-                        setTimeout(() => { window.location.href = '/sign-in'; }, 2000);
-                    } else {
-                        const parsedUser = typeof sessionData === 'string' ? JSON.parse(sessionData) : sessionData;
-                        setCurrentUser(parsedUser);
-                    }
+                const data = await getUserInfo();
+                if (!data) {
+                    alerts.error("Unauthorized", "Session expired. Redirecting...", 3000);
+                    setTimeout(() => { window.location.href = '/sign-in'; }, 3000);
                 } else {
-                    setSession("user-info", JSON.stringify(user));
-                    setCurrentUser(user);
+                    setCurrentUser(data);
                 }
             } catch (error) {
-                console.error("Error loading user:", error);
+                console.error("Failed to fetch user:", error);
             }
         };
         loadUser();
-    }, [user]);
+    }, []);
 
     // Handle window resize
     useEffect(() => {
