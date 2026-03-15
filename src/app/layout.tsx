@@ -1,6 +1,3 @@
-
-export const dynamic = "force-dynamic";
-
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import { Toaster } from 'sonner';
