@@ -24,10 +24,12 @@ export async function middleware(req: NextRequest) {
     const isApiRequest = pathname.startsWith("/api/");
     const isWriteMethod = ["POST", "PUT", "DELETE", "PATCH"].includes(req.method);
 
+    console.log(isApiRequest, isWriteMethod);
+
     if (isApiRequest && isWriteMethod) {
         const headerToken = req.headers.get("X-CSRF-Token");
         if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
-            return NextResponse.json({ message: "Unauthorized Access" }, { status: 403 });
+            return NextResponse.json({ message: "Unauthorized Access 1111" }, { status: 403 });
         }
     }
 
@@ -37,7 +39,7 @@ export async function middleware(req: NextRequest) {
 
     if (!token && !isPublicRoute) {
         if (isApiRequest) {
-            return NextResponse.json({ message: "Unauthorized Access" }, { status: 401 });
+            return NextResponse.json({ message: "Unauthorized Access 2222" }, { status: 401 });
         }
         return NextResponse.redirect(new URL("/sign-in", req.url));
     }
