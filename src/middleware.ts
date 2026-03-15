@@ -25,21 +25,17 @@ export async function middleware(req: NextRequest) {
     // Create response early so we can attach cookies
     const response = NextResponse.next();
 
-    // -----------------------------
-    // 1. Ensure CSRF Cookie Exists
-    // -----------------------------
+    // Ensure CSRF Cookie Exists
     if (!csrfCookie) {
         response.cookies.set("X-CSRF-Token", crypto.randomUUID(), {
             path: "/",
-            httpOnly: false, // frontend must read this
-            secure: process.env.NODE_ENV === "production",
+            httpOnly: false,
+            secure: true,
             sameSite: "lax",
         });
     }
 
-    // ---------------------------------
-    // 2. Redirect logged-in users away from sign-in
-    // ---------------------------------
+    // Redirect logged-in users away from sign-in
     if (pathname === "/sign-in" && token) {
         try {
             await jwtVerify(token, JWT_SECRET);
@@ -47,9 +43,7 @@ export async function middleware(req: NextRequest) {
         } catch {}
     }
 
-    // -----------------------------
-    // 3. CSRF Validation
-    // -----------------------------
+    // CSRF Validation
     if (isApiRequest && isWriteMethod) {
         const headerToken = req.headers.get("X-CSRF-Token");
 
@@ -61,9 +55,7 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // -----------------------------
-    // 4. Auth Protection
-    // -----------------------------
+    // Auth Protection
     if (!token && !isPublicRoute) {
         if (isApiRequest) {
             return NextResponse.json(
