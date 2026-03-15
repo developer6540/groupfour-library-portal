@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import "./Cart.scss";
 import { useDataContext } from "@/lib/dataContext";
 import Link from "next/link";
-import { getSession, setSession } from "@/lib/session-client";
+import { getSessionClient, setSessionClient } from "@/lib/session-client";
 
 const Cart = () => {
 
@@ -12,7 +12,7 @@ const Cart = () => {
 
     // Pull from Session on Mount
     useEffect(() => {
-        const ctDta = getSession("cart-items");
+        const ctDta = getSessionClient("cart-items");
         if (ctDta) {
             try {
                 const parsed = typeof ctDta === 'string' ? JSON.parse(ctDta) : ctDta;
@@ -30,7 +30,7 @@ const Cart = () => {
     useEffect(() => {
         // We only save if the cart actually exists (even if empty array)
         if (getGlobalDataCart !== undefined) {
-            setSession("cart-items", JSON.stringify(getGlobalDataCart));
+            setSessionClient("cart-items", JSON.stringify(getGlobalDataCart));
         }
     }, [getGlobalDataCart]); // Runs whenever getGlobalDataCart is updated
 
@@ -63,17 +63,26 @@ const Cart = () => {
                 )}
             </button>
 
-            <div className="dropdown-menu dropdown-menu-end shadow border-0 p-0 mt-3 notification-dropdown">
+            <div className="dropdown-menu dropdown-menu-end shadow cart-dropdown border-0 p-0 mt-3 ">
                 <div className="p-3 d-flex justify-content-between align-items-center border-bottom bg-light">
                     <h6 className="mb-0 fw-bold">My Book Cart ({items.length})</h6>
                     {items.length > 0 && (
-                        <button onClick={handleClearAll} className="btn btn-sm text-danger small p-0" style={{ fontSize: '11px' }}>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleClearAll();
+                            }}
+                            className="btn btn-sm btn-outline-danger text-danger text-decoration-none fw-semibold p-1"
+                            style={{ fontSize: '12px' }}
+                        >
                             Clear All
                         </button>
                     )}
                 </div>
 
-                <div className="notification-list" style={{ maxHeight: "350px", minWidth: "320px", overflowY: "auto" }}>
+                <div className="cart-list" style={{ maxHeight: "350px", minWidth: "320px", overflowY: "auto" }}>
                     {items.length > 0 ? (
                         items.map((item) => (
                             <div key={item.B_CODE} className="dropdown-item d-flex align-items-center gap-3 p-3 border-bottom">

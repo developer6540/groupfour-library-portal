@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import "./BookReservation.scss";
-import { getSession, setSession } from "@/lib/session-client";
+import { getSessionClient, setSessionClient } from "@/lib/session-client";
 import { capitalizeFirstLetter } from "@/lib/client-utility";
 import { useDataContext } from "@/lib/dataContext";
 import Link from "next/link";
@@ -19,7 +19,7 @@ export default function BookReservation() {
     // 1. LOAD: Fetch from Session on Mount
     const loadCart = useCallback(async () => {
         try {
-            const saved = await getSession("cart-items");
+            const saved = getSessionClient("cart-items");
             if (saved) {
                 const parsed = typeof saved === "string" ? JSON.parse(saved) : saved;
                 if (Array.isArray(parsed) && parsed.length > 0) {
@@ -46,7 +46,7 @@ export default function BookReservation() {
     // 2. SAVE: Sync Context to Session whenever cartItems change
     useEffect(() => {
         if (!isHydrated) return;
-        setSession("cart-items", JSON.stringify(cartItems));
+        setSessionClient("cart-items", JSON.stringify(cartItems));
     }, [cartItems, isHydrated]);
 
     const removeReservation = (code) => {
@@ -125,7 +125,7 @@ export default function BookReservation() {
 
                 // clear cart locally and globally on success
                 setGlobalDataCart([]);
-                setSession("cart-items", JSON.stringify([]));
+                setSessionClient("cart-items", JSON.stringify([]));
             } else {
                 alerts.error(result.message || "Failed to submit reservation.");
             }

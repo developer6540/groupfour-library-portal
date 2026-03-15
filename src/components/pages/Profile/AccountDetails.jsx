@@ -4,16 +4,27 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import './AccountDetails.scss';
 import { getDateFormated } from "@/lib/client-utility";
-import { getSession } from "@/lib/session-client";
 import Link from "next/link";
+import {getUserInfo} from "@/lib/server-utility";
 
 export default function AccountDetails() {
 
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const res = getSession("user-info")
-        setUser(JSON.parse(res));
+        const loadUserData = async () => {
+            try {
+                const data = await getUserInfo();
+                if (data) {
+                    const parsedUser = typeof data === 'string' ? JSON.parse(data) : data;
+                    setUser(parsedUser);
+                }
+            } catch (error) {
+                console.error("Failed to load account details:", error);
+            }
+        };
+
+        loadUserData();
     }, []);
 
     const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;

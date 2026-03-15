@@ -1,26 +1,6 @@
-.cart-card{
-  .btn-action-delete {
-    color: #fff;
-    background: #a30824;
-    border: 1px solid #a30824;
-    padding: 5px 8px;
-    border-radius: 50%;
-    transition: 0.2s;
-    font-size: 13px;
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-      color: #a80809;
-      border: 1px solid #a30824;
-    }
-  }
-  .btn-outline-danger{
-    padding: 5px 10px!important;
-    &:hover{
-      color: rgba(255, 255, 255) !important;
-    }
-  }
+.notification-card{
 
-  .cart-dropdown {
+  .notification-dropdown {
     border-radius: 12px;
     overflow: hidden;
     min-width: 340px;
@@ -29,7 +9,7 @@
 
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
 
-    .cart-list {
+    .notification-list {
       &::-webkit-scrollbar {
         width: 5px;
       }
@@ -81,6 +61,5 @@
       }
     }
   }
-
 
 }

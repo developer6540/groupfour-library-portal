@@ -2,17 +2,28 @@
 import "./WelcomeBanner.scss"
 import {FirstNameOnly} from "@/lib/client-utility";
 import {alerts} from "@/lib/alerts";
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";;
+import {getUserInfo} from "@/lib/server-utility";
 
-export default function WelcomeBanner({ user }) {
+export default function WelcomeBanner() {
 
+    const [user, setUser] = useState(null);
     const alertShown = useRef(false);
 
     useEffect(() => {
-        if (!alertShown.current) {
-            alerts.info(`Hello ${user?.U_NAME}! 👋`,'',  3000);
-            alertShown.current = true; // stop alert from showing again on re-renders
-        }
+        const fetchUser = async () => {
+            const data = await getUserInfo();
+            if (data) {
+                const parsedUser = typeof data === 'string' ? JSON.parse(data) : data;
+                setUser(parsedUser);
+                if (!alertShown.current) {
+                    const firstName = parsedUser.U_NAME?.split(' ')[0] || 'User';
+                    alerts.info(`Hello ${firstName}! 👋`, 'Welcome back to your dashboard.', 3000);
+                    alertShown.current = true;
+                }
+            }
+        };
+        fetchUser();
     }, []);
 
     return (

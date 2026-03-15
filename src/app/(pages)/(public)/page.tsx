@@ -1,7 +1,7 @@
 import React from "react";
 import "./page.scss"
 import Logger from "@/lib/logger";
-import {getBaseUrl} from "@/lib/client-utility";
+import {getBaseUrl} from "@/lib/server-utility";
 import {getUserCode} from "@/lib/server-utility";
 import MainLayoutContent from "@/components/layouts/MainLayoutContent";
 import ValueBox from "@/components/pages/Dashboard/ValueBox";
@@ -12,44 +12,47 @@ import WelcomeBanner from "@/components/pages/Dashboard/WelcomeBanner";
 import PageTitleBar from "@/components/common/PageTitleBar";
 import BooksReadChart from "@/components/pages/Dashboard/ReadProgressChart";
 import BookStatusChart from "@/components/pages/Dashboard/BookStatusChart";
+import {getCsrfToken, getSessionServer} from "@/lib/session-server";
 
 export default async function DashboardPage() {
 
-    let user = null;
     let dashboardStats = null;
-    //const userCode = await getUserCode();
-    const userCode = '00005';
+    const baseUrl = await getBaseUrl();
+    const userCode = await getUserCode();
+    const csrfToken = await getCsrfToken();
+    console.log("userCode", userCode);
 
     try {
-        // Fetch User Profile/Info (Existing)
-        const userRes = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}`, { cache: 'no-store' });
-        if(userRes.ok){
-            const userData = await userRes.json();
-            console.log(userData)
-            user = userData.data;
-        }
 
-        // Fetch Dashboard Counts (New)
-        const statsRes = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}/dashboard/counts`, { cache: 'no-store' });
+        // Fetch Dashboard Counts
+        const statsRes = await fetch(`${baseUrl}/api/v1/user/${userCode}/dashboard/counts`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': `auth-session=${await getSessionServer("auth-session")}`,
+                'X-CSRF-Token': csrfToken || '',
+            }
+        });
+
         if(statsRes.ok){
             const statsData = await statsRes.json();
             dashboardStats = statsData.data;
         }
 
     } catch (error) {
-        Logger.error("Dashboard Fetch Error:", error);
+        Logger.error("Fetch dashboard counts error:", error);
     }
 
     return <>
-        <MainLayoutContent user={user}>
+        <MainLayoutContent>
             <div className="container-fluid p-4">
 
                 <PageTitleBar title="Dashboard" />
 
-                {/* Welcome Banner */}
                 <div className="row mb-4">
                     <div className="col-12">
-                        <WelcomeBanner user={user} />
+                        <WelcomeBanner />
                     </div>
                 </div>
 
@@ -70,7 +73,7 @@ export default async function DashboardPage() {
 
                 <div className="row">
                     <div className="col-lg-12 mb-4 col-md-12">
-                        <MemberInfo user={user}  />
+                        <MemberInfo />
                     </div>
                 </div>
 

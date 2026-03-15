@@ -1,6 +1,6 @@
 // src/lib/session-client.ts
 
-export function setSession(name: string, data: any, days: number = 7) {
+export function setSessionClient(name: string, data: any, days: number = 7) {
     if (typeof window === "undefined") return;
 
     const value = typeof data === 'object' ? JSON.stringify(data) : data;
@@ -10,9 +10,8 @@ export function setSession(name: string, data: any, days: number = 7) {
     document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
 }
 
-export function getSession(name: string) {
+export function getSessionClient(name: string) {
     if (typeof window === "undefined") return null;
-
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
     for (let i = 0; i < ca.length; i++) {
@@ -25,7 +24,11 @@ export function getSession(name: string) {
     return null;
 }
 
-export function removeSession(name: string) {
+export function removeSessionClient(name: string) {
     if (typeof window === "undefined") return;
     document.cookie = `${name}=; Max-Age=-99999999; path=/;`;
+}
+
+export function getCsrfToken() {
+    return getSessionClient("X-CSRF-Token");
 }
