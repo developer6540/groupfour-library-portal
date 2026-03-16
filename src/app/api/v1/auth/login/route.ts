@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { errorResponse, successResponse } from "@/lib/response";
 import { authenticateUser } from "@/services/auth.service";
-import { setSessionServer } from "@/lib/session-server"; // Path to your functions
+import {setCsrfTokenServer, setSessionServer} from "@/lib/session-server"; // Path to your functions
 import Logger from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
@@ -23,7 +23,11 @@ export async function POST(request: NextRequest) {
         // Set Auth Session (JWT) for middleware/security
         await setSessionServer("auth-session", token);
 
+        // Store user info
         await setSessionServer("user-info", user);
+
+        // Create CSRF token
+        await setCsrfTokenServer();
 
         // Success Response
         return NextResponse.json(

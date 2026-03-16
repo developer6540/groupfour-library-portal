@@ -45,3 +45,26 @@ export async function getUserCodeServer() {
         return null;
     }
 }
+
+export async function setCsrfTokenServer(hours: number = 8) {
+    const cookieStore = await cookies();
+
+    const token = crypto.randomUUID();
+
+    cookieStore.set({
+        name: "X-CSRF-Token",
+        value: token,
+        httpOnly: false, // client must read it
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * hours,
+    });
+
+    return token;
+}
+
+export async function getCsrfTokenServer() {
+    const cookieStore = await cookies();
+    return cookieStore.get("X-CSRF-Token")?.value || null;
+}
