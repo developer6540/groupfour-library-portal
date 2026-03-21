@@ -1,5 +1,5 @@
 import { getDbConnection } from "@/lib/db";
-import { verifyPassword } from "@/lib/passwordHasher";
+import {hashPassword, verifyPassword} from "@/lib/passwordHasher";
 import { SignJWT } from 'jose';
 import { throwException } from "@/lib/exceptions";
 import logger from "@/lib/logger";
@@ -42,12 +42,12 @@ export async function authenticateUser(usercode: string, pass: string) {
     const user = userResult.recordset[0];
 
     // 3. Validations
-    if (!user) throwException("User details not found", 404);
-    if (!user.U_ACTIVE) throwException("Your account is inactive.", 403);
-    if (user.U_LOCKED) throwException("Account is locked.", 403);
+    if (!user) throwException("User details not found", 400);
+    if (!user.U_ACTIVE) throwException("Your account is inactive.", 400);
+    if (user.U_LOCKED) throwException("Account is locked.", 400);
 
     if (user.U_EXPIREDDATE && new Date(user.U_EXPIREDDATE) < new Date()) {
-        throwException("Your membership has expired.", 403);
+        throwException("Your membership has expired.", 400);
     }
 
     // 4. Generate Token with 'jose'
@@ -67,4 +67,111 @@ export async function authenticateUser(usercode: string, pass: string) {
         .sign(secret);
 
     return { user, token };
+}
+
+export interface RegisterPayload {
+    U_CODE: string;
+    U_NAME: string;
+    U_MOBILE: string;
+    U_DOB: string;
+    U_ADDRESS?: string;
+    U_PASSWORD: string;
+    U_NIC?: string;
+    U_GENDER: string;
+    U_EMAIL?: string;
+    U_LOCATION?: string;
+}
+
+export async function registerUser(payload: RegisterPayload) {
+    const pool = await getDbConnection();
+
+    const {
+        U_CODE,
+        U_NAME,
+        U_MOBILE,
+        U_DOB,
+        U_ADDRESS,
+        U_PASSWORD,
+        U_NIC,
+        U_GENDER,
+        U_EMAIL,
+        //U_LOCATION,
+    } = payload;
+
+
+    // NIC Validation (old/new)
+    if (U_NIC) {
+        const oldNic = /^[0-9]{9}[VXvx]$/; // Old NIC: 9 digits + V/X
+        const newNic = /^[0-9]{12}$/;       // New NIC: 12 digits
+        if (!oldNic.test(U_NIC) && !newNic.test(U_NIC)) {
+            throwException(
+                "Invalid NIC format. Old: 9 digits + V/X, New: 12 digits",
+                400
+            );
+        }
+    }
+
+    // Check duplicate user code
+    const exists = await pool.request()
+        .input("usercode", U_CODE)
+        .query(`SELECT U_CODE FROM M_TBLUSERS WHERE U_CODE = @usercode`);
+
+    if (exists.recordset.length > 0) {
+        throwException(`User code '${U_CODE}' already exists. Choose another.`, 400);
+    }
+
+    // Hash password
+    const hashedPassword = hashPassword(U_PASSWORD);
+
+    // Set default values
+    const now = new Date();
+    const expireDate = new Date(now);
+    expireDate.setFullYear(expireDate.getFullYear() + 1); // 1-year membership
+
+    // Insert new user
+    try {
+        await pool.request()
+            .input("U_CODE", U_CODE)
+            .input("U_NAME", U_NAME)
+            .input("U_ACTIVE", 0) // inactive until activated
+            .input("U_GROUP", "USER")
+            .input("U_MOBILE", U_MOBILE)
+            .input("U_DOB", U_DOB)
+            .input("U_ADDRESS", U_ADDRESS || null)
+            .input("U_PASSWORD", hashedPassword)
+            .input("U_NIC", U_NIC || null)
+            .input("M_DATE", now.toISOString())
+            .input("U_UID", U_CODE)
+            .input("U_GENDER", U_GENDER)
+            .input("U_MEMSTATUS", 1)
+            .input("U_SUBSSTATUS", 1)
+            .input("U_EMAIL", U_EMAIL || null)
+            .input("U_REGISTEREDATE", now.toISOString())
+            .input("U_SUBSTYPE", "00003")
+            .input("U_EXPIREDDATE", expireDate.toISOString())
+            .input("U_MAXBORROW", 2)
+            //.input("U_LOCATION", U_LOCATION || null)
+            .query(`
+                INSERT INTO [LibraryMS].[dbo].[M_TBLUSERS]
+                (
+                    U_CODE, U_NAME, U_ACTIVE, U_GROUP, U_MOBILE, U_DOB, U_ADDRESS,
+                    U_PASSWORD, U_NIC, M_DATE, U_UID, U_GENDER, U_MEMSTATUS,
+                    U_SUBSSTATUS, U_EMAIL, U_REGISTEREDATE, U_SUBSTYPE,
+                    U_EXPIREDDATE, U_MAXBORROW
+                )
+                VALUES
+                (
+                    @U_CODE, @U_NAME, @U_ACTIVE, @U_GROUP, @U_MOBILE, @U_DOB, @U_ADDRESS,
+                    @U_PASSWORD, @U_NIC, @M_DATE, @U_UID, @U_GENDER, @U_MEMSTATUS,
+                    @U_SUBSSTATUS, @U_EMAIL, @U_REGISTEREDATE, @U_SUBSTYPE,
+                    @U_EXPIREDDATE, @U_MAXBORROW
+                )
+            `);
+
+        return { message: "Registration successful", U_CODE, U_NAME };
+
+    } catch (err) {
+        logger.error("Error registering user", err);
+        throwException("Failed to register user. Please try again.", 500);
+    }
 }

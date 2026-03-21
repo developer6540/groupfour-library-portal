@@ -114,7 +114,7 @@ export default function Login() {
                 {/* User Code */}
                 <div className="mb-3">
                     <label htmlFor="usercode" className="form-label small fw-semibold text-secondary">
-                        User Code
+                        User Code *
                     </label>
                     <div className="position-relative">
                         <MdOutlineEmail
@@ -139,7 +139,7 @@ export default function Login() {
                     <div className="d-flex justify-content-between align-items-center mb-2">
                         <div className="d-flex align-items-center gap-2">
                             <label htmlFor="password" className="form-label small fw-semibold text-secondary mb-0">
-                                Password
+                                Password *
                             </label>
 
                             {/* Info Icon next to Label */}
@@ -157,10 +157,10 @@ export default function Login() {
                                     <div className="password-requirements-popup">
                                         <h6 className="fw-bold mb-2 small">Password Requirements:</h6>
                                         <ul className="list-unstyled mb-0 extra-small">
-                                            <li>• 8 - 20 Characters</li>
-                                            <li>• At least 1 Uppercase Letter</li>
-                                            <li>• At least 1 Number</li>
-                                            <li>• At least 1 Special Character (@$!%*?&)</li>
+                                            <li> 8 - 20 Characters</li>
+                                            <li> At least 1 Uppercase Letter</li>
+                                            <li> At least 1 Number</li>
+                                            <li> At least 1 Special Character (@$!%*?&)</li>
                                         </ul>
                                         <div className="popup-arrow"></div>
                                     </div>
