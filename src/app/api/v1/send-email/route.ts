@@ -1,21 +1,29 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
     try {
         const { to, subject, html } = await req.json();
-        console.log(to, subject, html);
-        const data = await resend.emails.send({
-            from: "onboarding@resend.dev", // change after domain verification
+
+        console.error(process.env.GMAIL_USER, process.env.GMAIL_APP_PASS);
+
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_APP_PASS,
+            },
+        });
+
+        await transporter.sendMail({
+            from: process.env.GMAIL_USER,
             to,
             subject,
             html,
         });
 
-        return Response.json({ success: true, data });
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (error) {
         console.error(error);
-        return Response.json({ success: false, error }, { status: 500 });
+        return new Response(JSON.stringify({ success: false, error: (error as Error).message }), { status: 500 });
     }
 }
