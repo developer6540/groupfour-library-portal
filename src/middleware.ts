@@ -20,6 +20,7 @@ export async function middleware(req: NextRequest) {
         "/forgot-password",
         "/api/v1/auth/login",
         "/api/v1/auth/register",
+        "/api/v1/locations",
     ];
 
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
@@ -48,10 +49,10 @@ export async function middleware(req: NextRequest) {
     // CSRF Validation
     if (isApiRequest && isWriteMethod) {
         const headerToken = req.headers.get("X-CSRF-Token");
-        console.log(headerToken, csrfCookie);
         if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
+            console.log("CSRF Not Allowed");
             return NextResponse.json(
-                { message: "Unauthorized Access 1" },
+                { message: "Unauthorized Access" },
                 { status: 401 }
             );
         }
@@ -60,8 +61,9 @@ export async function middleware(req: NextRequest) {
     // Auth Protection
     if (!token && !isPublicRoute) {
         if (isApiRequest) {
+            console.log("Token Not Allowed");
             return NextResponse.json(
-                { message: "Unauthorized Access 2" },
+                { message: "Unauthorized Access" },
                 { status: 401 }
             );
         }

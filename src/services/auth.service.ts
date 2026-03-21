@@ -95,14 +95,13 @@ export async function registerUser(payload: RegisterPayload) {
         U_NIC,
         U_GENDER,
         U_EMAIL,
-        //U_LOCATION,
+        U_LOCATION,
     } = payload;
 
-
-    // NIC Validation (old/new)
+    // NIC Validation
     if (U_NIC) {
-        const oldNic = /^[0-9]{9}[VXvx]$/; // Old NIC: 9 digits + V/X
-        const newNic = /^[0-9]{12}$/;       // New NIC: 12 digits
+        const oldNic = /^[0-9]{9}[VXvx]$/;
+        const newNic = /^[0-9]{12}$/;
         if (!oldNic.test(U_NIC) && !newNic.test(U_NIC)) {
             throwException(
                 "Invalid NIC format. Old: 9 digits + V/X, New: 12 digits",
@@ -120,20 +119,20 @@ export async function registerUser(payload: RegisterPayload) {
         throwException(`User code '${U_CODE}' already exists. Choose another.`, 400);
     }
 
-    // Hash password
     const hashedPassword = hashPassword(U_PASSWORD);
-
-    // Set default values
     const now = new Date();
     const expireDate = new Date(now);
-    expireDate.setFullYear(expireDate.getFullYear() + 1); // 1-year membership
+    expireDate.setFullYear(expireDate.getFullYear() + 1);
 
-    // Insert new user
+    const transaction = pool.transaction();
+
     try {
-        await pool.request()
+        await transaction.begin();
+
+        await transaction.request()
             .input("U_CODE", U_CODE)
             .input("U_NAME", U_NAME)
-            .input("U_ACTIVE", 0) // inactive until activated
+            .input("U_ACTIVE", 0)
             .input("U_GROUP", "USER")
             .input("U_MOBILE", U_MOBILE)
             .input("U_DOB", U_DOB)
@@ -150,9 +149,8 @@ export async function registerUser(payload: RegisterPayload) {
             .input("U_SUBSTYPE", "00003")
             .input("U_EXPIREDDATE", expireDate.toISOString())
             .input("U_MAXBORROW", 2)
-            //.input("U_LOCATION", U_LOCATION || null)
             .query(`
-                INSERT INTO [LibraryMS].[dbo].[M_TBLUSERS]
+                INSERT INTO M_TBLUSERS
                 (
                     U_CODE, U_NAME, U_ACTIVE, U_GROUP, U_MOBILE, U_DOB, U_ADDRESS,
                     U_PASSWORD, U_NIC, M_DATE, U_UID, U_GENDER, U_MEMSTATUS,
@@ -168,9 +166,28 @@ export async function registerUser(payload: RegisterPayload) {
                 )
             `);
 
+        if (U_LOCATION) {
+            await transaction.request()
+                .input("UL_USERCODE", U_CODE)
+                .input("UL_USERLOC", U_LOCATION)
+                .input("UL_ACTIVE", 1)
+                .input("M_DATE", now.toISOString())
+                .query(`
+                    INSERT INTO M_TBLUSERLOCATION
+                    (
+                        UL_USERCODE, UL_USERLOC, UL_ACTIVE, M_DATE
+                    )
+                    VALUES
+                    (
+                        @UL_USERCODE, @UL_USERLOC, @UL_ACTIVE, @M_DATE
+                    )
+                `);
+        }
+        await transaction.commit();
         return { message: "Registration successful", U_CODE, U_NAME };
 
     } catch (err) {
+        await transaction.rollback();
         logger.error("Error registering user", err);
         throwException("Failed to register user. Please try again.", 500);
     }

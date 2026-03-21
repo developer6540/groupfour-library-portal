@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,7 +11,8 @@ import {
     FaMapMarkerAlt,
     FaVenusMars,
     FaIdCard,
-    FaSpinner, FaInfoCircle,
+    FaSpinner,
+    FaInfoCircle,
 } from "react-icons/fa";
 import { MdOutlineEmail, MdNumbers, MdLocationOn } from "react-icons/md";
 import { alerts } from "@/lib/alerts";
@@ -30,6 +31,9 @@ export default function Register() {
     const [showNicPopup, setShowNicPopup] = useState(false);
     const [showPasswordInfo, setShowPasswordInfo] = useState(false);
 
+    const [locations, setLocations] = useState([]);
+    const [loadingLocations, setLoadingLocations] = useState(true);
+
     const [formData, setFormData] = useState({
         userCode: "",
         fullName: "",
@@ -44,11 +48,42 @@ export default function Register() {
         confirmPassword: "",
     });
 
+    const csrfToken = getCsrfToken();
+
     const [errors, setErrors] = useState({});
 
-    // -------------------------
-    // Validation function
-    // -------------------------
+    useEffect(() => {
+        const loadLocations = async () => {
+            try {
+                const res = await fetch(`${getBaseUrl()}/api/v1/locations`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": csrfToken || "",
+                    },
+                });
+
+                const data = await res.json();
+                console.log("Locations API response:", data);
+
+                if (res.ok) {
+                    // Defensive: check if array exists
+                    setLocations(Array.isArray(data) ? data : data.data || []);
+                } else {
+                    setLocations([]);
+                }
+            } catch (err) {
+                console.error("Failed to load locations", err);
+                setLocations([]);
+            } finally {
+                setLoadingLocations(false);
+            }
+        };
+
+        void loadLocations();
+    }, [csrfToken]);
+
+    // Validation
     const validate = (name, value) => {
         let error = "";
 
@@ -69,28 +104,30 @@ export default function Register() {
                 break;
 
             case "nic":
-                if (value.trim()) {
+                if (!value.trim()) error = "NIC is required";
+                else {
                     const oldNic = /^\d{9}[vVxX]$/;
                     const newNic = /^\d{12}$/;
-                    if (!oldNic.test(value) && !newNic.test(value))
+                    if (!oldNic.test(value) && !newNic.test(value)) {
                         error = "Enter valid NIC Number (Old or New)";
+                    }
                 }
                 break;
 
             case "email":
-                if (value.trim()) {
-                    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
-                        error = "Invalid email address";
+                if (!value.trim()) error = "Email is required";
+                else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
+                    error = "Invalid email address";
                 }
                 break;
 
             case "address":
-                // optional, no validation
+                if (!value.trim()) error = "Address is required";
                 break;
 
-            // case "location":
-            //     if (!value.trim()) error = "Location is required";
-            //     break;
+            case "location":
+                if (!value.trim()) error = "Location is required";
+                break;
 
             case "dob":
                 if (!value) error = "Date of Birth is required";
@@ -106,8 +143,7 @@ export default function Register() {
                 else if (value.length < 8) error = "Minimum 8 characters required";
                 else if (value.length > 20) error = "Maximum 20 characters allowed";
                 else if (!passwordRegex.test(value))
-                    error =
-                        "Password must include 1 uppercase letter, 1 number & 1 special character";
+                    error = "Password must include 1 uppercase letter, 1 number & 1 special character";
                 break;
 
             case "confirmPassword":
@@ -130,8 +166,8 @@ export default function Register() {
 
     const handleDateChange = (date) => {
         const isoDate = date ? moment(date).toISOString() : "";
-        setFormData(prev => ({ ...prev, dob: isoDate }));
-        setErrors(prev => ({ ...prev, dob: validate("dob", isoDate) }));
+        setFormData((prev) => ({ ...prev, dob: isoDate }));
+        setErrors((prev) => ({ ...prev, dob: validate("dob", isoDate) }));
     };
 
     const handleSubmit = async (e) => {
@@ -152,7 +188,6 @@ export default function Register() {
         const loadingToastId = alerts.loading("Creating account...");
 
         try {
-            const csrfToken = await getCsrfToken();
             const res = await fetch(`${getBaseUrl()}/api/v1/auth/register`, {
                 method: "POST",
                 headers: {
@@ -169,7 +204,7 @@ export default function Register() {
                     U_NIC: formData.nic,
                     U_GENDER: formData.gender,
                     U_EMAIL: formData.email,
-                    //U_LOCATION: formData.location,
+                    U_LOCATION: formData.location,
                 }),
             });
 
@@ -195,7 +230,7 @@ export default function Register() {
         !formData.userCode ||
         !formData.fullName ||
         !formData.phone ||
-        //!formData.location ||
+        !formData.location ||
         !formData.dob ||
         !formData.gender ||
         !formData.password ||
@@ -210,9 +245,7 @@ export default function Register() {
                 </div>
                 <hr className="gradient-hr" />
                 <h2 className="h4 fw-bold text-secondary mb-2">Create Account</h2>
-                <p className="text-muted mb-0">
-                    Join the world's largest online book community
-                </p>
+                <p className="text-muted mb-0">Join the world's largest online book community</p>
             </div>
 
             <form onSubmit={handleSubmit} noValidate>
@@ -250,7 +283,7 @@ export default function Register() {
                     {errors.fullName && <div className="error-text">{errors.fullName}</div>}
                 </div>
 
-                {/* Mobile */}
+                {/* Mobile & NIC */}
                 <div className="row g-3 mb-3">
                     <div className="col-md-6">
                         <label className="form-label small fw-semibold text-secondary">Mobile *</label>
@@ -270,7 +303,7 @@ export default function Register() {
 
                     <div className="col-md-6 position-relative">
                         <label className="form-label small fw-semibold text-secondary d-flex align-items-center">
-                            NIC
+                            NIC *
                             <FaInfoCircle
                                 className="ms-2 text-info cursor-pointer"
                                 onMouseEnter={() => setShowNicPopup(true)}
@@ -305,7 +338,7 @@ export default function Register() {
 
                 {/* Email */}
                 <div className="mb-3">
-                    <label className="form-label small fw-semibold text-secondary">Email Address</label>
+                    <label className="form-label small fw-semibold text-secondary">Email Address *</label>
                     <div className="position-relative">
                         <input
                             type="email"
@@ -338,21 +371,28 @@ export default function Register() {
                 </div>
 
                 {/* Location */}
-                {/*<div className="mb-3">*/}
-                {/*    <label className="form-label small fw-semibold text-secondary">Location *</label>*/}
-                {/*    <div className="position-relative">*/}
-                {/*        <input*/}
-                {/*            type="text"*/}
-                {/*            id="location"*/}
-                {/*            className={`form-control pe-5 ${errors.location ? "is-invalid" : ""}`}*/}
-                {/*            placeholder="Enter Location"*/}
-                {/*            value={formData.location}*/}
-                {/*            onChange={handleChange}*/}
-                {/*        />*/}
-                {/*        <MdLocationOn className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />*/}
-                {/*    </div>*/}
-                {/*    {errors.location && <div className="error-text">{errors.location}</div>}*/}
-                {/*</div>*/}
+                <div className="mb-3">
+                    <label className="form-label small fw-semibold text-secondary">Location *</label>
+                    <div className="position-relative">
+                        <select
+                            id="location"
+                            className={`form-select pe-5 ${errors.location ? "is-invalid" : ""}`}
+                            value={formData.location}
+                            onChange={handleChange}
+                            disabled={loadingLocations}
+                        >
+                            <option value="">{loadingLocations ? "Loading..." : "Select Location"}</option>
+                            {Array.isArray(locations) &&
+                                locations.map((loc) => (
+                                    <option key={loc.L_CODE} value={loc.L_CODE}>
+                                        {loc.L_DESC}
+                                    </option>
+                                ))}
+                        </select>
+                        <MdLocationOn className="position-absolute end-0 top-50 translate-middle-y me-5 text-secondary opacity-50 pe-none" />
+                    </div>
+                    {errors.location && <div className="error-text">{errors.location}</div>}
+                </div>
 
                 {/* DOB & Gender */}
                 <div className="row g-3 mb-3">
@@ -362,6 +402,7 @@ export default function Register() {
                             value={formData.dob}
                             maxDate={new Date()}
                             onChange={handleDateChange}
+                            placeholder={"YYYY-MM-DD"}
                         />
                         {errors.dob && <div className="error-text">{errors.dob}</div>}
                     </div>
@@ -384,10 +425,12 @@ export default function Register() {
                     </div>
                 </div>
 
-                {/* Password */}
+                {/* Password & Confirm Password */}
                 <div className="row g-3 mb-4">
+                    {/* Password */}
                     <div className="col-md-6 position-relative">
-                        <label className="form-label small fw-semibold text-secondary">Password *
+                        <label className="form-label small fw-semibold text-secondary">
+                            Password *
                             <FaInfoCircle
                                 className="ms-2 text-info cursor-pointer"
                                 size={14}
@@ -395,21 +438,21 @@ export default function Register() {
                                 onMouseLeave={() => setShowPasswordInfo(false)}
                                 onClick={() => setShowPasswordInfo(!showPasswordInfo)}
                             />
-
-                            {/* Password Requirements Popup */}
-                            {showPasswordInfo && (
-                                <div className="password-popup">
-                                    <h6 className="fw-bold mb-2 small">Password Requirements:</h6>
-                                    <ul className="list-unstyled mb-0 extra-small">
-                                        <li> 8 - 20 Characters</li>
-                                        <li> At least 1 Uppercase Letter</li>
-                                        <li> At least 1 Number</li>
-                                        <li> At least 1 Special Character (@$!%*?&)</li>
-                                    </ul>
-                                    <div className="popup-arrow"></div>
-                                </div>
-                            )}
                         </label>
+
+                        {showPasswordInfo && (
+                            <div className="password-popup">
+                                <h6 className="fw-bold mb-2 small">Password Requirements:</h6>
+                                <ul className="list-unstyled mb-0 extra-small">
+                                    <li>8 - 20 Characters</li>
+                                    <li>At least 1 Uppercase Letter</li>
+                                    <li>At least 1 Number</li>
+                                    <li>At least 1 Special Character (@$!%*?&)</li>
+                                </ul>
+                                <div className="popup-arrow"></div>
+                            </div>
+                        )}
+
                         <div className="position-relative">
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -430,6 +473,7 @@ export default function Register() {
                         {errors.password && <div className="error-text">{errors.password}</div>}
                     </div>
 
+                    {/* Confirm Password */}
                     <div className="col-md-6">
                         <label className="form-label small fw-semibold text-secondary">Confirm Password *</label>
                         <div className="position-relative">
