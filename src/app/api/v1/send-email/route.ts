@@ -1,31 +1,43 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
+import { NextResponse } from "next/server";
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 export async function POST(req: Request) {
     try {
         const { to, subject, html } = await req.json();
 
-        console.error(process.env.GMAIL_USER, process.env.GMAIL_APP_PASS);
+        // Validation
+        if (!to || !subject || !html) {
+            return NextResponse.json(
+                { success: false, error: "Missing fields" },
+                { status: 400 }
+            );
+        }
 
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_APP_PASS,
-            },
-        });
-
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        const msg = {
             to,
+            from: process.env.EMAIL_FROM!,
             subject,
             html,
+        };
+
+        await sgMail.send(msg);
+
+        return NextResponse.json({
+            success: true,
+            message: "Email sent successfully",
         });
 
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
-    } catch (error) {
-        console.error(error);
-        return new Response(JSON.stringify({ success: false, error: (error as Error).message }), { status: 500 });
+    } catch (error: any) {
+        console.error("SENDGRID ERROR:", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                error: error?.response?.body || error.message,
+            },
+            { status: 500 }
+        );
     }
 }
