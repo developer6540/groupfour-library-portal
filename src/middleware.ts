@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import Unauthorized from "next/dist/client/components/builtin/unauthorized";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -47,11 +48,11 @@ export async function middleware(req: NextRequest) {
     // CSRF Validation
     if (isApiRequest && isWriteMethod) {
         const headerToken = req.headers.get("X-CSRF-Token");
-
+        console.log(headerToken, csrfCookie);
         if (!headerToken || !csrfCookie || headerToken !== csrfCookie) {
             return NextResponse.json(
-                { message: "Invalid CSRF token" },
-                { status: 403 }
+                { message: "Unauthorized Access 1" },
+                { status: 401 }
             );
         }
     }
@@ -60,7 +61,7 @@ export async function middleware(req: NextRequest) {
     if (!token && !isPublicRoute) {
         if (isApiRequest) {
             return NextResponse.json(
-                { message: "Unauthorized Access" },
+                { message: "Unauthorized Access 2" },
                 { status: 401 }
             );
         }

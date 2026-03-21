@@ -8,7 +8,7 @@ export async function setSessionServer(name: string, data: any, hours: number = 
         name: name,
         value: value,
         httpOnly: true, // Recommended for security
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "strict",
         path: "/",
         maxAge: 60 * 60 * hours,
@@ -55,7 +55,7 @@ export async function setCsrfTokenServer(hours: number = 8) {
         name: "X-CSRF-Token",
         value: token,
         httpOnly: false, // client must read it
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * hours,

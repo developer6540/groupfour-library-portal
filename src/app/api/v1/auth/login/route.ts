@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { errorResponse, successResponse } from "@/lib/response";
 import { authenticateUser } from "@/services/auth.service";
-import {setCsrfTokenServer, setSessionServer} from "@/lib/session-server"; // Path to your functions
+import {setCsrfTokenServer, setSessionServer} from "@/lib/session-server";
 import Logger from "@/lib/logger";
 
 export async function POST(request: NextRequest) {

@@ -19,8 +19,24 @@ export default async function DashboardPage() {
     let dashboardStats = null;
     const baseUrl = await getBaseUrl();
     const userCode = await getUserCode();
+    const session = await getSessionServer("auth-session")
     const csrfToken = await getCsrfToken();
     console.log("userCode", userCode);
+
+    // console.log("HELOOOOOO");
+    // await fetch(`${baseUrl}/api/v1/send-email`, {
+    //     method: "POST",
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'Cookie': `auth-session=${session}; X-CSRF-Token=${csrfToken}`,
+    //         'X-CSRF-Token': csrfToken || '',
+    //     },
+    //     body: JSON.stringify({
+    //         to: "developer6540@gmail.com",
+    //         subject: "Test Railway",
+    //         html: "<h1>Hello from Railway 🚀</h1>",
+    //     }),
+    // });
 
     try {
 
@@ -30,7 +46,7 @@ export default async function DashboardPage() {
             cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': `auth-session=${await getSessionServer("auth-session")}`,
+                'Cookie': `auth-session=${session}; X-CSRF-Token=${csrfToken}`,
                 'X-CSRF-Token': csrfToken || '',
             }
         });

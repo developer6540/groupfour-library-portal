@@ -5,8 +5,11 @@ import Navbar from "./Navbar";
 import SideBar from "./SideBar";
 import {alerts} from "@/lib/alerts";
 import {getUserInfo} from "@/lib/server-utility";
+import {useIdleLogout} from "@/lib/client-utility";
 
 export default function MainLayoutContent({ children }) {
+
+    useIdleLogout();
 
     const [currentUser, setCurrentUser] = useState(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -14,6 +17,7 @@ export default function MainLayoutContent({ children }) {
     const [mobileSidebar, setMobileSidebar] = useState(false);
 
     useEffect(() => {
+
         const loadUser = async () => {
             try {
                 const data = await getUserInfo();

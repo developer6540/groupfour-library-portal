@@ -1,6 +1,9 @@
 'use client'
 
 import moment from "moment";
+import {getCsrfToken} from "@/lib/session-client";
+import {alerts} from "@/lib/alerts";
+import {useEffect, useRef} from "react";
 
 export function getBaseUrl(){
     return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -80,3 +83,64 @@ export function getCookie(name: string){
 export function deleteCookie(name: string){
     document.cookie = `${name}=; Max-Age=0; path=/`;
 };
+
+export function useIdleLogout() {
+
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isLoggingOut = useRef(false);
+    const IDLE_TIME = 5 * 60 * 1000; // 5 min
+
+    useEffect(() => {
+
+        const logout = async () => {
+
+            if (isLoggingOut.current) return;
+            isLoggingOut.current = true;
+
+            try {
+                const res = await fetch(`${getBaseUrl()}/api/v1/auth/logout`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": getCsrfToken() || "",
+                    },
+                });
+
+                if (res.ok) {
+                    alerts.warning("Sorry! Session Expired", "Please login again....", 3000);
+                } else {
+                    console.log("Logout Failed");
+                }
+
+            } catch (error) {
+                console.log("Logout Error");
+            } finally {
+                setTimeout(() => {
+                    window.location.href = "/sign-in";
+                }, 3000);
+            }
+        };
+
+        const resetTimer = () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(logout, IDLE_TIME);
+            console.log(IDLE_TIME);
+        };
+
+        const events = ["mousemove", "keydown", "click", "scroll"];
+
+        events.forEach(event =>
+            window.addEventListener(event, resetTimer)
+        );
+
+        resetTimer();
+
+        return () => {
+            events.forEach(event =>
+                window.removeEventListener(event, resetTimer)
+            );
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+
+    }, []);
+}
