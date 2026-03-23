@@ -135,7 +135,8 @@ export default function BookCatalog() {
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
     };
 
-    const handleAddToCart = async (book) => {
+    const handleAddToCart = async (book, e) => {
+
         const user = await getUserInfo();
         const userData = typeof user === "string" ? JSON.parse(user) : user;
         const maxBorrow = userData?.U_MAXBORROW || 2;
@@ -149,7 +150,52 @@ export default function BookCatalog() {
             alerts.error(`Limit reached! Max ${maxBorrow} books.`);
             return;
         }
+
+        animateToCart(e);
+
         setGlobalDataCart([...currentCart, book]);
+    };
+
+    const animateToCart = (event) => {
+        const cart = document.getElementById("cart-icon");
+
+        // Use event.target.closest to find the book-card
+        const card = event.target.closest(".book-card");
+        if (!card || !cart) return;
+
+        const img = card.querySelector(".book-image");
+        if (!img) return;
+
+        const imgRect = img.getBoundingClientRect();
+        const cartRect = cart.getBoundingClientRect();
+
+        const clone = img.cloneNode(true);
+
+        clone.style.position = "fixed";
+        clone.style.top = `${imgRect.top}px`;
+        clone.style.left = `${imgRect.left}px`;
+        clone.style.width = `${imgRect.width}px`;
+        clone.style.height = `${imgRect.height}px`;
+        clone.style.zIndex = "9999";
+        clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+        clone.style.pointerEvents = "none";
+
+        document.body.appendChild(clone);
+
+        requestAnimationFrame(() => {
+            clone.style.top = `${cartRect.top}px`;
+            clone.style.left = `${cartRect.left}px`;
+            clone.style.width = "40px";
+            clone.style.height = "40px";
+            clone.style.opacity = "0";
+            clone.style.borderRadius = "50%";
+        });
+
+        setTimeout(() => {
+            clone.remove();
+            cart.classList.add("cart-bounce");
+            setTimeout(() => cart.classList.remove("cart-bounce"), 300);
+        }, 700);
     };
 
     const totalPages = Math.ceil(totalBooks / booksPerPage) || 1;
@@ -197,10 +243,14 @@ export default function BookCatalog() {
                             <div className="book-card">
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
                                 <div className="book-overlay">
-                                    <button className="action-btn cart-btn" onClick={() => handleAddToCart(book)}><i className="bi bi-cart-fill"></i></button>
+                                    <button className="action-btn cart-btn"
+                                            onClick={(e) => {
+                                                handleAddToCart(book, e);
+                                            }}>
+                                        <i className="bi bi-cart-fill"></i></button>
                                     <button className="action-btn view-btn" onClick={() => handleViewBook(book)}><i className="bi bi-eye-fill"></i></button>
                                 </div>
-                                <div className="book-image-container category-icon-container" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
+                                <div className="book-image-container category-icon-container book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
                                         <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
@@ -235,7 +285,7 @@ export default function BookCatalog() {
                             {selectedBook && (
                                 <div className="row g-0">
                                     <div className="col-md-5 d-none d-md-flex align-items-center justify-content-center p-5 bg-light-purple">
-                                        <div className="book-image-container category-icon-container" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
+                                        <div className="book-image-container category-icon-container book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
                                             <div className="inner-cover-content">
                                                 <div className="top-title-container"><div className="top-title">{safeCap(selectedBook.B_TITLE)}</div></div>
                                                 <div className="mid-icon"><i className="bi bi-book"></i></div>
@@ -269,8 +319,10 @@ export default function BookCatalog() {
                                             </div>
 
                                             <div className="modal-action-row d-flex gap-2 mt-4">
-                                                <button onClick={() => handleAddToCart(selectedBook)}
-                                                        className="btn btn-dark-minimal flex-grow-1 py-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        handleAddToCart(selectedBook, e);
+                                                    }} className="btn btn-dark-minimal flex-grow-1 py-2">
                                                     Add to Cart
                                                 </button>
                                                 <button className="btn btn-outline-dark px-4 py-2" data-bs-dismiss="modal">

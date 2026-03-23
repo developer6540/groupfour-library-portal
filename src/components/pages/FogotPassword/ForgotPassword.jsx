@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FaLock, FaArrowLeft, FaEye, FaKey, FaEyeSlash } from "react-icons/fa";
-import { MdOutlineEmail } from "react-icons/md";
+import {MdNumbers, MdOutlineEmail} from "react-icons/md";
 import "./ForgotPassword.scss"
 
 export default function ForgotPassword() {
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
                         User Code
                     </label>
                     <div className="position-relative">
-                        <MdOutlineEmail
+                        <MdNumbers
                             className="position-absolute top-50 translate-middle-y text-muted"
                             style={{ left: "1rem", zIndex: 10 }}
                             size={20}

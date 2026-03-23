@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaLock, FaEye, FaKey, FaEyeSlash, FaSpinner, FaInfoCircle } from "react-icons/fa";
-import { MdOutlineEmail } from "react-icons/md";
+import {MdNumbers, MdOutlineEmail} from "react-icons/md";
 import { alerts } from "@/lib/alerts";
 import { getBaseUrl } from "@/lib/client-utility";
 import { getCsrfToken } from "@/lib/session-client";
@@ -117,7 +117,7 @@ export default function Login() {
                         User Code *
                     </label>
                     <div className="position-relative">
-                        <MdOutlineEmail
+                        <MdNumbers
                             className={`position-absolute top-50 translate-middle-y ${errors.usercode ? 'text-danger' : 'text-muted'}`}
                             style={{ left: "1rem", zIndex: 10 }}
                             size={20}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { capitalizeFirstLetter, FirstNameOnly, getBaseUrl } from "@/lib/client-utility";
 import SearchBox from "@/components/layouts/SearchBox";
 import { useRouter } from "next/navigation";
@@ -26,11 +26,19 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
     const [isOpen, setIsOpen] = useState(false);
     const { setGlobalData } = useDataContext();
     const router = useRouter();
+    const [isMobile, setIsMobile] = useState(false);
 
     const handleToggle = () => {
         setIsOpen(prev => !prev);
         onToggle();
     };
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const handleLogout = async () => {
 
@@ -60,10 +68,21 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
     }
 
     return (
-        <nav className="navbar navbar-expand navbar-light px-4 py-3">
+        <nav className="navbar fixed-top navbar-light bg-white shadow-sm">
             {/* Hamburger */}
-            <button type="button" className="btn btn-link link-dark p-0 me-auto" onClick={handleToggle}>
-                <i className={`bi ${isOpen ? "bi-text-indent-left" : "bi-text-indent-right"} fs-2`} style={{ color: "rgba(104,104,104,0.81)" }}></i>
+            <button
+                type="button"
+                style={{
+                    marginLeft: isMobile ? "0px" : isOpen ? "0px" : "280px",
+                    transition: "margin-left 0.3s",
+                }}
+                className="btn btn-link link-dark p-0 me-3"
+                onClick={handleToggle}
+            >
+                <i
+                    className={`bi ${isOpen ? "bi-text-indent-left" : "bi-text-indent-right"} fs-2`}
+                    style={{ color: "rgba(104,104,104,0.81)" }}
+                ></i>
             </button>
 
             {/* 🔍 Search Component */}
@@ -78,7 +97,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle, user }) => {
             <div className="d-flex align-items-center gap-3">
 
                 {/* Cart Dropdown */}
-                <Cart />
+                <div id="cart-icon" style={{ position: "relative" }}>
+                    <Cart />
+                </div>
 
                 {/* Notification Dropdown */}
                 <Notification />

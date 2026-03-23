@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import "./BookReservation.scss";
-import { getSessionClient, setSessionClient } from "@/lib/session-client";
-import { capitalizeFirstLetter } from "@/lib/client-utility";
-import { useDataContext } from "@/lib/dataContext";
+import {getSessionClient, setSessionClient} from "@/lib/session-client";
+import {capitalizeFirstLetter} from "@/lib/client-utility";
+import {useDataContext} from "@/lib/dataContext";
 import Link from "next/link";
 import {alerts} from "@/lib/alerts";
 
 export default function BookReservation() {
 
-    const { getGlobalDataCart, setGlobalDataCart } = useDataContext();
+    const {getGlobalDataCart, setGlobalDataCart} = useDataContext();
     const [isHydrated, setIsHydrated] = useState(false);
 
     // Use the global context as the single source of truth
@@ -50,7 +50,13 @@ export default function BookReservation() {
     }, [cartItems, isHydrated]);
 
     const removeReservation = (code) => {
-        setGlobalDataCart(prev => (prev || []).filter(book => book.B_CODE !== code));
+        alerts.confirm(
+            "Remove Item",
+            "Are you sure you want to remove?",
+            async () => {
+                setGlobalDataCart(prev => (prev || []).filter(book => book.B_CODE !== code));
+            }
+        )
     };
 
     const updateField = (code, field, delta) => {
@@ -77,7 +83,7 @@ export default function BookReservation() {
     const handleRemarkChange = (code, value) => {
         setGlobalDataCart(prev =>
             (prev || []).map(book =>
-                book.B_CODE === code ? { ...book, BR_REMARK: value } : book
+                book.B_CODE === code ? {...book, BR_REMARK: value} : book
             )
         );
     };
@@ -86,54 +92,63 @@ export default function BookReservation() {
 
         if (!cartItems.length) return;
 
-        try {
-            const user = getSession("user-info");
-            const userData = typeof user === "string" ? JSON.parse(user) : user;
+        alerts.confirm(
+            "Receive Books",
+            "Are you sure you want to make reservation?",
+            async () => {
 
-            // Calculate total quantity in the cart
-            const totalQtyInCart = cartItems.reduce((sum, book) => sum + (book.BR_QTY || 0), 0);
+                try {
+                    const user = getSession("user-info");
+                    const userData = typeof user === "string" ? JSON.parse(user) : user;
 
-            // Validate against user's max borrow limit
-            if (userData.U_MAXBORROW && totalQtyInCart > userData.U_MAXBORROW) {
-                alerts.error(`You can only borrow a maximum of ${userData.U_MAXBORROW} books. Your current selection has ${totalQtyInCart}.`);
-                return;
+                    // Calculate total quantity in the cart
+                    const totalQtyInCart = cartItems.reduce((sum, book) => sum + (book.BR_QTY || 0), 0);
+
+                    // Validate against user's max borrow limit
+                    if (userData.U_MAXBORROW && totalQtyInCart > userData.U_MAXBORROW) {
+                        alerts.error(`You can only borrow a maximum of ${userData.U_MAXBORROW} books. Your current selection has ${totalQtyInCart}.`);
+                        return;
+                    }
+
+                    // Map payload to match your Database Service expectations
+                    const payload = cartItems.map((book, index) => ({
+                        BR_USERCODE: userData?.U_CODE,
+                        BR_BOOKCODE: book.B_CODE,
+                        BR_QTY: 1, //book.BR_QTY,
+                        BR_HOLD_DAYS: 3, //book.BR_HOLD_DAYS,
+                        BR_REMARK: book.BR_REMARK,
+                        BR_BORROW_LINENO: index + 1
+                    }));
+
+                    // API Call to your new endpoint
+                    const response = await fetch("/api/v1/user/reserve-books", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alerts.success("Reservation submitted successfully!");
+
+                        // clear cart locally and globally on success
+                        setGlobalDataCart([]);
+                        setSessionClient("cart-items", JSON.stringify([]));
+                    } else {
+                        alerts.error(result.message || "Failed to submit reservation.");
+                    }
+
+                } catch (error) {
+                    console.error("Reservation failed:", error);
+                    alerts.error("A network error occurred. Please try again later.");
+                }
+
             }
+        )
 
-            // Map payload to match your Database Service expectations
-            const payload = cartItems.map((book, index) => ({
-                BR_USERCODE: userData?.U_CODE,
-                BR_BOOKCODE: book.B_CODE,
-                BR_QTY: 1, //book.BR_QTY,
-                BR_HOLD_DAYS: 3, //book.BR_HOLD_DAYS,
-                BR_REMARK: book.BR_REMARK,
-                BR_BORROW_LINENO: index + 1
-            }));
-
-            // API Call to your new endpoint
-            const response = await fetch("/api/v1/user/reserve-books", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alerts.success("Reservation submitted successfully!");
-
-                // clear cart locally and globally on success
-                setGlobalDataCart([]);
-                setSessionClient("cart-items", JSON.stringify([]));
-            } else {
-                alerts.error(result.message || "Failed to submit reservation.");
-            }
-
-        } catch (error) {
-            console.error("Reservation failed:", error);
-            alerts.error("A network error occurred. Please try again later.");
-        }
     };
 
     if (!isHydrated) {
@@ -166,7 +181,7 @@ export default function BookReservation() {
             {cartItems.length === 0 ? (
                 <div className="empty-reservation text-center py-5">
                     <div className="icon-wrapper mb-3">
-                        <i className="bi bi-cart-x text-muted" style={{ fontSize: '3rem' }}></i>
+                        <i className="bi bi-cart-x text-muted" style={{fontSize: '3rem'}}></i>
                     </div>
                     <h5 className="text-dark">Your queue is empty</h5>
                     <p className="text-muted mb-4">You haven't selected any books for reservation yet.</p>
@@ -193,7 +208,8 @@ export default function BookReservation() {
                                             <div className="d-flex align-items-center">
                                                 <div className="book-icon-sm me-3"><i className="bi bi-book"></i></div>
                                                 <div>
-                                                    <div className="fw-bold text-dark mb-0">{capitalizeFirstLetter(book.B_TITLE)}</div>
+                                                    <div
+                                                        className="fw-bold text-dark mb-0">{capitalizeFirstLetter(book.B_TITLE)}</div>
                                                     <span className="text-muted small-code">Code: {book.B_CODE}</span>
                                                 </div>
                                             </div>
@@ -202,7 +218,8 @@ export default function BookReservation() {
                                         <td className="text-secondary font-monospace small">{book.B_ISBN}</td>
                                         <td><span className="badge-category">{book.B_CATEGORY}</span></td>
                                         <td className="text-end">
-                                            <button type="button" className="btn btn-action-delete" onClick={() => removeReservation(book.B_CODE)}>
+                                            <button type="button" className="btn btn-action-delete"
+                                                    onClick={() => removeReservation(book.B_CODE)}>
                                                 <i className="bi bi-trash3"></i>
                                             </button>
                                         </td>
@@ -245,8 +262,11 @@ export default function BookReservation() {
                         </table>
                     </div>
                     <div className="reservation-footer d-flex justify-content-between align-items-center mt-4">
-                        <p className="small fw-bold text-muted mb-0">Total books: <strong>{cartItems.length}</strong></p>
-                        <button type="button" className="btn btn-purple" onClick={confirmReservation}>Confirm Reservation</button>
+                        <p className="small fw-bold text-muted mb-0">Total books: <strong>{cartItems.length}</strong>
+                        </p>
+                        <button type="button" className="btn btn-purple" onClick={confirmReservation}>Confirm
+                            Reservation
+                        </button>
                     </div>
                 </>
             )}
