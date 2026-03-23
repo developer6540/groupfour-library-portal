@@ -101,13 +101,14 @@
         border-radius: 10px;
         flex-shrink: 0;
         padding: 6px;
-        box-shadow: 2px 2px 6px 1px #28215161;
+        box-shadow: 5px 5px 8px 0px #a9a7a7;
         &.category-icon-container {
             background-color: #8677ed;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             display: flex;
+            rotate: 358deg;
 
             .inner-cover-content {
                 display: flex;
@@ -192,6 +193,23 @@
             border-radius: 6px;
             text-transform: uppercase;
             border: 1px solid rgba(134, 119, 237, 0.2);
+        }
+
+        .book-stock{
+            text-align: center;
+            color: #fff;
+            background: #c63737;
+            border-radius: 100%;
+            width: 35px;
+            height: 35px;
+            margin-top: 8px;
+            padding: 7px 0;
+            font-size: 13px;
+            font-weight: bolder;
+            position: absolute;
+            top: 0;
+            left: 3px;
+            box-shadow: 4px 3px 8px #000000b0;
         }
     }
 

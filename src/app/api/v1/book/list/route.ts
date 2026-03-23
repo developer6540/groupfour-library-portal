@@ -7,10 +7,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
 
     try {
+        const userCode = searchParams.get("userCode") || "";
         const page = parseInt(searchParams.get("page") || "1", 10);
         const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
-        const { data, total } = await getAllBooks(searchParams, { page, pageSize });
+        const { data, total } = await getAllBooks(searchParams, { userCode, page, pageSize });
 
         return NextResponse.json(
             successResponse({ data, total, page, pageSize }, "Books retrieved successfully")

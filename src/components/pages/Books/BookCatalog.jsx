@@ -6,7 +6,7 @@ import Pagination from "@/components/common/Pagination";
 import { useDataContext } from "@/lib/dataContext";
 import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
 import { alerts } from "@/lib/alerts";
-import { getUserInfo } from "@/lib/server-utility";
+import {getUserCode, getUserInfo} from "@/lib/server-utility";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -69,6 +69,22 @@ export default function BookCatalog() {
         }
     }, [getGlobalData]);
 
+
+    const fetchCategories = useCallback(async () => {
+        try {
+            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`);
+            const result = await response.json();
+
+            if (response.ok && result.data) {
+                setCategories(result.data || []);
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    }, []);
+
+    useEffect(() => { fetchCategories(); }, [fetchCategories]);
+
     const fetchBooks = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -77,6 +93,7 @@ export default function BookCatalog() {
                 author: debouncedFilters.author,
                 isbn: debouncedFilters.isbn,
                 category: debouncedFilters.category,
+                userCode: await getUserCode(),
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
@@ -195,13 +212,15 @@ export default function BookCatalog() {
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
                                     {renderStars(0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
+                                    <p className="book-stock">{book.TOTAL_AVAILABLE_QTY}</p>
                                 </div>
                             </div>
                         </div>
                     ))
                 ) : !isLoading && (
                     <div className="col-12 text-center py-5">
-                        <h4 className="text-muted">No books found</h4>
+                        <div className="fw-bold" style={{fontSize:"50px", marginBottom:"-10px", color:"#b3b3b3"}}><i className="bi bi-book"></i></div>
+                        <div className="fw-bold" style={{fontSize:"20px", color:"#b3b3b3"}}>Books Not Found</div>
                     </div>
                 )}
             </div>
@@ -244,17 +263,17 @@ export default function BookCatalog() {
                                                     <span className="value text-truncate ms-2">{safeCap(selectedBook.B_PUBLISHER) || "N/A"}</span>
                                                 </div>
                                                 <div className="spec-row">
-                                                    <span className="label">Availability</span>
-                                                    <span className="value text-success fw-semibold">In Stock</span>
+                                                    <span className="label">Available Stock</span>
+                                                    <span className="value fw-semibold">{selectedBook.TOTAL_AVAILABLE_QTY}</span>
                                                 </div>
                                             </div>
 
                                             <div className="modal-action-row d-flex gap-2 mt-4">
                                                 <button onClick={() => handleAddToCart(selectedBook)}
-                                                        className="btn btn-dark-minimal flex-grow-1 py-3">
+                                                        className="btn btn-dark-minimal flex-grow-1 py-2">
                                                     Add to Cart
                                                 </button>
-                                                <button className="btn btn-outline-minimal px-4 py-3" data-bs-dismiss="modal">
+                                                <button className="btn btn-outline-dark px-4 py-2" data-bs-dismiss="modal">
                                                     Close
                                                 </button>
                                             </div>
