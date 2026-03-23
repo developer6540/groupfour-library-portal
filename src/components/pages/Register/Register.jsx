@@ -12,7 +12,7 @@ import {
     FaVenusMars,
     FaIdCard,
     FaSpinner,
-    FaInfoCircle,
+    FaInfoCircle, FaCalendar,
 } from "react-icons/fa";
 import { MdOutlineEmail, MdNumbers, MdLocationOn } from "react-icons/md";
 import { alerts } from "@/lib/alerts";
@@ -261,7 +261,7 @@ export default function Register() {
                             value={formData.userCode}
                             onChange={handleChange}
                         />
-                        <MdNumbers className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                        <MdNumbers className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
                     {errors.userCode && <div className="error-text">{errors.userCode}</div>}
                 </div>
@@ -278,7 +278,7 @@ export default function Register() {
                             value={formData.fullName}
                             onChange={handleChange}
                         />
-                        <FaUser className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                        <FaUser className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
                     {errors.fullName && <div className="error-text">{errors.fullName}</div>}
                 </div>
@@ -296,7 +296,7 @@ export default function Register() {
                                 value={formData.phone}
                                 onChange={handleChange}
                             />
-                            <FaPhone className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                            <FaPhone className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                         </div>
                         {errors.phone && <div className="error-text">{errors.phone}</div>}
                     </div>
@@ -319,7 +319,7 @@ export default function Register() {
                                 value={formData.nic}
                                 onChange={handleChange}
                             />
-                            <FaIdCard className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                            <FaIdCard className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                         </div>
                         {errors.nic && <div className="error-text">{errors.nic}</div>}
 
@@ -348,7 +348,7 @@ export default function Register() {
                             value={formData.email}
                             onChange={handleChange}
                         />
-                        <MdOutlineEmail className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                        <MdOutlineEmail className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
                     {errors.email && <div className="error-text">{errors.email}</div>}
                 </div>
@@ -365,7 +365,7 @@ export default function Register() {
                             value={formData.address}
                             onChange={handleChange}
                         />
-                        <FaMapMarkerAlt className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary opacity-50" />
+                        <FaMapMarkerAlt className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
                     {errors.address && <div className="error-text">{errors.address}</div>}
                 </div>
@@ -389,7 +389,7 @@ export default function Register() {
                                     </option>
                                 ))}
                         </select>
-                        <MdLocationOn className="position-absolute end-0 top-50 translate-middle-y me-5 text-secondary opacity-50 pe-none" />
+                        <MdLocationOn className="position-absolute end-0 top-50 translate-middle-y me-5 text-secondary  pe-none" />
                     </div>
                     {errors.location && <div className="error-text">{errors.location}</div>}
                 </div>
@@ -398,12 +398,16 @@ export default function Register() {
                 <div className="row g-3 mb-3">
                     <div className="col-md-6">
                         <label className="form-label small fw-semibold text-secondary">Date of Birth *</label>
-                        <DatePickerInput
-                            value={formData.dob}
-                            maxDate={new Date()}
-                            onChange={handleDateChange}
-                            placeholder={"YYYY-MM-DD"}
-                        />
+                        <div className="position-relative">
+                            <DatePickerInput
+                                value={formData.dob}
+                                maxDate={new Date()}
+                                onChange={handleDateChange}
+                                placeholder={"YYYY-MM-DD"}
+                                style={{width:'100%'}}
+                            />
+                            <FaCalendar className="position-absolute end-0 top-50 translate-middle-y me-2 text-secondary  pe-none" />
+                        </div>
                         {errors.dob && <div className="error-text">{errors.dob}</div>}
                     </div>
 
@@ -419,7 +423,7 @@ export default function Register() {
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                             </select>
-                            <FaVenusMars className="position-absolute end-0 top-50 translate-middle-y me-5 text-secondary opacity-50 pe-none" />
+                            <FaVenusMars className="position-absolute end-0 top-50 translate-middle-y me-5 text-secondary  pe-none" />
                         </div>
                         {errors.gender && <div className="error-text">{errors.gender}</div>}
                     </div>

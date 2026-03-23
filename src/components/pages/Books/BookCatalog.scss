@@ -9,13 +9,13 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            color: #6b7280;
+            color: #40434c;
             margin-bottom: 8px;
         }
 
         .custom-input, .custom-select {
-            background-color: #f8fafc;
-            border: 2px solid #f1f5f9;
+            //background-color: #f8fafc;
+            border: 2px solid rgba(184, 187, 189, 0.32);
             border-radius: 12px;
             padding: 10px 15px;
             transition: all 0.3s ease;
