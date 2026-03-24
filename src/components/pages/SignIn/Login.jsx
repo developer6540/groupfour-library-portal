@@ -111,7 +111,7 @@ export default function Login() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate>
-                {/* User Code */
+                {/* User Code */}
                 <div className="mb-3">
                     <label htmlFor="usercode" className="form-label small fw-semibold text-secondary">
                         User Code *
