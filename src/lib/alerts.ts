@@ -59,4 +59,24 @@ export const alerts = {
             style: baseStyle
         });
     },
+
+    confirm: (message: string, description: string, onConfirm: () => void) => {
+        toast(message, {
+            description,
+            duration: Infinity, // Toast stays until user clicks
+            style: {
+                ...baseStyle,
+                border: '5px solid #6e5bd8', // Indigo border for confirmation
+            },
+            action: {
+                label: "Confirm",
+                onClick: () => onConfirm(),
+            },
+            // The cancel button is built into sonner's 'cancel' property
+            cancel: {
+                label: "Cancel",
+                onClick: () => {}, // Closes toast by default
+            },
+        });
+    },
 };

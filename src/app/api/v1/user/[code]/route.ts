@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import {getUserByCode} from "@/services/user.service";
 import {errorResponse, successResponse} from "@/lib/response";
 import Logger from "@/lib/logger";
+import {getUserByCode} from "@/services/user.service";
 
 export async function GET(request: NextRequest, context: { params: Promise<{ code: string }> }) {
     const { code } = await context.params;
     try {
-        const user = await getUserByCode(code);
-        return NextResponse.json(successResponse(user, "User retrieved successfully"));
+        const dashboardData = await getUserByCode(code);
+        return NextResponse.json(
+            successResponse(dashboardData, "Dashboard statistics retrieved successfully")
+        );
     } catch (error: any) {
-        Logger.error("API Error (getUserByCode): ", error);
-        return NextResponse.json(errorResponse(error.message, error.status || 500), {
-            status: error.status || 500,
-        });
+        const status = error.status || 500;
+        Logger.error(`API Error (getDashboardCounts) for code ${code}: `, error);
+        return NextResponse.json(
+            errorResponse(error.message || "Internal Server Error", status),
+            { status }
+        );
     }
 }

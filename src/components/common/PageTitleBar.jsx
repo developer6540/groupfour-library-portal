@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './PageTitleBar.scss';
-import {getCurrentTime} from "@/lib/utility";
+import {getCurrentTime} from "@/lib/client-utility";
 
 export default function PageTitleBar({ title }) {
 
@@ -22,7 +22,7 @@ export default function PageTitleBar({ title }) {
     }, []);
 
     return (
-        <div className="pg-title-bar d-flex align-items-center justify-content-between mb-4">
+        <div style={{marginTop:"60px"}} className="pg-title-bar d-flex align-items-center justify-content-between mb-4">
             <div className="pg-title">{title}</div>
             <div className="pg-time">{currentTime}</div>
         </div>

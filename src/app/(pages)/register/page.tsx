@@ -28,7 +28,8 @@ export default function RegisterPage() {
                         />
 
                         {/* Content */}
-                        <div className="position-relative text-center text-lg-start h-100 d-flex flex-column justify-content-center z-index-2">
+                        <div
+                            className="position-relative text-center text-lg-start h-100 d-flex flex-column justify-content-center z-index-2">
                             <img
                                 src="/img/logo-white.png"
                                 width={200}
@@ -38,21 +39,24 @@ export default function RegisterPage() {
 
                             <h1 className="text-white fw-bold mb-3">
                                 Welcome Back to Your
-                                <span className="d-block" style={{ color: "#a59cfa" }}>
+                                <span className="d-block" style={{color: "#a59cfa"}}>
                                    Literary Haven
                                 </span>
                             </h1>
 
-                            <p className="text-white fs-5 mb-4" style={{ opacity: "0.80" }}>
-                                Create your account today to discover amazing books, connect with like-minded readers, and start building your own personalized library.
+                            <p className="text-white fs-5 mb-4" style={{opacity: "0.80"}}>
+                                Create your account today to discover amazing books, connect with like-minded readers,
+                                and start building your own personalized library.
                             </p>
                         </div>
                     </div>
 
                     {/* RIGHT SIDE */}
-                    <div className="col-12 col-lg-6 d-flex align-items-center bg-rgt-container justify-content-center p-4 p-md-5">
-                        <div className="w-100" style={{ maxWidth: "520px" }}>
-                            <Register />
+                    <div className="col-12 col-lg-6 d-flex flex-column vh-100 bg-rgt-container p-4 p-md-5" style={{ position: 'relative' }}>
+                        <div className="w-100 pe-sm-4 d-flex justify-content-center overflow-y-auto overflow-x-hidden flex-grow-1">
+                            <div className="w-100" style={{ maxWidth: "520px" }}>
+                                <Register />
+                            </div>
                         </div>
                     </div>
 

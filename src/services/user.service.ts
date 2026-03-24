@@ -1,6 +1,7 @@
 import {getDbConnection} from "@/lib/db";
 import {throwException} from "@/lib/exceptions";
 import { hashPassword, verifyPassword } from "@/lib/passwordHasher";
+import {getDateISO} from "@/lib/server-utility";
 
 export async function getUserByCode(code: string) {
     const userCode = code;
@@ -25,7 +26,6 @@ export async function getUserByCode(code: string) {
 
     } catch (error: unknown) {
         if (error instanceof Error) {
-            // Optional: if your Error has a custom status property
             const status = (error as any).status || 500;
             throwException(error.message, status);
         } else if (typeof error === "string") {
@@ -53,7 +53,7 @@ export async function updateUserByCode(code: string, data: UpdateUserInput) {
         const pool = await getDbConnection();
 
         const uName = data.U_NAME ? `'${data.U_NAME.replace(/'/g, "''")}'` : "NULL";
-        const uDob = data.U_DOB ? `'${new Date(data.U_DOB).toISOString()}'` : "NULL";
+        const uDob = data.U_DOB ? `'${await getDateISO(data.U_DOB)}'` : "NULL";
         const uGender = data.U_GENDER ? `'${data.U_GENDER}'` : "NULL";
         const uAddress = data.U_ADDRESS ? `'${data.U_ADDRESS.replace(/'/g, "''")}'` : "NULL";
         const uMobile = data.U_MOBILE ? `'${data.U_MOBILE}'` : "NULL";
@@ -66,7 +66,6 @@ export async function updateUserByCode(code: string, data: UpdateUserInput) {
                            U_GENDER  = ${uGender},
                            U_ADDRESS = ${uAddress},
                            U_MOBILE  = ${uMobile},
-                           U_NIC     = ${uNic},
                            U_EMAIL   = ${uEmail},
                            M_DATE    = GETDATE()
                        WHERE U_CODE = '${code}'
@@ -138,5 +137,86 @@ export async function changePassword(code: string, data: { currentPassword?: str
 
     } catch (error: any) {
         throwException(error.message || "Failed to change password", error.status || 500);
+    }
+}
+
+interface ReservationInput {
+    BR_USERCODE: string | number;
+    BR_BOOKCODE: string;
+    BR_QTY: number;
+    BR_HOLD_DAYS: number;
+    BR_REMARK?: string;
+    BR_BORROW_LINENO: number;
+}
+
+export async function reserveBook(reservations: ReservationInput[]) {
+
+    if (!reservations || reservations.length === 0) {
+        throwException("No reservation data provided", 400);
+    }
+
+    const pool = await getDbConnection();
+
+    const transaction = pool.transaction();
+
+    try {
+        await transaction.begin();
+
+        for (const item of reservations) {
+            // Validate hold days (max 3 as per your requirement)
+            const holdDays = Math.min(item.BR_HOLD_DAYS, 3);
+
+            // Calculate expiry date (Request Date + Hold Days)
+            const expiresOn = new Date();
+            expiresOn.setDate(expiresOn.getDate() + holdDays);
+
+            const request = transaction.request();
+
+            request.input('userCode', item.BR_USERCODE);
+            request.input('bookCode', item.BR_BOOKCODE);
+            request.input('qty', item.BR_QTY);
+            request.input('holdDays', holdDays);
+            request.input('expiresOn', expiresOn);
+            request.input('remark', item.BR_REMARK || "");
+            request.input('lineNo', item.BR_BORROW_LINENO);
+
+            const query = `
+                INSERT INTO T_TBLBOOKRESERVATIONS (
+                    BR_USERCODE, 
+                    BR_BOOKCODE,
+                    BR_LOCCODE,
+                    BR_QTY, 
+                    BR_HOLD_DAYS, 
+                    BR_REQ_DATE, 
+                    BR_REMARK, 
+                    M_DATE, 
+                    BR_PROC_BY, 
+                    BR_PROC_AT, 
+                    BR_BORROW_LINENO
+                )
+                VALUES (
+                    @userCode, 
+                    @bookCode,
+                    '00001', 
+                    @qty, 
+                    @holdDays, 
+                    GETDATE(), 
+                    @remark, 
+                    GETDATE(), 
+                    @userCode, 
+                    GETDATE(), 
+                    @lineNo
+                )
+            `;
+
+            await request.query(query);
+        }
+
+        await transaction.commit();
+        return { success: true, message: "Reservations created successfully" };
+
+    } catch (error: any) {
+        if (transaction) await transaction.rollback();
+        throwException(error.message || "Failed to process reservations", 500);
     }
 }

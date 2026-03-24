@@ -4,7 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./BookCatalog.scss";
 import Pagination from "@/components/common/Pagination";
 import { useDataContext } from "@/lib/dataContext";
-import { capitalizeFirstLetter } from "@/lib/utility";
+import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
+import { alerts } from "@/lib/alerts";
+import {getUserCode, getUserInfo} from "@/lib/server-utility";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -21,7 +23,7 @@ export default function BookCatalog() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedBook, setSelectedBook] = useState(null);
 
-    const { globalData } = useDataContext();
+    const { getGlobalData, getGlobalDataCart, setGlobalDataCart } = useDataContext();
 
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
@@ -35,24 +37,53 @@ export default function BookCatalog() {
 
     const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
-    // Helper to get dynamic cover image logic in one place
     const getCoverData = (bookCode) => {
-        const coverNum = (Math.abs(parseInt(bookCode)) % 3) + 1;
+        const numericId = parseInt(bookCode?.replace(/\D/g, '')) || 0;
+        const coverNum = (numericId % 10) + 1;
         return `/img/book-covers/book-cover-${coverNum}.png`;
     };
 
+    const renderStars = (rating = 0) => (
+        <div className="star-rating">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <i key={star} className={`bi ${star <= rating ? 'bi-star-fill' : 'bi-star'}`}></i>
+            ))}
+            <span className="rating-text">({rating})</span>
+        </div>
+    );
+
+    // --- NEW: PAGE CHANGE HANDLER ---
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        // Smoothly scroll to the top of the catalog when page changes
+        const catalogTop = document.querySelector(".book-catalog");
+        if (catalogTop) {
+            catalogTop.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
+
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch("/api/v1/category/list");
-                const result = await response.json();
-                if (response.ok && result.data) setCategories(result.data || []);
-            } catch (error) {
-                console.error("Error fetching categories:", error);
+        if (getGlobalData) {
+            setTitleInput(getGlobalData);
+            setFilters(prev => ({ ...prev, title: getGlobalData }));
+        }
+    }, [getGlobalData]);
+
+
+    const fetchCategories = useCallback(async () => {
+        try {
+            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`);
+            const result = await response.json();
+
+            if (response.ok && result.data) {
+                setCategories(result.data || []);
             }
-        };
-        fetchCategories();
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
     }, []);
+
+    useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
     const fetchBooks = useCallback(async () => {
         setIsLoading(true);
@@ -62,17 +93,15 @@ export default function BookCatalog() {
                 author: debouncedFilters.author,
                 isbn: debouncedFilters.isbn,
                 category: debouncedFilters.category,
+                userCode: await getUserCode(),
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
-            const response = await fetch(`/api/v1/book/list?${queryParams.toString()}`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/book/list?${queryParams.toString()}`);
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);
                 setTotalBooks(result.data.total || 0);
-            } else {
-                setBooks([]);
-                setTotalBooks(0);
             }
         } catch (error) {
             console.error("Error fetching books:", error);
@@ -81,197 +110,219 @@ export default function BookCatalog() {
         }
     }, [debouncedFilters, currentPage]);
 
-    useEffect(() => {
-        fetchBooks();
-    }, [fetchBooks]);
+    useEffect(() => { fetchBooks(); }, [fetchBooks]);
 
     useEffect(() => {
         const handler = setTimeout(() => setDebouncedFilters(filters), 500);
         return () => clearTimeout(handler);
     }, [filters]);
 
-    useEffect(() => setCurrentPage(1), [debouncedFilters]);
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedFilters]);
 
     const clearFilters = () => {
-        setTitleInput("");
-        setAuthorInput("");
-        setIsbnInput("");
-        setCategoryInput("");
+        setTitleInput(""); setAuthorInput(""); setIsbnInput(""); setCategoryInput("");
         setFilters({ title: "", author: "", isbn: "", category: "" });
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleViewBook = async (book) => {
         setSelectedBook(book);
         const modalEl = document.getElementById("bookDetailModal");
         if (!modalEl) return;
-
-        try {
-            const bootstrap = await loadBootstrap();
-            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modalInstance.show();
-        } catch (err) {
-            console.error("Error showing Bootstrap modal", err);
-        }
+        const bootstrap = await loadBootstrap();
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     };
 
-    const hasFilters = titleInput || authorInput || isbnInput || categoryInput;
+    const handleAddToCart = async (book, e) => {
+
+        const user = await getUserInfo();
+        const userData = typeof user === "string" ? JSON.parse(user) : user;
+        const maxBorrow = userData?.U_MAXBORROW || 2;
+        const currentCart = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
+
+        if (currentCart.some(item => item.B_CODE === book.B_CODE)) {
+            alerts.warning("Already in your cart.");
+            return;
+        }
+        if (currentCart.length >= maxBorrow) {
+            alerts.error(`Limit reached! Max ${maxBorrow} books.`);
+            return;
+        }
+
+        animateToCart(e);
+
+        setGlobalDataCart([...currentCart, book]);
+    };
+
+    const animateToCart = (event) => {
+        const cart = document.getElementById("cart-icon");
+
+        const card = event.target.closest(".book-card");
+        const img = card.querySelector(".book-image");
+
+        const imgRect = img.getBoundingClientRect();
+        const cartRect = cart.getBoundingClientRect();
+
+        const clone = img.cloneNode(true);
+
+        clone.style.position = "fixed";
+        clone.style.top = `${imgRect.top}px`;
+        clone.style.left = `${imgRect.left}px`;
+        clone.style.width = `${imgRect.width}px`;
+        clone.style.height = `${imgRect.height}px`;
+        clone.style.zIndex = "20000";
+        clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+        clone.style.pointerEvents = "none";
+        clone.style.filter = "blur(5px)";
+
+        document.body.appendChild(clone);
+
+        requestAnimationFrame(() => {
+            clone.style.top = `${cartRect.top}px`;
+            clone.style.left = `${cartRect.left}px`;
+            clone.style.width = "40px";
+            clone.style.height = "40px";
+            clone.style.opacity = "0";
+            clone.style.borderRadius = "20%";
+        });
+
+        setTimeout(() => {
+            clone.remove();
+            cart.classList.add("cart-bounce");
+            setTimeout(() => cart.classList.remove("cart-bounce"), 300);
+        }, 700);
+    };
+
     const totalPages = Math.ceil(totalBooks / booksPerPage) || 1;
 
     return (
-        <div className="book-catalog container py-4">
+        <div className="book-catalog container py-4" style={{ scrollMarginTop: '20px' }}>
             {/* SEARCH PANEL */}
             <div className="search-panel p-4 mb-5 bg-white shadow-sm rounded">
                 <div className="row g-3 align-items-end">
                     <div className="col-md-3">
-                        <label className="form-label small fw-bold">Title</label>
-                        <input type="text" className="form-control custom-input" placeholder="Book title..."
-                               value={titleInput} onChange={(e) => {
-                            setTitleInput(e.target.value);
-                            setFilters(prev => ({ ...prev, title: e.target.value }));
-                        }} />
+                        <label className="form-label small fw-bold text-uppercase">Title</label>
+                        <input type="text" className="form-control custom-input" placeholder="Search title..." value={titleInput} onChange={(e) => { setTitleInput(e.target.value); setFilters(prev => ({ ...prev, title: e.target.value })); }} />
                     </div>
                     <div className="col-md-3">
-                        <label className="form-label small fw-bold">Author</label>
-                        <input type="text" className="form-control custom-input" placeholder="Author name..."
-                               value={authorInput} onChange={(e) => {
-                            setAuthorInput(e.target.value);
-                            setFilters(prev => ({ ...prev, author: e.target.value }));
-                        }} />
+                        <label className="form-label small fw-bold text-uppercase">Author</label>
+                        <input type="text" className="form-control custom-input" placeholder="Search author..." value={authorInput} onChange={(e) => { setAuthorInput(e.target.value); setFilters(prev => ({ ...prev, author: e.target.value })); }} />
                     </div>
                     <div className="col-md-2">
-                        <label className="form-label small fw-bold">ISBN</label>
-                        <input type="text" className="form-control custom-input" placeholder="ISBN..." value={isbnInput}
-                               onChange={(e) => {
-                                   setIsbnInput(e.target.value);
-                                   setFilters(prev => ({ ...prev, isbn: e.target.value }));
-                               }} />
+                        <label className="form-label small fw-bold text-uppercase">ISBN</label>
+                        <input type="text" className="form-control custom-input" placeholder="ISBN..." value={isbnInput} onChange={(e) => { setIsbnInput(e.target.value); setFilters(prev => ({ ...prev, isbn: e.target.value })); }} />
                     </div>
                     <div className="col-md-2">
-                        <label className="form-label small fw-bold">Category</label>
-                        <select className="form-select custom-select" value={categoryInput} onChange={(e) => {
-                            setCategoryInput(e.target.value);
-                            setFilters(prev => ({ ...prev, category: e.target.value }));
-                        }}>
+                        <label className="form-label small fw-bold text-uppercase">Category</label>
+                        <select className="form-select custom-select" value={categoryInput} onChange={(e) => { setCategoryInput(e.target.value); setFilters(prev => ({ ...prev, category: e.target.value })); }}>
                             <option value="">All</option>
                             {categories.map(cat => <option key={cat.BC_CODE} value={cat.BC_CODE}>{cat.BC_NAME}</option>)}
                         </select>
                     </div>
                     <div className="col-md-2">
-                        <button className="btn btn-danger w-100 search-btn" onClick={clearFilters} disabled={!hasFilters}>
-                            <i className="bi bi-eraser"></i>&nbsp;Clear
+                        <button className="btn btn-danger w-100 search-btn" onClick={clearFilters} disabled={!titleInput && !authorInput && !isbnInput && !categoryInput}>
+                            <i className="bi bi-eraser"></i> Clear
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* BOOK GRID */}
-            <div className="row g-4">
-                {isLoading ? (
-                    <div className="col-12 text-center py-5">
-                        <div className="spinner-border text-purple" role="status"></div>
-                    </div>
-                ) : books.length > 0 ? (
+            <div className="row g-4 position-relative">
+                {isLoading && (
+                    <div className="col-12 text-center py-5"><div className="spinner-border text-purple"></div></div>
+                )}
+                {!isLoading && books.length > 0 ? (
                     books.map(book => (
                         <div key={book.B_CODE} className="col-lg-4 col-md-6">
                             <div className="book-card">
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
                                 <div className="book-overlay">
-                                    <button className="action-btn cart-btn"><i className="bi bi-cart-fill"></i></button>
-                                    <button className="action-btn view-btn" onClick={() => handleViewBook(book)}>
-                                        <i className="bi bi-eye-fill"></i>
-                                    </button>
+                                    <button className="action-btn cart-btn"
+                                            onClick={(e) => {
+                                                handleAddToCart(book, e);
+                                            }}>
+                                        <i className="bi bi-cart-fill"></i></button>
+                                    <button className="action-btn view-btn" onClick={() => handleViewBook(book)}><i className="bi bi-eye-fill"></i></button>
                                 </div>
-                                <div className="book-image-container category-icon-container"
-                                     style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
+                                <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
-                                        <div className="top-title-container">
-                                            <div className="top-title">{safeCap(book.B_TITLE)}</div>
-                                        </div>
+                                        <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
+                                    <p className="book-stock">{book.TOTAL_AVAILABLE_QTY}</p>
                                 </div>
                                 <div className="book-info">
                                     <p className="book-title">{safeCap(book.B_TITLE)}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
-                                    <span className="badge-category">{safeCap(book.B_CATEGORY)}</span>
+                                    {renderStars(0)}
+                                    <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
                                 </div>
                             </div>
                         </div>
                     ))
-                ) : (
+                ) : !isLoading && (
                     <div className="col-12 text-center py-5">
-                        <i className="bi bi-search text-muted mb-3" style={{ fontSize: "30px", display: "block" }}></i>
-                        <h4 className="fw-bold m-3 text-muted">No books found</h4>
-                        <button className="btn btn-outline-dark btn-sm" onClick={clearFilters}>Clear filters</button>
+                        <div className="fw-bold" style={{fontSize:"50px", marginBottom:"-10px", color:"#b3b3b3"}}><i className="bi bi-book"></i></div>
+                        <div className="fw-bold" style={{fontSize:"20px", color:"#b3b3b3"}}>Books Not Found</div>
                     </div>
                 )}
             </div>
 
             {books.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
 
-            {/* MODAL */}
+            {/* CLEAN & MINIMALIST DETAIL MODAL */}
             <div className="modal fade" id="bookDetailModal" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-lg">
-                    <div className="modal-content border-0 shadow">
-                        <div className="modal-header bg-purple">
-                            <h5 className="modal-title text-white fw-bold">Book Details</h5>
-                        </div>
-                        <div className="modal-body p-4">
+                    <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div className="modal-body p-0">
                             {selectedBook && (
-                                <div className="row align-items-center">
-                                    <div className="col-md-4 text-center mb-3 mb-md-0">
-                                        <div className="book-image-container category-icon-container"
-                                             style={{ backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
+                                <div className="row g-0">
+                                    <div className="col-md-5 d-none d-md-flex align-items-center justify-content-center p-5 bg-light-purple">
+                                        <div className="book-image-container category-icon-container book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
                                             <div className="inner-cover-content">
-                                                <div className="top-title-container">
-                                                    <div className="top-title">{safeCap(selectedBook.B_TITLE)}</div>
-                                                </div>
+                                                <div className="top-title-container"><div className="top-title">{safeCap(selectedBook.B_TITLE)}</div></div>
                                                 <div className="mid-icon"><i className="bi bi-book"></i></div>
                                                 <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-md-8">
-                                        <h3 className="fw-bold text-purple">{safeCap(selectedBook.B_TITLE)}</h3>
-                                        <p className="text-muted mb-4">By {safeCap(selectedBook.B_AUTHOR)}</p>
-                                        <table className="table table-sm table-borderless">
-                                            <tbody>
-                                            <tr>
-                                                <td className="fw-bold" style={{ width: "100px" }}>ISBN:</td>
-                                                <td>{selectedBook.B_ISBN}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="fw-bold">Category:</td>
-                                                <td><span className="badge bg-info text-dark">{safeCap(selectedBook.B_CATEGORY)}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td className="fw-bold">Publisher:</td>
-                                                <td>{safeCap(selectedBook.B_PUBLISHER) || "N/A"}</td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <div className="row g-2 mt-4">
-                                            <div className="col-6">
-                                                <button
-                                                    className="btn btn-purple text-white shadow-sm py-2 w-100"
-                                                    style={{ backgroundColor: '#6f42c1', fontWeight: '600' }}
-                                                >
-                                                    <i className="bi bi-cart-plus-fill me-2"></i> Add to Cart
-                                                </button>
+
+                                    <div className="col-md-7 p-4 p-lg-5">
+                                        <div className="d-flex flex-column h-100">
+                                            <div className="mb-4">
+                                                <span className="badge-minimal mb-2">{safeCap(selectedBook.B_CATEGORY)}</span>
+                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{safeCap(selectedBook.B_TITLE)}</h3>
+                                                <p className="text-muted mb-3">by <span className="text-dark fw-medium">{safeCap(selectedBook.B_AUTHOR)}</span></p>
+                                                <div className="detail-rating-wrap">{renderStars(0)}</div>
                                             </div>
-                                            <div className="col-6">
+
+                                            <div className="specs-grid mb-auto">
+                                                <div className="spec-row">
+                                                    <span className="label">ISBN-13</span>
+                                                    <span className="value">{selectedBook.B_ISBN}</span>
+                                                </div>
+                                                <div className="spec-row">
+                                                    <span className="label">Publisher</span>
+                                                    <span className="value text-truncate ms-2">{safeCap(selectedBook.B_PUBLISHER) || "N/A"}</span>
+                                                </div>
+                                                <div className="spec-row">
+                                                    <span className="label">Available Stock</span>
+                                                    <span className="value fw-semibold">{selectedBook.TOTAL_AVAILABLE_QTY}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="modal-action-row d-flex gap-2 mt-4">
                                                 <button
-                                                    type="button"
-                                                    className="btn btn-secondary py-2 w-100"
-                                                    data-bs-dismiss="modal"
-                                                    style={{ fontWeight: '500' }}
-                                                >
+                                                    onClick={(e) => {
+                                                        handleAddToCart(selectedBook, e);
+                                                    }} className="btn btn-dark-minimal flex-grow-1 py-2">
+                                                    Add to Cart
+                                                </button>
+                                                <button className="btn btn-outline-dark px-4 py-2" data-bs-dismiss="modal">
                                                     Close
                                                 </button>
                                             </div>

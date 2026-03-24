@@ -1,5 +1,9 @@
-import {getSession, setSession} from "@/lib/session";
+'use client'
+
 import moment from "moment";
+import {getCsrfToken} from "@/lib/session-client";
+import {alerts} from "@/lib/alerts";
+import {useEffect, useRef} from "react";
 
 export function getBaseUrl(){
     return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -80,36 +84,63 @@ export function deleteCookie(name: string){
     document.cookie = `${name}=; Max-Age=0; path=/`;
 };
 
-export async function updateLoggedUser(user: any, id: string): Promise<any | null> {
-    try {
-        // Return session user if already provided
-        if (!user) {
-            const sessionUser = await getSession("user-info");
-            if (sessionUser) {
-                return JSON.parse(sessionUser);
+export function useIdleLogout() {
+
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isLoggingOut = useRef(false);
+    const IDLE_TIME = 5 * 60 * 1000; // 5 min
+
+    useEffect(() => {
+
+        const logout = async () => {
+
+            if (isLoggingOut.current) return;
+            isLoggingOut.current = true;
+
+            try {
+                const res = await fetch(`${getBaseUrl()}/api/v1/auth/logout`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": getCsrfToken() || "",
+                    },
+                });
+
+                if (res.ok) {
+                    alerts.warning("Sorry! Session Expired", "Please login again....", 3000);
+                } else {
+                    console.log("Logout Failed");
+                }
+
+            } catch (error) {
+                console.log("Logout Error");
+            } finally {
+                setTimeout(() => {
+                    window.location.href = "/sign-in";
+                }, 3000);
             }
-        }
+        };
 
-        // Fetch latest user from API
-        const response = await fetch(`${getBaseUrl()}/api/v1/user/${id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
+        const resetTimer = () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(logout, IDLE_TIME);
+            console.log(IDLE_TIME);
+        };
 
-        if (!response.ok) {
-            console.error(`Failed to fetch user ${id}: ${response.status} ${response.statusText}`);
-            return null;
-        }
+        const events = ["mousemove", "keydown", "click", "scroll"];
 
-        const data = await response.json();
-        const currentUser = data.data;
+        events.forEach(event =>
+            window.addEventListener(event, resetTimer)
+        );
 
-        // Update session
-        await setSession("user-info", JSON.stringify(currentUser));
+        resetTimer();
 
-        return currentUser;
-    } catch (error) {
-        console.error("Update Logged User error:", error);
-        return null;
-    }
+        return () => {
+            events.forEach(event =>
+                window.removeEventListener(event, resetTimer)
+            );
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+
+    }, []);
 }
