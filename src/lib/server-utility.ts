@@ -66,3 +66,33 @@ export async function setUserInfo(updatedData: any) {
         };
     }
 }
+
+export async function generateStrongPassword(length: number = 10) {
+
+    if (length < 8) length = 8;
+    if (length > 20) length = 20;
+
+    const lower = "abcdefghijklmnopqrstuvwxyz";
+    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numbers = "0123456789";
+    const specials = "!@#$%^&*()_+";
+
+    const all = lower + upper + numbers + specials;
+
+    // Ensure required characters
+    let password = [
+        upper[Math.floor(Math.random() * upper.length)],
+        numbers[Math.floor(Math.random() * numbers.length)],
+        specials[Math.floor(Math.random() * specials.length)]
+    ];
+
+    // Fill remaining length
+    for (let i = password.length; i < length; i++) {
+        password.push(all[Math.floor(Math.random() * all.length)]);
+    }
+
+    // Shuffle to avoid predictable pattern
+    password = password.sort(() => Math.random() - 0.5);
+
+    return password.join("");
+}
