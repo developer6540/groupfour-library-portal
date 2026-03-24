@@ -24,10 +24,10 @@ export function forgotPasswordEmailTemplate(params: {
                 .container{
                     max-width: 600px;
                     margin: 30px auto;
-                    background: #fcfcfc;
+                    background: #efeefd7d;
                     border-radius: 31px;
                     padding: 30px;
-                    border: 10px solid #cccccc42;
+                    border: 10px solid #655cc8;
                 }
                 .logo {
                     display: block;
