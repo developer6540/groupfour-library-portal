@@ -29,7 +29,6 @@ const Cart = () => {
 
     // Push to Session whenever state changes
     useEffect(() => {
-        // We only save if the cart actually exists (even if empty array)
         if (getGlobalDataCart !== undefined) {
             setSessionClient("cart-items", JSON.stringify(getGlobalDataCart));
         }

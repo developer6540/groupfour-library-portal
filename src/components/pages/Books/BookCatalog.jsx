@@ -159,12 +159,8 @@ export default function BookCatalog() {
     const animateToCart = (event) => {
         const cart = document.getElementById("cart-icon");
 
-        // Use event.target.closest to find the book-card
         const card = event.target.closest(".book-card");
-        if (!card || !cart) return;
-
         const img = card.querySelector(".book-image");
-        if (!img) return;
 
         const imgRect = img.getBoundingClientRect();
         const cartRect = cart.getBoundingClientRect();
@@ -176,9 +172,10 @@ export default function BookCatalog() {
         clone.style.left = `${imgRect.left}px`;
         clone.style.width = `${imgRect.width}px`;
         clone.style.height = `${imgRect.height}px`;
-        clone.style.zIndex = "9999";
+        clone.style.zIndex = "20000";
         clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
         clone.style.pointerEvents = "none";
+        clone.style.filter = "blur(5px)";
 
         document.body.appendChild(clone);
 
@@ -188,7 +185,7 @@ export default function BookCatalog() {
             clone.style.width = "40px";
             clone.style.height = "40px";
             clone.style.opacity = "0";
-            clone.style.borderRadius = "50%";
+            clone.style.borderRadius = "20%";
         });
 
         setTimeout(() => {
@@ -250,19 +247,19 @@ export default function BookCatalog() {
                                         <i className="bi bi-cart-fill"></i></button>
                                     <button className="action-btn view-btn" onClick={() => handleViewBook(book)}><i className="bi bi-eye-fill"></i></button>
                                 </div>
-                                <div className="book-image-container category-icon-container book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
+                                <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
                                         <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
+                                    <p className="book-stock">{book.TOTAL_AVAILABLE_QTY}</p>
                                 </div>
                                 <div className="book-info">
                                     <p className="book-title">{safeCap(book.B_TITLE)}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
                                     {renderStars(0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
-                                    <p className="book-stock">{book.TOTAL_AVAILABLE_QTY}</p>
                                 </div>
                             </div>
                         </div>
