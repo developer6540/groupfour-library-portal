@@ -1,43 +1,33 @@
-import sgMail from "@sendgrid/mail";
-import { NextResponse } from "next/server";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/services/email.service";
+import { successResponse, errorResponse } from "@/lib/response";
+import Logger from "@/lib/logger";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
-        const { to, subject, html } = await req.json();
+        const body = await req.json();
+        const { to, subject, html } = body;
 
-        // Validation
         if (!to || !subject || !html) {
             return NextResponse.json(
-                { success: false, error: "Missing fields" },
+                errorResponse("Missing required fields", 400),
                 { status: 400 }
             );
         }
 
-        const msg = {
-            to,
-            from: process.env.EMAIL_FROM || '',
-            subject,
-            html,
-        };
-
-        await sgMail.send(msg);
-
-        return NextResponse.json({
-            success: true,
-            message: "Email sent successfully",
-        });
-
-    } catch (error: any) {
-        console.error("SENDGRID ERROR:", error);
+        const result = await sendEmail({ to, subject, html });
 
         return NextResponse.json(
-            {
-                success: false,
-                error: error?.response?.body || error.message,
-            },
-            { status: 500 }
+            successResponse(result, "Email sent successfully")
+        );
+
+    } catch (error: any) {
+        Logger.error("API Error (sendEmail): ", error);
+
+        return NextResponse.json(
+            errorResponse(error.message, error.status || 500),
+            { status: error.status || 500 }
         );
     }
 }

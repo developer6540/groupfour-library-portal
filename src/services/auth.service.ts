@@ -3,8 +3,13 @@ import {hashPassword, verifyPassword} from "@/lib/passwordHasher";
 import { SignJWT } from 'jose';
 import { throwException } from "@/lib/exceptions";
 import logger from "@/lib/logger";
+import {generateStrongPassword} from "@/lib/server-utility";
+import {sendEmail} from "@/services/email.service";
+import {getBaseUrl} from "@/lib/server-utility";
+import {forgotPasswordEmailTemplate} from "@/lib/emailTemplates";
 
 export async function authenticateUser(usercode: string, pass: string) {
+
     const pool = await getDbConnection();
 
     // 1. Verify Password
@@ -190,5 +195,86 @@ export async function registerUser(payload: RegisterPayload) {
         await transaction.rollback();
         logger.error("Error registering user", err);
         throwException("Failed to register user. Please try again.", 500);
+    }
+}
+
+export interface ForgotPasswordPayload {
+    U_CODE: string;
+}
+
+export async function forgotPassword(payload: ForgotPasswordPayload) {
+    const pool = await getDbConnection();
+    const { U_CODE } = payload;
+
+    if (!U_CODE) {
+        throwException("Invalid user code", 400);
+    }
+
+    const transaction = pool.transaction();
+
+    try {
+        await transaction.begin();
+
+        // 1. Check user exists
+        const userResult = await transaction.request()
+            .input("usercode", U_CODE)
+            .query(`
+                SELECT U_CODE, U_NAME, U_EMAIL, U_ACTIVE
+                FROM M_TBLUSERS
+                WHERE U_CODE = @usercode AND U_GROUP = 'USER'
+            `);
+
+        const user = userResult.recordset[0];
+
+        if (!user) {
+            throwException("User account not found", 404);
+        }
+
+        if (!user.U_ACTIVE) {
+            throwException("Your account is inactive", 400);
+        }
+
+        // 2. Generate strong temp password
+        const tempPassword = await generateStrongPassword(10);
+        const hashedPassword = hashPassword(tempPassword);
+
+        // 3. Update password
+        await transaction.request()
+            .input("usercode", U_CODE)
+            .input("password", hashedPassword)
+            .query(`
+                UPDATE M_TBLUSERS
+                SET U_PASSWORD = @password,
+                    U_FAIL_COUNT = 0,
+                    U_LOCKED = 0,
+                    U_LOCKED_AT = NULL
+                WHERE U_CODE = @usercode
+            `);
+
+        const baseUrl = await getBaseUrl();
+
+        // Send email
+        const html = forgotPasswordEmailTemplate({
+            userName: user.U_NAME,
+            tempPassword: tempPassword,
+            actionUrl: `${baseUrl}sign-in`,
+        });
+
+        await sendEmail({
+            to: user.U_EMAIL,
+            subject: "Your Temporary Password - GroupFour Library",
+            html
+        });
+
+        await transaction.commit();
+
+        return {
+            message: "Temporary password sent to your email. Please sign in and change it immediately.",
+        };
+
+    } catch (err: any) {
+        await transaction.rollback();
+        logger.error("Error in forgotPassword", err);
+        throwException(err.message || "Failed to process forgot password", err.status || 500);
     }
 }

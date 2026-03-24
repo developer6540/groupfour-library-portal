@@ -21,6 +21,7 @@ export async function middleware(req: NextRequest) {
         "/api/v1/auth/login",
         "/api/v1/auth/register",
         "/api/v1/locations",
+        "/api/v1/auth/forgot-password",
     ];
 
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));

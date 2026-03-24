@@ -4,7 +4,7 @@ const SALT_SIZE = 16;
 const HASH_SIZE = 32;
 const ITERATIONS = 10000;
 
-export function hashPassword(password) {
+export function hashPassword(password:any) {
     if (!password) {
         throw new Error("Password cannot be empty");
     }
@@ -19,7 +19,7 @@ export function hashPassword(password) {
     return `${salt.toString("base64")}:${hash.toString("base64")}`;
 }
 
-export function verifyPassword(password, storedPassword) {
+export function verifyPassword(password:any, storedPassword:any) {
 
     if (!password || !storedPassword) return false;
 
