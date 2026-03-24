@@ -81,6 +81,26 @@ input, select, textarea {
     background: #5b4cc4;
 }
 
+@keyframes rotateLoop {
+    0%   { transform: rotate(-2deg); }
+    25%  { transform: rotate(0deg); }
+    50%  { transform: rotate(2deg); }
+    75%  { transform: rotate(0deg); }
+    100% { transform: rotate(-2deg); }
+}
+
+.bk-rotate {
+    animation: rotateLoop 2s ease-in-out infinite;
+}
+
+.book-card:nth-child(odd) .bk-rotate {
+    animation-duration: 3s;
+}
+
+.book-card:nth-child(even) .bk-rotate {
+    animation-duration: 3s;
+}
+
 .cart-bounce {
     animation: cartBounce 0.3s ease;
 }

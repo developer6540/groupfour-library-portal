@@ -33,15 +33,15 @@
             border-bottom: none;
 
             .book-icon-sm {
+                color: #f5f3ff;
+                background: #6f42c1;
+                border: 5px solid rgba(111, 66, 193, 0.55);
+                border-radius: 10px;
+                justify-content: center;
+                align-items: center;
                 width: 50px;
                 height: 50px;
-                background: #f5f3ff;
-                color: #6f42c1;
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 8px;
-                border: 3px solid rgba(111, 66, 193, 0.06);
             }
 
             .small-code {
@@ -72,10 +72,10 @@
         }
 
         .row {
-            background: #fcfcff;
-            padding: 15px;
+            background: #4d4dff0f;
+            border: 1px dashed #bdbdeb;
             border-radius: 12px;
-            border: 1px dashed #e0e0ff;
+            padding: 15px;
         }
 
         .form-label-custom {
