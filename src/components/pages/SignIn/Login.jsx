@@ -9,7 +9,7 @@ import { alerts } from "@/lib/alerts";
 import { getBaseUrl } from "@/lib/client-utility";
 import { getCsrfToken } from "@/lib/session-client";
 import "./Login.scss";
-
+AAAA
 export default function Login() {
     const router = useRouter();
 
