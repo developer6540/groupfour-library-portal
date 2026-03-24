@@ -35,6 +35,15 @@ const menuItems = [
             { title: "Book List", path: "/books" },
             { title: "Reserve Book", path: "/books/reserve" }
         ]
+    },
+    {
+        title: "Borrow History",
+        icon: "bi-journal-bookmark-fill",
+        key: "borrowed-books",
+        children: [
+            { title: "Borrow Books", path: "/books/borrowed" },
+            { title: "Return Books", path: "/books/returned"  }
+        ]
     }
 ];
 

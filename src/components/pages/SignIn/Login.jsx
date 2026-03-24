@@ -8,6 +8,40 @@ import "./Login.scss"
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    const [userCode, setUserCode] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            const response = await fetch("/api/v1/auth/sign-in", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userCode, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                setError(data.message || "Invalid user code or password");
+                setLoading(false);
+                return;
+            }
+
+            // Store user session
+            localStorage.setItem("user", JSON.stringify(data.data));
+            window.location.href = "/";
+
+        } catch (err) {
+            setError("Something went wrong. Please try again.");
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="mx-auto">
@@ -29,7 +63,7 @@ export default function Login() {
                     Enter your credentials to access your account
                 </p>
             </div>
-            <form className="needs-validation" noValidate>
+            <form className="needs-validation" noValidate onSubmit={handleSubmit}>
                 {/* Email Address */}
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label small fw-semibold text-secondary">
@@ -42,11 +76,13 @@ export default function Login() {
                             size={20}
                         />
                         <input
-                            type="email"
+                            type="text"
                             id="email"
                             className="form-control rounded-3 ps-5"
                             placeholder="xxxxxxxx"
                             required
+                            value={userCode}
+                            onChange={(e) => setUserCode(e.target.value)}
                         />
                     </div>
                 </div>
@@ -81,9 +117,18 @@ export default function Login() {
                             className="form-control rounded-3 ps-5"
                             placeholder="••••••••••••"
                             required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="alert alert-danger py-2 small" role="alert">
+                        {error}
+                    </div>
+                )}
 
                 {/* Remember me */}
                 <div className="form-check mb-4">
@@ -96,10 +141,11 @@ export default function Login() {
                 {/* Submit Button */}
                 <button
                     type="submit"
+                    disabled={loading}
                     className="btn btn-purple w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                 >
                     <FaLock size={16} />
-                    Sign In
+                    {loading ? "Signing in..." : "Sign In"}
                 </button>
             </form>
 
