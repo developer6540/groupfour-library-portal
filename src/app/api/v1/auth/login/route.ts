@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
         // Success Response
         return NextResponse.json(
-            successResponse(user, "Login successful")
+            successResponse(user, "Login successful", 201)
         );
 
     } catch (error: any) {

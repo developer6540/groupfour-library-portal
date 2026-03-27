@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const updatedUser = await forgotPassword(body);
-        return NextResponse.json(successResponse(updatedUser, "Password  successfully"));
+        return NextResponse.json(successResponse(updatedUser, "Temporary password sent to your email. Please sign in and change it immediately.", 201));
     } catch (error: any) {
         Logger.error("API Error (forgotPassword): ", error);
         return NextResponse.json(errorResponse(error.message, error.status || 500), {

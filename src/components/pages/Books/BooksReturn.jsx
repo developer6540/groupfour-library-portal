@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from "react";
-import "./BookCatalog.scss";
+import "./BooksReturn.scss";
 import Pagination from "@/components/common/Pagination";
-import { useDataContext } from "@/lib/dataContext";
 import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
 import { alerts } from "@/lib/alerts";
-import {getUserCode, getUserInfo} from "@/lib/server-utility";
+import {getUserCode} from "@/lib/server-utility";
+import {getCsrfToken} from "@/lib/session-client";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -16,14 +16,12 @@ const loadBootstrap = async () => {
     return window.bootstrap;
 };
 
-export default function BookCatalog() {
+export default function BooksReturn() {
     const [books, setBooks] = useState([]);
     const [categories, setCategories] = useState([]);
     const [totalBooks, setTotalBooks] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedBook, setSelectedBook] = useState(null);
-
-    const { getGlobalData, getGlobalDataCart, setGlobalDataCart } = useDataContext();
 
     const [titleInput, setTitleInput] = useState("");
     const [authorInput, setAuthorInput] = useState("");
@@ -35,6 +33,18 @@ export default function BookCatalog() {
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 12;
 
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [subject, setSubject] = useState("");
+    const [message, setMessage] = useState("");
+    const [feedbackType, setFeedbackType] = useState("General");
+
+    const [errors, setErrors] = useState({
+        rating: "",
+        subject: "",
+        message: ""
+    });
+
     const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
     const getCoverData = (bookCode) => {
@@ -42,15 +52,6 @@ export default function BookCatalog() {
         const coverNum = (numericId % 10) + 1;
         return `/img/book-covers/book-cover-${coverNum}.png`;
     };
-
-    const renderStars = (rating = 0) => (
-        <div className="star-rating">
-            {[1, 2, 3, 4, 5].map((star) => (
-                <i key={star} className={`bi ${star <= rating ? 'bi-star-fill' : 'bi-star'}`}></i>
-            ))}
-            <span className="rating-text">({rating})</span>
-        </div>
-    );
 
     // --- NEW: PAGE CHANGE HANDLER ---
     const handlePageChange = (page) => {
@@ -61,14 +62,6 @@ export default function BookCatalog() {
             catalogTop.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     };
-
-    useEffect(() => {
-        if (getGlobalData) {
-            setTitleInput(getGlobalData);
-            setFilters(prev => ({ ...prev, title: getGlobalData }));
-        }
-    }, [getGlobalData]);
-
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -83,7 +76,9 @@ export default function BookCatalog() {
         }
     }, []);
 
-    useEffect(() => { fetchCategories(); }, [fetchCategories]);
+    useEffect(() => {
+        fetchCategories();
+    },[fetchCategories]);
 
     const fetchBooks = useCallback(async () => {
         setIsLoading(true);
@@ -97,7 +92,8 @@ export default function BookCatalog() {
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
-            const response = await fetch(`${getBaseUrl()}/api/v1/books/list?${queryParams.toString()}`);
+
+            const response = await fetch(`${getBaseUrl()}/api/v1/books/return?${queryParams.toString()}`);
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);
@@ -110,7 +106,9 @@ export default function BookCatalog() {
         }
     }, [debouncedFilters, currentPage]);
 
-    useEffect(() => { fetchBooks(); }, [fetchBooks]);
+    useEffect(() => {
+        fetchBooks();
+    },[fetchBooks]);
 
     useEffect(() => {
         const handler = setTimeout(() => setDebouncedFilters(filters), 500);
@@ -127,87 +125,140 @@ export default function BookCatalog() {
         setFilters({ title: "", author: "", isbn: "", category: "" });
     };
 
-    const handleViewBook = async (book) => {
+    const handleFeedbackView = async (book) => {
         setSelectedBook(book);
-        const modalEl = document.getElementById("bookDetailModal");
+        const modalEl = document.getElementById("bookReturnModal");
         if (!modalEl) return;
         const bootstrap = await loadBootstrap();
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
     };
 
-    const handleAddToCart = async (book, e) => {
+    // Validaiton
+    const validateFeedback = (name, value) => {
+        let error = "";
 
-        const user = await getUserInfo();
-        const userData = typeof user === "string" ? JSON.parse(user) : user;
-        const maxBorrow = userData?.U_MAXBORROW || 2;
-        const currentCart = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
-
-        if (currentCart.some(item => item.B_CODE === book.B_CODE)) {
-            alerts.warning("Already in your cart.");
-            return;
-        }
-        if (currentCart.length >= maxBorrow) {
-            alerts.error(`Limit reached! Max ${maxBorrow} books.`);
-            return;
+        if (name === "rating") {
+            if (!value || value < 1) error = "Rating is required";
         }
 
-        animateToCart(e);
+        if (name === "subject") {
+            if (!value.trim()) error = "Subject is required";
+            else if (value.trim().length < 3) error = "Minimum 3 characters required";
+            else if (value.length > 100) error = "Maximum 100 characters allowed";
+        }
 
-        setGlobalDataCart([...currentCart, book]);
+        if (name === "message") {
+            if (!value.trim()) error = "Message is required";
+            else if (value.trim().length < 10) error = "Minimum 10 characters required";
+            else if (value.length > 500) error = "Maximum 500 characters allowed";
+        }
+
+        return error;
     };
 
-    const animateToCart = (event) => {
-
-        const cart = document.getElementById("cart-icon");
-        if (!cart) return;
-
-        const sourceEl = event?.currentTarget || event?.target;
-        if (!sourceEl) return;
-
-        const card = sourceEl.closest?.(".book-card");
-        if (!card) return;
-
-        const img = card.querySelector(".book-image");
-        if (!img) return;
-
-        const imgRect = img.getBoundingClientRect();
-        const cartRect = cart.getBoundingClientRect();
-
-        const clone = img.cloneNode(true);
-
-        clone.style.position = "fixed";
-        clone.style.top = `${imgRect.top}px`;
-        clone.style.left = `${imgRect.left}px`;
-        clone.style.width = `${imgRect.width}px`;
-        clone.style.height = `${imgRect.height}px`;
-        clone.style.zIndex = "20000";
-        clone.style.pointerEvents = "none";
-        clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
-        clone.style.transform = "scale(1)";
-        clone.style.opacity = "1";
-
-        document.body.appendChild(clone);
-
-        requestAnimationFrame(() => {
-            clone.style.top = `${cartRect.top}px`;
-            clone.style.left = `${cartRect.left}px`;
-            clone.style.width = "40px";
-            clone.style.height = "40px";
-            clone.style.opacity = "0";
-            clone.style.transform = "scale(0.3)";
-        });
-
-        setTimeout(() => {
-            clone.remove();
-            cart.classList.add("cart-bounce");
-            setTimeout(() => cart.classList.remove("cart-bounce"), 300);
-        }, 700);
+    const handleRating = (value) => {
+        setRating(value);
+        setErrors(prev => ({
+            ...prev,
+            rating: validateFeedback("rating", value)
+        }));
     };
+
+    const handleSubjectChange = (e) => {
+        const value = e.target.value;
+        setSubject(value);
+        setErrors(prev => ({
+            ...prev,
+            subject: validateFeedback("subject", value)
+        }));
+    };
+
+    const handleMessageChange = (e) => {
+        const value = e.target.value;
+        setMessage(value);
+        setErrors(prev => ({
+            ...prev,
+            message: validateFeedback("message", value)
+        }));
+    };
+
+    const handleFeedback = async (selectedBook) => {
+
+        const ratingError = validateFeedback("rating", rating);
+        const subjectError = validateFeedback("subject", subject);
+        const messageError = validateFeedback("message", message);
+
+        if (ratingError || subjectError || messageError) {
+            setErrors({
+                rating: ratingError,
+                subject: subjectError,
+                message: messageError
+            });
+
+            alerts.error("Validation Error", "Please fix the errors before submitting.");
+            return;
+        }
+
+        try {
+            const payload = {
+                FB_USER_ID: await getUserCode(),
+                FB_BOOK_ID: selectedBook.B_CODE,
+                FB_TYPE: feedbackType,
+                FB_RATING: rating,
+                FB_SUBJECT: subject,
+                FB_MESSAGE: message
+            };
+
+            const res = await fetch(`${getBaseUrl()}/api/v1/feedback/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+
+                alerts.success(data.message || "Feedback submitted successfully 111!");
+
+                resetFeedbackForm();
+
+                const modalEl = document.getElementById("bookReturnModal");
+                if (modalEl && window.bootstrap) {
+                    const modalInstance = window.bootstrap.Modal.getInstance(modalEl);
+                    modalInstance?.hide();
+                }
+
+            } else {
+                alerts.error("Failed to submit feedback");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alerts.error("Something went wrong");
+        }
+    };
+
+    const resetFeedbackForm = () => {
+        setRating(0);
+        setHoverRating(0); // if you implement hover
+        setSubject("");
+        setMessage("");
+        setFeedbackType("General");
+        setErrors({ rating: "", subject: "", message: "" });
+    };
+
+    const isFeedbackInvalid =
+        errors.rating || errors.subject || errors.message ||
+        !rating || !subject || !message;
 
     const totalPages = Math.ceil(totalBooks / booksPerPage) || 1;
 
     return (
-        <div className="book-catalog container py-4" style={{ scrollMarginTop: '20px' }}>
+        <div className="book-return container py-4" style={{ scrollMarginTop: '20px' }}>
             {/* SEARCH PANEL */}
             <div className="search-panel p-4 mb-5 bg-white shadow-sm rounded">
                 <div className="row g-3 align-items-end">
@@ -244,31 +295,22 @@ export default function BookCatalog() {
                     <div className="col-12 text-center py-5"><div className="spinner-border text-purple"></div></div>
                 )}
                 {!isLoading && books.length > 0 ? (
-                    books.map((book, index) => (
-                        <div key={index} className="col-lg-4 col-md-6">
+                    books.map(book => (
+                        <div key={book.B_CODE} className="col-lg-4 col-md-6">
                             <div className="book-card">
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
-                                <div className="book-overlay">
-                                    <button className="action-btn cart-btn"
-                                            onClick={(e) => {
-                                                handleAddToCart(book, e);
-                                            }}>
-                                        <i className="bi bi-cart-fill"></i></button>
-                                    <button className="action-btn view-btn" onClick={() => handleViewBook(book)}><i className="bi bi-eye-fill"></i></button>
-                                </div>
                                 <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
                                         <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
-                                    <p className="book-stock">{book.BI_QTY}</p>
                                 </div>
                                 <div className="book-info">
-                                    <p className="book-title mt-2">{safeCap(book.B_TITLE)}</p>
+                                    <p className="book-title mt-3">{safeCap(book.B_TITLE)}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
-                                    {renderStars(0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
+                                    <button  className="btn btn-sm shadow-sm fw-bold btn-feedback mt-3" onClick={() => handleFeedbackView(book)}><i className="bi bi-star"></i> Add Feedback</button>
                                 </div>
                             </div>
                         </div>
@@ -284,7 +326,7 @@ export default function BookCatalog() {
             {books.length > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
 
             {/* CLEAN & MINIMALIST DETAIL MODAL */}
-            <div className="modal fade" id="bookDetailModal" tabIndex="-1" aria-hidden="true">
+            <div className="modal fade" id="bookReturnModal" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-lg">
                     <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                         <div className="modal-body p-0">
@@ -303,41 +345,88 @@ export default function BookCatalog() {
                                     <div className="col-md-7 p-4 p-lg-5">
                                         <div className="d-flex flex-column h-100">
                                             <div className="mb-4">
-                                                <span className="badge-minimal mb-2">{safeCap(selectedBook.B_CATEGORY)}</span>
-                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{safeCap(selectedBook.B_TITLE)}</h3>
-                                                <p className="text-muted mb-3">by <span className="text-dark fw-medium">{safeCap(selectedBook.B_AUTHOR)}</span></p>
-                                                <div className="detail-rating-wrap">{renderStars(0)}</div>
+                                                <h5 className="fw-bold text-dark mb-1 lh-sm">Add Your Feedback</h5>
                                             </div>
 
-                                            <div className="specs-grid mb-auto">
-                                                <div className="spec-row">
-                                                    <span className="label">ISBN-13</span>
-                                                    <span className="value">{selectedBook.B_ISBN}</span>
+                                            <div className="feedback-form" style={{height:"250px", overflowY:"scroll", paddingRight:"20px"}}>
+
+                                                {/* RATING */}
+                                                <div className="mb-3">
+                                                    <div className={`star-rating ${errors.rating ? 'is-invalid' : ''} text-center`}>
+                                                        {[1,2,3,4,5].map(num => (
+                                                            <i
+                                                                key={num}
+                                                                className={`bi ${num <= (hoverRating || rating) ? "bi-star-fill" : "bi-star"}`}
+                                                                onClick={() => handleRating(num)}
+                                                                onMouseEnter={() => setHoverRating(num)}
+                                                                onMouseLeave={() => setHoverRating(0)}
+                                                                style={{ cursor: "pointer" }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    {errors.rating && <div className="error-text">{errors.rating}</div>}
                                                 </div>
-                                                <div className="spec-row">
-                                                    <span className="label">Publisher</span>
-                                                    <span className="value text-truncate ms-2">{safeCap(selectedBook.B_PUBLISHER) || "N/A"}</span>
+
+                                                {/* TYPE */}
+                                                <div className="mb-3">
+                                                    <label className="form-label">Feedback Type</label>
+                                                    <select
+                                                        className="form-select"
+                                                        value={feedbackType}
+                                                        onChange={(e) => setFeedbackType(e.target.value)}
+                                                    >
+                                                        <option value="General">General</option>
+                                                        <option value="Complaint">Complaint</option>
+                                                        <option value="Issue">Issue</option>
+                                                        <option value="Suggestion">Suggestion</option>
+                                                    </select>
                                                 </div>
-                                                <div className="spec-row">
-                                                    <span className="label">Available Stock</span>
-                                                    <span className="value fw-semibold">{selectedBook.BI_QTY}</span>
+
+                                                {/* SUBJECT */}
+                                                <div className="mb-3">
+                                                    <label className="form-label">Subject *</label>
+                                                    <input
+                                                        type="text"
+                                                        className={`form-control ${errors.subject ? 'is-invalid' : ''}`}
+                                                        value={subject}
+                                                        onChange={handleSubjectChange}
+                                                        placeholder="Enter subject"
+                                                    />
+                                                    {errors.subject && <div className="error-text">{errors.subject}</div>}
                                                 </div>
+
+                                                {/* MESSAGE */}
+                                                <div className="mb-3">
+                                                    <label className="form-label">Message *</label>
+                                                    <textarea
+                                                        className={`form-control ${errors.message ? 'is-invalid' : ''}`}
+                                                        rows={3}
+                                                        value={message}
+                                                        onChange={handleMessageChange}
+                                                        placeholder="Write your feedback..."
+                                                    />
+                                                    {errors.message && <div className="error-text">{errors.message}</div>}
+                                                </div>
+
                                             </div>
 
                                             <div className="modal-action-row d-flex gap-2 mt-4">
                                                 <button
-                                                    onClick={(e) => {
-                                                        handleAddToCart(selectedBook, e);
-                                                    }} className="btn btn-dark-minimal flex-grow-1 py-2">
-                                                    Add to Cart
+                                                    disabled={isFeedbackInvalid}
+                                                    onClick={() => handleFeedback(selectedBook)}
+                                                    className="btn btn-purple flex-grow-1 py-2"
+                                                >
+                                                    Submit Feedback
                                                 </button>
-                                                <button className="btn btn-outline-dark px-4 py-2" data-bs-dismiss="modal">
+                                                <button className="btn btn-outline-dark px-4 py-2" onClick={resetFeedbackForm} data-bs-dismiss="modal">
                                                     Close
                                                 </button>
                                             </div>
+
+                                            </div>
+
                                         </div>
                                     </div>
-                                </div>
                             )}
                         </div>
                     </div>

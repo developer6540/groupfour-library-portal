@@ -8,7 +8,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ code: s
     try {
         const body = await req.json();
         const updatedUser = await updateUserByCode(code, body);
-        return NextResponse.json(successResponse(updatedUser, "User updated successfully"));
+        return NextResponse.json(successResponse(updatedUser, "User updated successfully", 201));
     } catch (error: any) {
         Logger.error("API Error (updateUserByCode): ", error);
         return NextResponse.json(errorResponse(error.message, error.status || 500), {

@@ -9,67 +9,145 @@ import {getBaseUrl} from "@/lib/server-utility";
 import {forgotPasswordEmailTemplate} from "@/lib/emailTemplates";
 
 export async function authenticateUser(usercode: string, pass: string) {
-
     const pool = await getDbConnection();
 
-    // 1. Verify Password
+    // 1. Fetch stored password, fail count, and lock status
     const authResult = await pool.request()
         .input("usercode", usercode)
-        .query(`SELECT U_PASSWORD FROM [LibraryMS].[dbo].[M_TBLUSERS] WHERE U_GROUP = 'USER' AND U_CODE = @usercode`);
+        .query(`
+            SELECT U_PASSWORD, U_FAIL_COUNT, U_LOCKED
+            FROM M_TBLUSERS
+            WHERE U_GROUP = 'USER' AND U_CODE = @usercode
+        `);
 
     const storedAuth = authResult.recordset[0];
 
-    // Check if user exists at all
     if (!storedAuth) {
-        throwException("Sorry! This portal is for members only.", 403);
+        throwException("Sorry! This portal is for members only.", 400);
     }
 
-    // Verify Password
-    if (!verifyPassword(pass, storedAuth.U_PASSWORD)) {
-        throwException("Invalid login credentials", 401);
+    // Check if account is already locked
+    if (storedAuth.U_LOCKED) {
+        throwException(
+            "Your account is currently locked. Please contact the librarian. Thank you for your patience!",
+            403
+        );
     }
 
-    // 2. Fetch User Details
+    // Verify password
+    const isValid = verifyPassword(pass, storedAuth.U_PASSWORD);
+    const failCount = storedAuth.U_FAIL_COUNT || 0;
+    const maxAttempts = 5;
+
+    if (!isValid) {
+        const newFailCount = failCount + 1;
+
+        // Increment fail count
+        await pool.request()
+            .input("usercode", usercode)
+            .input("failCount", newFailCount)
+            .query(`
+                UPDATE M_TBLUSERS
+                SET U_FAIL_COUNT = @failCount
+                WHERE U_CODE = @usercode
+            `);
+
+        const attemptsLeft = maxAttempts - newFailCount;
+
+        // Auto-lock if failCount >= maxAttempts
+        if (newFailCount >= maxAttempts) {
+
+            // Lock the user account
+            await pool.request()
+                .input("usercode", usercode)
+                .query(`
+                    UPDATE M_TBLUSERS
+                    SET
+                        U_ACTIVE = 0,
+                        U_LOCKED = 1,
+                        U_LOCKED_AT = GETDATE()
+                    WHERE U_CODE = @usercode
+                `);
+
+            // Insert into user lock approval table
+            await pool.request()
+                .input("usercode", usercode)
+                .query(`INSERT INTO T_TBLUSERLOCKAPPROVAL
+                            (UL_ID, UL_USERCODE, UL_DATE, UL_STATUS, M_DATE)
+                            VALUES
+                                (
+                                    'UL' + CONVERT(VARCHAR(14), GETDATE(), 112)
+                                        + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '')
+                                        + RIGHT('000' + CAST(ABS(CHECKSUM(NEWID())) % 1000 AS VARCHAR(3)), 3),
+                                    @usercode,
+                                    GETDATE(),
+                                    'P',
+                                    GETDATE()
+                                )`);
+            throwException(
+                "Account locked due to multiple failed login attempts. Please contact the librarian to unlock.",
+                403
+            );
+        }
+
+        // Throw message with remaining attempts
+        throwException(
+            `Invalid login credentials. You have ${attemptsLeft} out of ${maxAttempts} attempts left.`,
+            401
+        );
+    }
+
+    // Fetch user details
     const userResult = await pool.request()
         .input("usercode", usercode)
         .query(`
-            SELECT 
-                [U_CODE], [U_NAME], [U_ACTIVE], [U_GROUP], [U_MOBILE], 
-                [U_DOB], [U_ADDRESS], [U_NIC], [M_DATE], [U_UID],
-                [U_GENDER], [U_MEMSTATUS], [U_SUBSSTATUS], [U_EMAIL],
-                [U_REGISTEREDATE], [U_SUBSTYPE], [U_EXPIREDDATE],
-                [U_MAXBORROW], [U_FAIL_COUNT], [U_LOCKED], [U_LOCKED_AT],
-                [U_GRACEDATE], [U_TEMPDATETIME]
-            FROM [LibraryMS].[dbo].[M_TBLUSERS] 
+            SELECT
+                U_CODE, U_NAME, U_ACTIVE, U_GROUP, U_MOBILE,
+                U_DOB, U_ADDRESS, U_NIC, M_DATE, U_UID,
+                U_GENDER, U_MEMSTATUS, U_SUBSSTATUS, U_EMAIL,
+                U_REGISTEREDATE, U_SUBSTYPE, U_EXPIREDDATE,
+                U_MAXBORROW, U_FAIL_COUNT, U_LOCKED, U_LOCKED_AT,
+                U_GRACEDATE, U_TEMPDATETIME
+            FROM M_TBLUSERS
             WHERE U_CODE = @usercode
         `);
 
     const user = userResult.recordset[0];
 
-    // 3. Validations
     if (!user) throwException("User details not found", 400);
     if (!user.U_ACTIVE) throwException("Your account is inactive.", 400);
-    if (user.U_LOCKED) throwException("Account is locked.", 400);
-
+    if (user.U_LOCKED) throwException("Account is locked.", 403);
     if (user.U_EXPIREDDATE && new Date(user.U_EXPIREDDATE) < new Date()) {
         throwException("Your membership has expired.", 400);
     }
 
-    // 4. Generate Token with 'jose'
+    // Generate JWT token
     const secretKey = process.env.JWT_SECRET;
     if (!secretKey) {
-        logger.error("JWT_SECRET is not defined")
-        throwException("Oops! Some error occurred, Please try again later", 401);
+        logger.error("JWT_SECRET is not defined");
+        throwException("Oops! Some error occurred, please try again later.", 401);
     }
 
-    // jose requires the secret to be an encoded Uint8Array
     const secret = new TextEncoder().encode(secretKey);
-
-    const token = await new SignJWT({ ...user })
-        .setProtectedHeader({ alg: 'HS256' }) // Algorithm is required
+    const token = await new SignJWT({
+        user_info: { ...user },
+        jti: "GROUPFOUR-LBR" + crypto.randomUUID(),
+    })
+        .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
-        .setExpirationTime('24h')
+        .setExpirationTime("24h")
         .sign(secret);
+
+    // Reset fail count on successful login
+    if (failCount > 0) {
+        await pool.request()
+            .input("usercode", usercode)
+            .query(`
+                UPDATE M_TBLUSERS
+                SET U_FAIL_COUNT = 0
+                WHERE U_CODE = @usercode
+            `);
+    }
 
     return { user, token };
 }
@@ -189,7 +267,7 @@ export async function registerUser(payload: RegisterPayload) {
                 `);
         }
         await transaction.commit();
-        return { message: "Registration successful", U_CODE, U_NAME };
+        return {U_CODE, U_NAME};
 
     } catch (err) {
         await transaction.rollback();
@@ -244,10 +322,7 @@ export async function forgotPassword(payload: ForgotPasswordPayload) {
             .input("password", hashedPassword)
             .query(`
                 UPDATE M_TBLUSERS
-                SET U_PASSWORD = @password,
-                    U_FAIL_COUNT = 0,
-                    U_LOCKED = 0,
-                    U_LOCKED_AT = NULL
+                SET U_PASSWORD = @password
                 WHERE U_CODE = @usercode
             `);
 
@@ -268,9 +343,7 @@ export async function forgotPassword(payload: ForgotPasswordPayload) {
 
         await transaction.commit();
 
-        return {
-            message: "Temporary password sent to your email. Please sign in and change it immediately.",
-        };
+        return [];
 
     } catch (err: any) {
         await transaction.rollback();
