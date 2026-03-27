@@ -1,0 +1,323 @@
+.book-return {
+    .search-panel {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: bolder;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: rgba(64, 67, 76, 0.59);
+            margin-bottom: 8px;
+        }
+
+        .custom-input, .custom-select {
+            border: 2px solid rgba(184, 187, 189, 0.32);
+            border-radius: 12px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+
+            &:focus {
+                border-color: #8677ed;
+                box-shadow: 0 0 0 4px rgba(134, 119, 237, 0.1);
+                outline: none;
+            }
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #8677ed 0%, #6459b1 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 4px 15px rgba(134, 119, 237, 0.3);
+            transition: transform 0.2s ease;
+
+            &:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.05);
+            }
+        }
+    }
+
+    .book-card {
+        position: relative;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        height: 100%;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #e2e8f0;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.24);
+        }
+
+        .book-isbn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #8677ed;
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.6rem;
+            z-index: 5;
+            border: 1px solid #e2e8f0;
+        }
+    }
+
+    .btn-feedback {
+        color: #9e920e;
+        border: 1px solid #9e920e;
+        transition: all 0.2s ease-in-out;
+
+        i {
+            color: inherit;
+        }
+
+        &:hover {
+            background: #9e920e;
+            color: #fff;
+        }
+    }
+
+    .book-image-container {
+        width: 120px;
+        height: 170px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        padding: 6px;
+        box-shadow: 5px 5px 8px 0px #a9a7a7;
+
+        &.category-icon-container {
+            background-color: #8677ed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+
+            .inner-cover-content {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                text-align: center;
+                color: #ffffff;
+                border: 1.5px solid rgba(255, 255, 255, 0.25);
+                border-radius: 10px;
+                overflow: hidden;
+
+                .top-title-container {
+                    padding: 10px 4px;
+                    border: 1.5px solid rgba(255, 255, 255, 0.25);
+                    margin-top: 5px;
+                    width: calc(100% - 10px);
+                    min-height: 55px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 5px;
+                }
+
+                .top-title {
+                    font-size: 9px;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    text-transform: uppercase;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .mid-icon {
+                    font-size: 28px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-grow: 1;
+                    opacity: 0.95;
+                }
+
+                .bottom-label {
+                    width: 100%;
+                    padding: 6px 4px;
+                    font-size: 8px;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                    text-transform: capitalize;
+                }
+            }
+        }
+    }
+
+    .book-info {
+        flex-grow: 1;
+
+        .book-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .book-author {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .badge-category {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #8677ed;
+            background: #f5f3ff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            border: 1px solid rgba(134, 119, 237, 0.2);
+        }
+    }
+}
+
+/* MODAL */
+#bookReturnModal {
+
+    .top-title {
+        font-size: 18px;
+    }
+
+    .mid-icon {
+        font-size: 80px;
+    }
+
+    .bottom-label {
+        font-size: 15px;
+    }
+
+    .bg-light-purple {
+        background-color: #fcfaff;
+        border-right: 1px solid #f1f1f1;
+    }
+
+    .badge-minimal {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8677ed;
+        background: rgba(134, 119, 237, 0.1);
+        padding: 4px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .spec-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f9fa;
+
+        .label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .value {
+            color: #1e293b;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .btn-dark-minimal {
+        background: #1e1e1e;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: transform 0.2s;
+
+        &:hover {
+            background: #000;
+            transform: translateY(-1px);
+        }
+    }
+
+    .btn-outline-minimal {
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+
+        &:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+    }
+
+    .star-rating {
+        display: flex;
+        justify-content: center; // center horizontally
+        align-items: center;     // center vertically if needed
+        gap: 5px;
+
+        i {
+            display: block;
+            font-size: 50px;       // adjust size
+            cursor: pointer;
+            color: #e2e8f0;        // default empty star
+            transition: color 0.2s;
+
+            &.bi-star-fill {
+                color: #ffc107;      // filled star
+            }
+
+            &:hover,
+            &:hover ~ i {
+                color: #ffc107;      // highlight on hover
+            }
+        }
+    }
+
+    .form-control {
+        &.is-invalid, &.is-valid {
+            background-image: none !important;
+            padding-right: 1rem !important; // Adjust padding since icon is gone
+        }
+        &#password {
+            padding-right: 3rem !important;
+        }
+    }
+
+    .error-text {
+        font-size: 0.85rem;
+        color: #dc2626;
+        margin-top: 8px;
+        font-weight: 400;
+        padding-left: 4px;
+        display: block;
+        animation: slideDown 0.2s ease-out;
+    }
+}
+

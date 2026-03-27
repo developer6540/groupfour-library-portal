@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         const result = await sendEmail({ to, subject, html });
 
         return NextResponse.json(
-            successResponse(result, "Email sent successfully")
+            successResponse(result, "Email sent successfully", 201)
         );
 
     } catch (error: any) {

@@ -133,7 +133,7 @@ export async function changePassword(code: string, data: { currentPassword?: str
                 WHERE U_CODE = @code
             `);
 
-        return { message: "Password updated successfully" };
+        return [];
 
     } catch (error: any) {
         throwException(error.message || "Failed to change password", error.status || 500);
@@ -213,7 +213,7 @@ export async function reserveBook(reservations: ReservationInput[]) {
         }
 
         await transaction.commit();
-        return { success: true, message: "Reservations created successfully" };
+        return [];
 
     } catch (error: any) {
         if (transaction) await transaction.rollback();

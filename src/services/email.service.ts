@@ -26,10 +26,7 @@ export async function sendEmail({ to, subject, html }: SendEmailPayload) {
 
         await sgMail.send(msg);
 
-        return {
-            success: true,
-            message: "Email sent successfully",
-        };
+        return [];
 
     } catch (error: any) {
         logger.error("SENDGRID ERROR:", error);

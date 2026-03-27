@@ -67,8 +67,7 @@ export async function setUserInfo(updatedData: any) {
     }
 }
 
-export async function generateStrongPassword(length: number = 10) {
-
+export async function generateStrongPassword(length: number = 10): Promise<string> {
     if (length < 8) length = 8;
     if (length > 20) length = 20;
 
@@ -79,20 +78,32 @@ export async function generateStrongPassword(length: number = 10) {
 
     const all = lower + upper + numbers + specials;
 
-    // Ensure required characters
+    // Secure random helper
+    const getRandomChar = (charset: string) => {
+        const array = new Uint32Array(1);
+        crypto.getRandomValues(array);
+        return charset[array[0] % charset.length];
+    };
+
     let password = [
-        upper[Math.floor(Math.random() * upper.length)],
-        numbers[Math.floor(Math.random() * numbers.length)],
-        specials[Math.floor(Math.random() * specials.length)]
+        getRandomChar(lower),   // ensure lowercase
+        getRandomChar(upper),   // ensure uppercase
+        getRandomChar(numbers), // ensure number
+        getRandomChar(specials) // ensure special char
     ];
 
     // Fill remaining length
     for (let i = password.length; i < length; i++) {
-        password.push(all[Math.floor(Math.random() * all.length)]);
+        password.push(getRandomChar(all));
     }
 
-    // Shuffle to avoid predictable pattern
-    password = password.sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle (secure shuffle)
+    for (let i = password.length - 1; i > 0; i--) {
+        const array = new Uint32Array(1);
+        crypto.getRandomValues(array);
+        const j = array[0] % (i + 1);
+        [password[i], password[j]] = [password[j], password[i]];
+    }
 
     return password.join("");
 }
