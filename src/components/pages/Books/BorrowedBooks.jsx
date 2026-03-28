@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./BorrowedBooks.scss";
 import Pagination from "@/components/common/Pagination";
 import { capitalizeFirstLetter } from "@/lib/client-utility";
-import {getCsrfToken} from "@/lib/session-client";
+import { getCsrfToken } from "@/lib/session-client";
+import { alerts } from "@/lib/alerts";
 
 const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
@@ -52,6 +53,11 @@ export default function BorrowedBooks() {
     // Fine summary
     const [fineSummary,  setFineSummary]  = useState({ totalFine: 0, totalPaid: 0, totalBalance: 0 });
     const [showPayModal, setShowPayModal] = useState(false);
+
+    // Return book
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [returnBook,      setReturnBook]      = useState(null);
+    const [isReturning,     setIsReturning]     = useState(false);
 
     const pageSize   = 12;
     const totalPages = Math.ceil(total / pageSize) || 1;
@@ -150,6 +156,45 @@ export default function BorrowedBooks() {
 
     const closeModal = () => setShowModal(false);
 
+    const openReturnModal = (e, book) => {
+        e.stopPropagation();
+        setReturnBook(book);
+        setShowReturnModal(true);
+    };
+
+    const handleReturnBook = async () => {
+        if (!returnBook) return;
+        setIsReturning(true);
+        try {
+            const res = await fetch("/api/v1/books/return", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || "",
+                },
+                body: JSON.stringify({
+                    docNo:      returnBook.BH_DOCNO,
+                    lineNo:     returnBook.BD_LINENO,
+                    memberCode: memberCodeRef.current,
+                }),
+            });
+            const result = await res.json();
+            if (res.ok) {
+                alerts.success("Book returned successfully!");
+                setShowReturnModal(false);
+                setReturnBook(null);
+                fetchBooks();
+            } else {
+                alerts.error(result.message || "Failed to return book");
+            }
+        } catch (err) {
+            console.error(err);
+            alerts.error("Something went wrong");
+        } finally {
+            setIsReturning(false);
+        }
+    };
+
     const formatDate = (val) => {
         if (!val) return "—";
         const d = new Date(val);
@@ -175,18 +220,7 @@ export default function BorrowedBooks() {
                 </div>
             </div>
 
-            {/* ── Pay Button ── */}
-            <div className="pay-fine-bar mb-4">
-                <p className="pay-fine-total">Total Fine Amount</p>
-                <p className="pay-fine-amount">LKR {fineSummary.totalFine.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</p>
-                <button
-                    type="button"
-                    className="btn-pay-standalone"
-                    onClick={() => setShowPayModal(true)}
-                >
-                    <i className="bi bi-credit-card-fill me-2"></i>Pay Fine
-                </button>
-            </div>
+
 
             {/* ── Filter Bar ── */}
             <div className="borrowed-filter-panel p-4 mb-4 bg-white shadow-sm rounded">
@@ -226,77 +260,119 @@ export default function BorrowedBooks() {
                 </div>
             </div>
 
-            {/* ── Table ── */}
-            <div className="borrowed-table-wrapper bg-white shadow-sm rounded p-0 mb-3">
+            {/* ── List View ── */}
+            <div className="borrowed-list-wrapper mb-3">
                 {isLoading ? (
                     <div className="text-center py-5">
                         <div className="spinner-border text-purple" role="status"></div>
                         <p className="text-muted mt-3 small">Loading borrowed books…</p>
                     </div>
                 ) : books.length > 0 ? (
-                    <div className="table-responsive">
-                        <table className="table borrowed-table mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Cover</th>
-                                    <th>ISBN</th>
-                                    <th>Title</th>
-                                    <th>Author</th>
-                                    <th>Category</th>
-                                    <th>Publisher</th>
-                                    <th>Borrow Date</th>
-                                    <th>Due Date</th>
-                                    <th>Rating</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {books.map((book, idx) => {
-                                    return (
-                                        <tr key={`${book.BH_DOCNO}-${book.BD_LINENO}`} onClick={() => openDetail(book)} style={{ cursor: 'pointer' }}>
-                                            <td className="row-num">{(currentPage - 1) * pageSize + idx + 1}</td>
-                                            <td>
-                                                <div
-                                                    className="book-thumb category-icon-container"
-                                                    style={{ backgroundImage: `url(${getCoverData(book.BD_BOOKCODE)})` }}
-                                                >
-                                                    <div className="inner-cover-content">
-                                                        <div className="top-title-container">
-                                                            <div className="top-title">{safeCap(book.B_TITLE)}</div>
-                                                        </div>
-                                                        <div className="mid-icon"><i className="bi bi-book"></i></div>
-                                                        <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
+                    <>
+                        <div className="borrowed-list-scroll">
+                        {/* Column header ribbon bar */}
+                        <div className="borrowed-list-header">
+                            <div className="blh-cover"></div>
+                            <div className="blh-col">
+                                <span className="col-ribbon col-ribbon-isbn">
+                                    <i className="bi bi-upc-scan me-1"></i>ISBN
+                                </span>
+                            </div>
+                            <div className="blh-col blh-wide">
+                                <span className="col-ribbon col-ribbon-title">
+                                    <i className="bi bi-book-half me-1"></i>Book Title
+                                </span>
+                            </div>
+                            <div className="blh-col">
+                                <span className="col-ribbon col-ribbon-author">
+                                    <i className="bi bi-person-fill me-1"></i>Author
+                                </span>
+                            </div>
+                            <div className="blh-col">
+                                <span className="col-ribbon col-ribbon-category">
+                                    <i className="bi bi-tag-fill me-1"></i>Category
+                                </span>
+                            </div>
+                            <div className="blh-col">
+                                <span className="col-ribbon col-ribbon-publisher">
+                                    <i className="bi bi-building me-1"></i>Publisher
+                                </span>
+                            </div>
+                            <div className="blh-col blh-date-borrowed">
+                                <span className="col-ribbon col-ribbon-date">
+                                    <i className="bi bi-calendar-event me-1"></i>Borrowed Date
+                                </span>
+                            </div>
+                            <div className="blh-col blh-date-return">
+                                <span className="col-ribbon col-ribbon-return">
+                                    <i className="bi bi-calendar-check me-1"></i>Return Date
+                                </span>
+                            </div>
+                            <div className="blh-col blh-actions"></div>
+                        </div>
+
+                        {/* Rows */}
+                        <div className="borrowed-list-body">
+                            {books.map((book) => {
+                                const isReturnable = book.BD_STATUS === 'O' || book.BD_STATUS === 'L';
+                                return (
+                                    <div
+                                        key={`${book.BH_DOCNO}-${book.BD_LINENO}`}
+                                        className="borrowed-list-row"
+                                        onClick={() => openDetail(book)}
+                                    >
+                                        <div className="blh-cover">
+                                            <div
+                                                className="book-thumb category-icon-container"
+                                                style={{ backgroundImage: `url(${getCoverData(book.BD_BOOKCODE)})` }}
+                                            >
+                                                <div className="inner-cover-content">
+                                                    <div className="top-title-container">
+                                                        <div className="top-title">{safeCap(book.B_TITLE)}</div>
                                                     </div>
+                                                    <div className="mid-icon"><i className="bi bi-book"></i></div>
+                                                    <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                                 </div>
-                                            </td>
-                                            <td className="isbn-cell">{book.B_ISBN || "—"}</td>
-                                            <td className="title-cell">{safeCap(book.B_TITLE)}</td>
-                                            <td>{safeCap(book.B_AUTHOR)}</td>
-                                            <td>
-                                                <span className="badge-category">{safeCap(book.B_CATEGORY)}</span>
-                                            </td>
-                                            <td>{safeCap(book.B_PUBLISHER)}</td>
-                                            <td className="date-cell">{formatDate(book.BH_BORROWDATE)}</td>
-                                            <td className="date-cell">{formatDate(book.BD_DUEDATE)}</td>
-                                            <td>
-                                                <RatingStars rating={book.AVG_RATING || 0} count={book.RATING_COUNT || 0} />
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className="btn-icon-action"
-                                                    title="View Details"
-                                                    onClick={() => openDetail(book)}
-                                                >
-                                                    <i className="bi bi-eye-fill"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </div>
+                                        </div>
+                                        <div className="blh-col">
+                                            <span className="list-isbn">{book.B_ISBN || "—"}</span>
+                                        </div>
+                                        <div className="blh-col blh-wide">
+                                            <span className="list-title">{safeCap(book.B_TITLE)}</span>
+                                        </div>
+                                        <div className="blh-col">
+                                            <span className="list-text">{safeCap(book.B_AUTHOR)}</span>
+                                        </div>
+                                        <div className="blh-col">
+                                            <span className="badge-category">{safeCap(book.B_CATEGORY)}</span>
+                                        </div>
+                                        <div className="blh-col">
+                                            <span className="list-text">{safeCap(book.B_PUBLISHER)}</span>
+                                        </div>
+                                        <div className="blh-col blh-date-cell">
+                                            <span className="list-date">{formatDate(book.BH_BORROWDATE)}</span>
+                                        </div>
+                                        <div className="blh-col blh-date-cell">
+                                            <span className={`list-date${book.BD_STATUS === 'L' ? ' list-date-overdue' : ''}`}>
+                                                {formatDate(book.BD_DUEDATE)}
+                                            </span>
+                                        </div>
+                                        <div className="blh-col blh-actions" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                className="btn-icon-action"
+                                                title="View Details"
+                                                onClick={(e) => { e.stopPropagation(); openDetail(book); }}
+                                            >
+                                                <i className="bi bi-eye-fill"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        </div> {/* end borrowed-list-scroll */}
+                    </>
                 ) : (
                     <div className="text-center py-5">
                         <i className="bi bi-journal-x text-muted mb-3" style={{ fontSize: "36px", display: "block" }}></i>
@@ -428,6 +504,75 @@ export default function BorrowedBooks() {
                     </div>
                 </div>
             )}
+            {/* ── Return Book Confirmation Modal ── */}
+            {showReturnModal && returnBook && (
+                <div className="modal-overlay" onClick={() => setShowReturnModal(false)}>
+                    <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-box-header">
+                            <h5 className="mb-0 fw-bold">
+                                <i className="bi bi-arrow-return-left me-2"></i>Return Book
+                            </h5>
+                            <button className="modal-close-btn" onClick={() => setShowReturnModal(false)}>
+                                <i className="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div className="modal-box-body">
+                            <p className="text-muted mb-4">Please confirm you are returning the following book:</p>
+                            <div className="row g-3">
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">ISBN</span>
+                                        <span className="detail-value font-monospace">{returnBook.B_ISBN || "—"}</span>
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">Book Title</span>
+                                        <span className="detail-value">{safeCap(returnBook.B_TITLE)}</span>
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">Author</span>
+                                        <span className="detail-value">{safeCap(returnBook.B_AUTHOR)}</span>
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">Category</span>
+                                        <span className="badge-category">{safeCap(returnBook.B_CATEGORY)}</span>
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">Publisher</span>
+                                        <span className="detail-value">{safeCap(returnBook.B_PUBLISHER)}</span>
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="detail-item">
+                                        <span className="detail-label">Borrowed Date</span>
+                                        <span className="detail-value">{formatDate(returnBook.BH_BORROWDATE)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-box-footer">
+                            <button
+                                className="btn btn-danger"
+                                onClick={handleReturnBook}
+                                disabled={isReturning}
+                            >
+                                {isReturning
+                                    ? <><span className="spinner-border spinner-border-sm me-2"></span>Returning…</>
+                                    : <><i className="bi bi-arrow-return-left me-2"></i>Confirm Return</>}
+                            </button>
+                            <button className="btn btn-secondary" onClick={() => setShowReturnModal(false)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ── Pay Modal ── */}
             {showPayModal && (
                 <div className="modal-overlay" onClick={() => setShowPayModal(false)}>

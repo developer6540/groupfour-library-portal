@@ -424,6 +424,66 @@ export async function recordFinePayment(
     }
 }
 
+export async function processBookReturn(
+    docNo: string,
+    lineNo: number,
+    memberCode: string
+): Promise<void> {
+    try {
+        const pool = await getDbConnection();
+
+        const check = await pool.request()
+            .input("DOCNO", docNo)
+            .input("LINENO", lineNo)
+            .input("MC", memberCode.trim())
+            .query(`
+                SELECT d.BD_STATUS, d.BD_QTY
+                FROM dbo.T_TBLBOOKBORROW_D d
+                INNER JOIN dbo.T_TBLBOOKBORROW_H h ON h.BH_DOCNO = d.BD_DOCNO
+                WHERE d.BD_DOCNO = @DOCNO
+                  AND d.BD_LINENO = @LINENO
+                  AND h.BH_MEMBERCODE = @MC
+            `);
+
+        if (!check.recordset.length) {
+            throw throwException("Borrow record not found", 404);
+        }
+
+        const { BD_STATUS, BD_QTY } = check.recordset[0];
+
+        if (BD_STATUS === 'R' || BD_STATUS === 'C') {
+            throw throwException("Book has already been returned or cancelled", 400);
+        }
+
+        await pool.request()
+            .input("DOCNO", docNo)
+            .input("LINENO", lineNo)
+            .input("QTY", BD_QTY)
+            .query(`
+                UPDATE dbo.T_TBLBOOKBORROW_D
+                SET BD_STATUS = 'R',
+                    BD_RETURNED_QTY = @QTY,
+                    M_DATE = GETDATE()
+                WHERE BD_DOCNO = @DOCNO AND BD_LINENO = @LINENO
+            `);
+
+        await pool.request()
+            .input("DOCNO", docNo)
+            .query(`
+                UPDATE dbo.T_TBLBOOKBORROW_H
+                SET BH_STATUS = 'R', M_DATE = GETDATE()
+                WHERE BH_DOCNO = @DOCNO
+                  AND NOT EXISTS (
+                      SELECT 1 FROM dbo.T_TBLBOOKBORROW_D
+                      WHERE BD_DOCNO = @DOCNO AND BD_STATUS NOT IN ('R', 'C')
+                  )
+            `);
+
+    } catch (error: any) {
+        throw throwException(error.message || "Database error", error.status || 500);
+    }
+}
+
 export async function getDueNotifications(memberCode: string): Promise<any[]> {
     try {
         if (!memberCode?.trim()) return [];
