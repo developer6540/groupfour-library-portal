@@ -98,7 +98,7 @@ export default function BookReservation() {
             async () => {
 
                 try {
-                    const user = getSession("user-info");
+                    const user = getSessionClient("user-info");
                     const userData = typeof user === "string" ? JSON.parse(user) : user;
 
                     // Calculate total quantity in the cart
