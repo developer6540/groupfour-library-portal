@@ -69,6 +69,16 @@
         }
     }
 
+    .error-banner {
+        background: #fff1f0;
+        border: 1px solid #ffa39e;
+        color: #a8071a;
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
     .pay-btn {
         display: flex;
         align-items: center;

@@ -1,54 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { FaLock, FaSpinner, FaCreditCard, FaCalendarAlt, FaUserAlt } from "react-icons/fa";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaLock, FaSpinner, FaCalendarAlt, FaUserAlt } from "react-icons/fa";
 import { MdOutlineCreditCard } from "react-icons/md";
-import { alerts } from "@/lib/alerts";
-import { getBaseUrl } from "@/lib/client-utility";
-import { getCsrfToken } from "@/lib/session-client";
 import "./PaymentPage.scss";
-
-const PLANS = [
-    {
-        id: "MONTHLY",
-        label: "Monthly",
-        duration: "1 Month Access",
-        price: "LKR 500",
-        priceNum: 500,
-        icon: "bi-calendar-month",
-        description: "Flexible, cancel anytime",
-        popular: false,
-    },
-    {
-        id: "ANNUAL",
-        label: "Annual",
-        duration: "12 Months Access",
-        price: "LKR 5,000",
-        priceNum: 5000,
-        icon: "bi-calendar-check",
-        description: "Best value — save 17%",
-        popular: true,
-    },
-];
 
 export default function PaymentPage() {
 
-    const searchParams = useSearchParams();
     const router = useRouter();
 
-    const usercode  = searchParams.get("u") ? decodeURIComponent(searchParams.get("u")) : "";
-    const userName  = searchParams.get("n") ? decodeURIComponent(searchParams.get("n")) : "";
-
-    const [selectedPlan, setSelectedPlan] = useState("ANNUAL");
     const [loading, setLoading] = useState(false);
+    const [paid, setPaid] = useState(false);
     const [form, setForm] = useState({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
     const [errors, setErrors] = useState({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
-
-    useEffect(() => {
-        //if (!usercode) router.replace("/sign-in");
-    }, [usercode, router]);
 
     const formatCardNumber = (val) =>
         val.replace(/\D/g, "").substring(0, 16).replace(/(.{4})/g, "$1 ").trim();
@@ -80,45 +45,37 @@ export default function PaymentPage() {
         return !Object.values(e).some(Boolean);
     };
 
-    const handleSubmit = async (ev) => {
+    const handleSubmit = (ev) => {
         ev.preventDefault();
         if (!validate()) return;
-
         setLoading(true);
-        const toastId = alerts.loading("Processing payment...");
-
-        try {
-            const res = await fetch(`${getBaseUrl()}/api/v1/payment/subscribe`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token": getCsrfToken() || "",
-                },
-                body: JSON.stringify({ usercode, plan: selectedPlan }),
-            });
-
-            const result = await res.json();
-            import("sonner").then(({ toast }) => toast.dismiss(toastId));
-
-            if (!res.ok) {
-                alerts.error("Payment Failed", result.message || "Something went wrong. Please try again.");
-                return;
-            }
-
-            alerts.success(
-                "Payment Successful! 🎉",
-                `Your subscription has been renewed. Please sign in to continue.`,
-                4000
-            );
-            //setTimeout(() => router.push("/sign-in"), 3000);
-        } catch {
-            alerts.error("Connection Error", "Could not process payment. Please try again.");
-        } finally {
+        setTimeout(() => {
             setLoading(false);
-        }
+            setPaid(true);
+        }, 1800);
     };
 
-    const selectedPlanData = PLANS.find(p => p.id === selectedPlan);
+    if (paid) {
+        return (
+            <div className="payment-card mx-auto text-center">
+                <div className="success-icon-wrapper">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" className="success-checkmark">
+                        <circle cx="32" cy="32" r="30" fill="#e9f9f0" stroke="#28a745" strokeWidth="2"/>
+                        <polyline points="18,34 28,44 47,22" fill="none" stroke="#28a745" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </div>
+                <h4 className="fw-bold mt-3 mb-1" style={{ color: "#1a1a2e" }}>Payment Successful!</h4>
+                <p className="text-muted mb-4">Your membership has been activated.</p>
+                <button
+                    className="btn btn-purple w-100 py-2 fw-bold"
+                    onClick={() => router.push("/")}
+                >
+                    <i className="bi bi-house me-2"></i>Go to Dashboard
+                </button>
+                <p className="text-center mt-3 small text-muted">🔒 Payments are secured and encrypted</p>
+            </div>
+        );
+    }
 
     return (
         <div className="payment-card mx-auto">
@@ -129,55 +86,30 @@ export default function PaymentPage() {
                 <hr className="gradient-hr" />
             </div>
 
-            {/* Expiry Banner */}
-            <div className="alert alert-warning d-flex align-items-center gap-2 py-2 mb-4" role="alert">
-                <i className="bi bi-exclamation-triangle-fill fs-5"></i>
-                <div>
-                    <strong>Subscription Required</strong>
-                    <div className="small">Your subscription is inactive or has expired. Renew below to regain access.</div>
-                </div>
-            </div>
-
-            {/* User Info */}
-            {userName && (
-                <div className="user-info-bar mb-4">
-                    <i className="bi bi-person-circle fs-4 text-purple"></i>
-                    <div>
-                        <p className="mb-0 fw-semibold text-dark">{userName}</p>
-                        <p className="mb-0 small text-muted">Member Code: <span className="fw-bold">{usercode}</span></p>
-                    </div>
-                </div>
-            )}
-
-            {/* Plan Selection */}
-            <h6 className="fw-bold text-secondary mb-3">
-                <i className="bi bi-grid me-2"></i>Choose a Plan
-            </h6>
-            <div className="row g-3 mb-4">
-                {PLANS.map(plan => (
-                    <div className="col-6" key={plan.id}>
-                        <div
-                            className={`plan-card ${selectedPlan === plan.id ? "plan-selected" : ""}`}
-                            onClick={() => setSelectedPlan(plan.id)}
-                            role="button"
-                        >
-                            {plan.popular && (
-                                <span className="plan-badge">Best Value</span>
-                            )}
-                            <i className={`bi ${plan.icon} plan-icon`}></i>
-                            <p className="fw-bold mb-0 mt-1">{plan.label}</p>
-                            <p className="plan-duration">{plan.duration}</p>
-                            <p className="plan-price">{plan.price}</p>
-                            <p className="plan-desc">{plan.description}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
             {/* Payment Form */}
-            <h6 className="fw-bold text-secondary mb-3">
-                <i className="bi bi-credit-card me-2"></i>Card Details
-            </h6>
+            <div className="d-flex align-items-center justify-content-between mb-3">
+                <h6 className="fw-bold text-secondary mb-0">
+                    <i className="bi bi-credit-card me-2"></i>Card Details
+                </h6>
+                <div className="card-logos">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 471" className="card-logo-svg">
+                        <rect width="750" height="471" rx="40" fill="#1A1F71"/>
+                        <text x="375" y="310" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="200" fill="#FFFFFF" letterSpacing="-8">VISA</text>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 471" className="card-logo-svg">
+                        <rect width="750" height="471" rx="40" fill="#252525"/>
+                        <circle cx="280" cy="235" r="145" fill="#EB001B"/>
+                        <circle cx="470" cy="235" r="145" fill="#F79E1B"/>
+                        <path d="M375 122 a145 145 0 0 1 0 226 a145 145 0 0 1 0-226z" fill="#FF5F00"/>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 471" className="card-logo-svg">
+                        <rect width="750" height="471" rx="40" fill="#2E77BC"/>
+                        <text x="375" y="295" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="120" fill="#FFFFFF" letterSpacing="2">AMEX</text>
+                        <text x="375" y="380" textAnchor="middle" fontFamily="Arial,sans-serif" fontSize="55" fill="#FFFFFF" letterSpacing="1">AMERICAN EXPRESS</text>
+                    </svg>
+                </div>
+            </div>
+
             <form onSubmit={handleSubmit} noValidate>
 
                 {/* Cardholder Name */}
@@ -256,18 +188,6 @@ export default function PaymentPage() {
                     </div>
                 </div>
 
-                {/* Order Summary */}
-                <div className="order-summary mb-4">
-                    <div className="d-flex justify-content-between">
-                        <span className="text-muted small">Plan</span>
-                        <span className="fw-semibold small">{selectedPlanData?.label} ({selectedPlanData?.duration})</span>
-                    </div>
-                    <div className="d-flex justify-content-between mt-1">
-                        <span className="text-muted small">Total</span>
-                        <span className="fw-bold text-purple">{selectedPlanData?.price}</span>
-                    </div>
-                </div>
-
                 <button
                     type="submit"
                     disabled={loading}
@@ -275,7 +195,7 @@ export default function PaymentPage() {
                 >
                     {loading
                         ? <><FaSpinner className="spin" /> Processing...</>
-                        : <><FaLock size={14} /> Pay {selectedPlanData?.price}</>
+                        : <><FaLock size={14} /> Pay</>
                     }
                 </button>
             </form>
@@ -283,11 +203,7 @@ export default function PaymentPage() {
             <p className="text-center mt-4 small text-muted">
                 🔒 Payments are secured and encrypted
             </p>
-            <p className="text-center small fw-semibold text-secondary">
-                <Link href="/sign-in" className="text-purple text-decoration-none">
-                    <i className="bi bi-arrow-left me-1"></i>Back to Sign In
-                </Link>
-            </p>
         </div>
     );
 }
+

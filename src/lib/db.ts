@@ -18,11 +18,22 @@ const config = {
     },
 };
 
+function validateDbConfig() {
+    const requiredKeys = ["DB_SERVER", "DB_USER", "DB_PASSWORD", "DB_DATABASE"];
+    const missingKeys = requiredKeys.filter((key) => !process.env[key] || process.env[key]?.trim() === "");
+
+    if (missingKeys.length > 0) {
+        throw new Error(`Missing database configuration: ${missingKeys.join(", ")}. Update .env.local with valid MSSQL credentials.`);
+    }
+}
+
 // global pool to persist across hot reloads / production
 let pool: ConnectionPool | undefined;
 
 export async function getDbConnection(): Promise<ConnectionPool> {
     try {
+        validateDbConfig();
+
         if (pool?.connected) {
             console.log("Using existing DB connection");
             logger.info("Using existing DB connection");
