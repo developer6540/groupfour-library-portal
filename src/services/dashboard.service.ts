@@ -14,34 +14,46 @@ export async function getDashboardCounts(code: string) {
 
         // Fetching all Dashboard Counts in a single query
         const query = `
-            SELECT (
-                       SELECT ISNULL(SUM(BR_QTY), 0)
-                       FROM dbo.T_TBLBOOKRESERVATIONS
-                       WHERE BR_USERCODE = @userCode
-                         AND BR_STATUS = 'A'
-                         AND BR_EXPIRES_ON >= CONVERT(date, SYSDATETIME())
-                   ) AS TotalReservedBooks,
-                   (
-                       SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
-                       FROM dbo.T_TBLBOOKRETURN_H h
-                                JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
-                       WHERE h.RH_MEMBERCODE = @userCode
-                   ) AS TotalBooksRead,
-                   (
-                       SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
-                       FROM dbo.T_TBLBOOKRETURN_H h
-                                JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
-                       WHERE h.RH_MEMBERCODE = @userCode
-                         AND d.RD_CONDITION IN ('O', 'P')
-                         AND ISNULL(d.RD_RETURN_QTY, 0) > 0
-                   ) AS TotalBooksOverdue,
-                   (
-                       SELECT ISNULL(SUM(d.FD_AMOUNT), 0)
-                       FROM dbo.T_TBLMEMBERFINE_H h
-                                JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
-                       WHERE h.FH_MEMBERCODE = @userCode
-                         AND d.FD_FINE_TYPE = 'O'
-                   ) AS TotalOverdueFines
+            SELECT
+                (
+                    SELECT ISNULL(SUM(BR_QTY), 0)
+                    FROM dbo.T_TBLBOOKRESERVATIONS
+                    WHERE BR_USERCODE = @userCode
+                      AND BR_STATUS = 'A'
+                      AND BR_EXPIRES_ON >= CONVERT(date, SYSDATETIME())
+                ) AS TotalReservedBooks,
+
+                (
+                    SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
+                    FROM dbo.T_TBLBOOKRETURN_H h
+                             JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
+                    WHERE h.RH_MEMBERCODE = @userCode
+                ) AS TotalBooksRead,
+
+                (
+                    SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
+                    FROM dbo.T_TBLBOOKRETURN_H h
+                             JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
+                    WHERE h.RH_MEMBERCODE = @userCode
+                      AND d.RD_CONDITION IN ('O', 'P')
+                      AND ISNULL(d.RD_RETURN_QTY, 0) > 0
+                ) AS TotalBooksOverdue,
+
+                (
+                    SELECT ISNULL(SUM(d.FD_AMOUNT), 0)
+                    FROM dbo.T_TBLMEMBERFINE_H h
+                             JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
+                    WHERE h.FH_MEMBERCODE = @userCode
+                      AND d.FD_FINE_TYPE IN ('O','L','D')
+                ) AS TotalOverdueFines,
+
+                (
+                    SELECT ISNULL(SUM(d.FD_AMOUNT), 0)
+                    FROM dbo.T_TBLMEMBERFINE_H h
+                             JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
+                    WHERE h.FH_MEMBERCODE = @userCode
+                      AND h.FH_STATUS IN ('P','T')
+                ) AS PendingFines
         `;
 
         const result = await request.query(query);

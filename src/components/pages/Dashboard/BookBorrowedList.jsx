@@ -111,9 +111,9 @@ export default function BookBorrowedList() {
                         })}
                     </Swiper>
                 ) : (
-                    <div className="text-center py-4">
-                        <i className="bi bi-book fs-2 text-muted"></i>
-                        <p className="text-muted mt-2">No borrowed books found.</p>
+                    <div className="text-center py-3">
+                        <i className="bi fw-bold bi-book" style={{fontSize:"80px", marginBottom:"-10px", color:"#ccc"}}></i>
+                        <p className="fw-bold" style={{fontSize:"20px", marginTop:"-20px", color:"#ccc"}}>No borrowed books found.</p>
                     </div>
                 )}
             </div>

@@ -1,94 +1,104 @@
 .stat-card {
     position: relative;
-    border-radius: 20px !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 16px !important;
+    transition: all 0.25s ease;
     background: #ffffff;
-    //border-bottom: 4px solid #6e5bd8 !important;
     overflow: hidden;
 
     &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.17) !important;
-    }
-
-    .card-body {
-        position: relative;
-        z-index: 1;
-        padding: 1.5rem 1.25rem; // consistent padding
+        transform: translateY(-4px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12) !important;
     }
 }
 
+/* Blob background */
 .card-bg-blob {
     position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 80px;
-    height: 80px;
+    top: -10px;
+    right: -10px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    opacity: 0.05;
-    z-index: 0;
-    filter: blur(20px);
+    opacity: 0.06;
+    filter: blur(18px);
 }
 
-.stat-icon-wrapper {
-    transition: transform 0.3s ease;
-    .stat-card:hover & {
-        transform: rotate(-10deg) scale(1.1);
-    }
-}
-
-/* Text inside card */
-.text-muted {
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    margin-bottom: 0.25rem;
-}
-
-h3 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 0;
-}
-
-/* Badge Light Backgrounds */
-.bg-success-light {
-    background-color: rgba(45, 206, 137, 0.15) !important;
-}
-
-.bg-danger-light {
-    background-color: rgba(245, 54, 92, 0.15) !important;
-}
-
-.z-1 {
+/* Card body layout */
+.card-body {
+    padding: 1.25rem;
+    position: relative;
     z-index: 1;
 }
 
-/* Responsive Grid Adjustments */
-@media (max-width: 992px) {
-    .col-md-6 {
-        margin-bottom: 1rem;
+/* Text section */
+.text-content {
+    max-width: 70%;
+}
+
+/* Title */
+.stat-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6c757d;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+
+/* Value */
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2d2d2d;
+}
+
+/* Icon */
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.stat-card:hover .stat-icon-wrapper {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .stat-icon-wrapper {
+        width: 42px;
+        height: 42px;
+        font-size: 1rem;
     }
 }
 
 @media (max-width: 576px) {
-    .stat-card {
-        padding: 1rem;
-    }
-
     .card-body {
         padding: 1rem;
     }
 
-    .stat-icon-wrapper {
-        width: 45px;
-        height: 45px;
+    .stat-value {
+        font-size: 1.1rem;
     }
 
-    h3 {
-        font-size: 1.3rem;
-    }
-
-    .text-muted {
+    .stat-title {
         font-size: 0.65rem;
+    }
+
+    .card-bg-blob {
+        width: 40px;
+        height: 40px;
     }
 }
