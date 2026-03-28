@@ -1,0 +1,94 @@
+.payment-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+
+    .payment-card {
+        background: #fff;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 500px;
+        padding: 2rem;
+        transition: transform .3s;
+        box-shadow: 0 10px 30px #00000014;
+        border: 1px solid #dfdfdf;
+
+        &.loading { opacity: 0.6; pointer-events: none; }
+    }
+
+    .payment-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        h3 { font-weight: 700; color: #1a1a1a; margin-bottom: 0.25rem; }
+        .member-badge { font-size: 0.85rem; color: #6c757d; background: #f8f9fa; display: inline-block; padding: 4px 12px; border-radius: 50px; }
+    }
+
+    .divider { border: 0; border-top: 1px solid #eee; margin: 1.5rem 0; }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            background: #fcfcfc;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+
+            .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+            .value { font-weight: 600; color: #333; }
+            .value.small { font-size: 0.95rem; }
+
+            &.highlighted {
+                grid-column: span 2;
+                background: #f0f7ff;
+                border-color: #d0e3ff;
+                .value.large { font-size: 1.5rem; color: #007bff; }
+            }
+        }
+    }
+
+    .info-banner {
+        display: flex;
+        align-items: start;
+        background: #fff8eb;
+        border: 1px solid #ffeeba;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+
+        .icon-wrapper { color: #856404; margin-right: 0.75rem; margin-top: 2px; }
+        .text-content {
+            strong { font-size: 0.9rem; color: #856404; display: block; }
+            p { font-size: 0.8rem; color: #856404; margin: 0; line-height: 1.4; }
+        }
+    }
+
+    .pay-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+
+        &:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        &.disabled {
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        i { font-size: 1.5rem; margin-left: 0.5rem; }
+    }
+}

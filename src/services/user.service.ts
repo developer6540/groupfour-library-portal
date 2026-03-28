@@ -220,3 +220,20 @@ export async function reserveBook(reservations: ReservationInput[]) {
         throwException(error.message || "Failed to process reservations", 500);
     }
 }
+
+export async function membershipPayment() {
+    try {
+        const pool = await getDbConnection();
+
+        const result = await pool.request().query(`
+            SELECT UG_MEMBERSHIPAMT
+            FROM M_TBLUSERGROUPS
+            WHERE UG_NAME = 'USER'
+        `);
+
+        return result.recordset[0] || null;
+
+    } catch (error: any) {
+        throwException(error.message || "Failed to fetch membership payment", error.status || 500);
+    }
+}

@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import "./page.scss";
-import PaymentPage from "@/components/pages/Payment/PaymentPage";
+import Payment from "@/components/pages/MembershipPayment/Payment";
 
-export default function PaymentRoute() {
+export default function MembershipPaymentPage() {
     return (
         <div className="payment-page-wrapper">
             <Suspense fallback={
@@ -10,7 +10,7 @@ export default function PaymentRoute() {
                     <div className="spinner-border text-purple" role="status" />
                 </div>
             }>
-                <PaymentPage />
+                <Payment />
             </Suspense>
         </div>
     );
