@@ -88,6 +88,43 @@
     }
   }
 
+  // Success screen
+  .success-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+
+    .success-checkmark {
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  .success-amount-badge {
+    display: inline-block;
+    background: #e9f9f0;
+    border: 1px solid #b7eacc;
+    color: #1a7a42;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+  }
+
+  // Card brand logos
+  .card-logos {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .card-logo-svg {
+      width: 44px;
+      height: 28px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    }
+  }
+
   // Form icon helper
   .form-icon {
     position: absolute;

@@ -1,45 +1,72 @@
 'use client';
 
 import './Payment.scss';
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {getCsrfToken} from "@/lib/session-client";
+import {getUserInfo} from "@/lib/server-utility";
 
 export default function Payment() {
-    const [userReady, setUserReady] = useState(false);
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [membershipAmount, setMembershipAmount] = useState(0);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [user, setUser] = useState(null);
 
-    const [fineSummary, setFineSummary] = useState({
-        totalFine: 0,
-        totalPaid: 0,
-        totalBalance: 0
-    });
-
-    const fetchFineSummary = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
+        setErrorMessage("");
+
         try {
-            const res = await fetch(`/api/v1/user/membership-payment`,{
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token": getCsrfToken() || '',
-                },
-            });
-            const result = await res.json();
-            if (res.ok && result.data.UG_MEMBERSHIPAMT) {
-                setFineSummary(result.data.UG_MEMBERSHIPAMT);
+            const [userInfo, res] = await Promise.all([
+                getUserInfo(),
+                fetch(`/api/v1/user/membership-payment`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": getCsrfToken() || '',
+                    },
+                }),
+            ]);
+
+            setUser(userInfo);
+
+            const result = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setErrorMessage(result?.message || "Unable to load membership amount. Please check your database connection.");
+                return;
             }
+
+            const amount = Number(result?.data?.UG_MEMBERSHIPAMT);
+            if (!Number.isFinite(amount)) {
+                setErrorMessage("Invalid membership amount returned from the server.");
+                return;
+            }
+
+            setMembershipAmount(amount);
         } catch (err) {
-            console.error("Error fetching fine summary:", err);
+            console.error("Error fetching data:", err);
+            setErrorMessage("Unable to reach the server. Please try again.");
         } finally {
             setLoading(false);
         }
-    }, [userReady]);
+    }, []);
 
     useEffect(() => {
-        fetchFineSummary();
-    }, [fetchFineSummary]);
+        fetchData();
+    }, [fetchData]);
 
-    const formattedBalance = fineSummary.toLocaleString('en-LK', {
+    const handlePay = () => {
+        if (!membershipAmount || loading || errorMessage) return;
+        const params = new URLSearchParams();
+        if (user?.U_CODE) params.set("u", user.U_CODE);
+        if (user?.U_NAME) params.set("n", user.U_NAME);
+        params.set("a", String(membershipAmount));
+        router.push(`/payment?${params.toString()}`);
+    };
+
+    const formattedBalance = membershipAmount.toLocaleString('en-LK', {
         style: 'currency',
         currency: 'LKR'
     });
@@ -61,6 +88,12 @@ export default function Payment() {
                     </div>
                 </div>
 
+                {errorMessage && (
+                    <div className="error-banner" role="alert">
+                        {errorMessage}
+                    </div>
+                )}
+
                 {/* Info Notice */}
                 <div className="info-banner">
                     <div className="icon-wrapper">
@@ -74,15 +107,15 @@ export default function Payment() {
 
                 {/* Action Button */}
                 <div className="action-area">
-                    <a
-                        href=""
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`pay-btn btn btn-purple ${fineSummary.totalBalance <= 0 ? 'disabled' : ''}`}
+                    <button
+                        type="button"
+                        onClick={handlePay}
+                        disabled={membershipAmount <= 0 || loading || !!errorMessage}
+                        className={`pay-btn btn btn-purple ${membershipAmount <= 0 || loading || !!errorMessage ? 'disabled' : ''}`}
                     >
                         <span>Pay {formattedBalance}</span>
                         <i className="bi bi-arrow-right-short"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
