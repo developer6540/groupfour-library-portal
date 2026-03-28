@@ -5,8 +5,6 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import {getCsrfToken} from "@/lib/session-client";
 
 export default function Payment() {
-    const memberCodeRef = useRef("");
-    const [loggedUser, setLoggedUser] = useState(null);
     const [userReady, setUserReady] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -16,24 +14,10 @@ export default function Payment() {
         totalBalance: 0
     });
 
-    useEffect(() => {
-        try {
-            const stored = localStorage.getItem("user");
-            const user = stored ? JSON.parse(stored) : null;
-            memberCodeRef.current = user?.U_CODE || "";
-            setLoggedUser(user);
-        } catch (err) {
-            console.error("User parse error:", err);
-        }
-        setUserReady(true);
-    }, []);
-
     const fetchFineSummary = useCallback(async () => {
-        if (!userReady || !memberCodeRef.current) return;
         setLoading(true);
         try {
-            const params = new URLSearchParams({ member: memberCodeRef.current });
-            const res = await fetch(`/api/v1/book/fine-summary?${params}`,{
+            const res = await fetch(`/api/v1/user/membership-payment`,{
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -41,9 +25,8 @@ export default function Payment() {
                 },
             });
             const result = await res.json();
-
-            if (res.ok && result.data) {
-                setFineSummary(result.data);
+            if (res.ok && result.data.UG_MEMBERSHIPAMT) {
+                setFineSummary(result.data.UG_MEMBERSHIPAMT);
             }
         } catch (err) {
             console.error("Error fetching fine summary:", err);
@@ -56,7 +39,7 @@ export default function Payment() {
         fetchFineSummary();
     }, [fetchFineSummary]);
 
-    const formattedBalance = fineSummary.totalBalance.toLocaleString('en-LK', {
+    const formattedBalance = fineSummary.toLocaleString('en-LK', {
         style: 'currency',
         currency: 'LKR'
     });
@@ -92,7 +75,7 @@ export default function Payment() {
                 {/* Action Button */}
                 <div className="action-area">
                     <a
-                        href={`http://localhost:3001/?amount=${fineSummary.totalBalance.toFixed(2)}&type=fine&locked=1&member=${encodeURIComponent(memberCodeRef.current)}&callback=${encodeURIComponent('http://localhost:3000/api/v1/book/fine-payment')}`}
+                        href=""
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`pay-btn btn btn-purple ${fineSummary.totalBalance <= 0 ? 'disabled' : ''}`}
