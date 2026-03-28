@@ -68,9 +68,9 @@ export default function PaymentPage() {
                 <p className="text-muted mb-4">Your membership has been activated.</p>
                 <button
                     className="btn btn-purple w-100 py-2 fw-bold"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.push("/sign-in")}
                 >
-                    <i className="bi bi-house me-2"></i>Go to Dashboard
+                    <i className="bi bi-box-arrow-in-right me-2"></i>Go to Sign in
                 </button>
                 <p className="text-center mt-3 small text-muted">🔒 Payments are secured and encrypted</p>
             </div>
