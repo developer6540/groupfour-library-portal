@@ -3,10 +3,11 @@
 import React, {useState, useEffect, useCallback} from "react";
 import "./BookReservation.scss";
 import {getCsrfToken, getSessionClient, setSessionClient} from "@/lib/session-client";
-import {capitalizeFirstLetter} from "@/lib/client-utility";
+import {capitalizeFirstLetter, getBaseUrl} from "@/lib/client-utility";
 import {useDataContext} from "@/lib/dataContext";
 import Link from "next/link";
 import {alerts} from "@/lib/alerts";
+import {getUserInfo} from "@/lib/server-utility";
 
 export default function BookReservation() {
 
@@ -98,7 +99,7 @@ export default function BookReservation() {
             async () => {
 
                 try {
-                    const user = getSession("user-info");
+                    const user = await getUserInfo();
                     const userData = typeof user === "string" ? JSON.parse(user) : user;
 
                     // Calculate total quantity in the cart
