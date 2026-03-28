@@ -217,7 +217,7 @@ export default function Register() {
             }
 
             alerts.success("Registration Success", `Hi ${formData.fullName}, your account is created.`);
-            router.push("/sign-in");
+            router.push("/membership-payment");
         } catch (err) {
             alerts.error("Connection Error", "Could not reach the server.");
         } finally {

@@ -22,10 +22,14 @@ export async function middleware(req: NextRequest) {
         "/sign-in",
         "/register",
         "/forgot-password",
+        "/membership-payment",
+        "/payment",
         "/api/v1/auth/login",
         "/api/v1/auth/register",
         "/api/v1/locations",
         "/api/v1/auth/forgot-password",
+        "/api/v1/user/membership-payment",
+        "/api/v1/payment/subscribe",
     ];
 
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
