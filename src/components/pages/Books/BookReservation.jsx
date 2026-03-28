@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect, useCallback} from "react";
 import "./BookReservation.scss";
-import {getSessionClient, setSessionClient} from "@/lib/session-client";
+import {getCsrfToken, getSessionClient, setSessionClient} from "@/lib/session-client";
 import {capitalizeFirstLetter} from "@/lib/client-utility";
 import {useDataContext} from "@/lib/dataContext";
 import Link from "next/link";
@@ -121,10 +121,11 @@ export default function BookReservation() {
                     }));
 
                     // API Call to your new endpoint
-                    const response = await fetch("/api/v1/user/reserve-books", {
+                    const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-books`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            "X-CSRF-Token": getCsrfToken() || '',
                         },
                         body: JSON.stringify(payload),
                     });

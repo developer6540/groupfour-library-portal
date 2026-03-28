@@ -7,6 +7,7 @@ import { useDataContext } from "@/lib/dataContext";
 import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
 import { alerts } from "@/lib/alerts";
 import {getUserCode, getUserInfo} from "@/lib/server-utility";
+import {getCsrfToken} from "@/lib/session-client";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -72,7 +73,13 @@ export default function BookCatalog() {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
 
             if (response.ok && result.data) {
@@ -97,7 +104,13 @@ export default function BookCatalog() {
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
-            const response = await fetch(`${getBaseUrl()}/api/v1/books/list?${queryParams.toString()}`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/books/list?${queryParams.toString()}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);

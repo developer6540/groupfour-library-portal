@@ -65,7 +65,13 @@ export default function BooksReturn() {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
 
             if (response.ok && result.data) {
@@ -93,7 +99,13 @@ export default function BooksReturn() {
                 pageSize: booksPerPage.toString(),
             });
 
-            const response = await fetch(`${getBaseUrl()}/api/v1/books/return?${queryParams.toString()}`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/books/return?${queryParams.toString()}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);
