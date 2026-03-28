@@ -12,6 +12,11 @@ interface GetBooksOptions {
     userCode: string;
 }
 
+interface GetBooksBorrowOptions {
+    page?: number;
+    pageSize?: number;
+}
+
 export async function getAllBooks(
     searchParams: URLSearchParams,
     options: GetBooksOptions
@@ -237,7 +242,7 @@ export async function getAllReturnBooks(
 
 export async function getBorrowedBooks(
     searchParams: URLSearchParams,
-    options: GetBooksOptions
+    options: GetBooksBorrowOptions
 ): Promise<BooksResult> {
     try {
         const pool = await getDbConnection();
