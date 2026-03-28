@@ -24,6 +24,7 @@ const menuItems = [
         title: "Book Catalog", icon: "bi-book", key: "book-catalog", children: [
             { title: "Books List", path: "/books" },
             { title: "Reserve Books", path: "/books/reserve" },
+            { title: "Borrow Books", path: "/books/borrowed" },
             { title: "Returned Books", path: "/books/return" }
         ]
     }
