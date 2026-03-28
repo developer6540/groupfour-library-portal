@@ -34,6 +34,7 @@ const PLANS = [
 ];
 
 export default function PaymentPage() {
+
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -46,7 +47,7 @@ export default function PaymentPage() {
     const [errors, setErrors] = useState({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
 
     useEffect(() => {
-        if (!usercode) router.replace("/sign-in");
+        //if (!usercode) router.replace("/sign-in");
     }, [usercode, router]);
 
     const formatCardNumber = (val) =>
@@ -109,7 +110,7 @@ export default function PaymentPage() {
                 `Your subscription has been renewed. Please sign in to continue.`,
                 4000
             );
-            setTimeout(() => router.push("/sign-in"), 3000);
+            //setTimeout(() => router.push("/sign-in"), 3000);
         } catch {
             alerts.error("Connection Error", "Could not process payment. Please try again.");
         } finally {

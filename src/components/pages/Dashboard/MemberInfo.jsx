@@ -26,8 +26,19 @@ export default function MemberInfo() {
         fetchUser();
     }, []);
 
+
+    const now = new Date();
+    const twoWeeksFromNow = new Date();
+    twoWeeksFromNow.setDate(now.getDate() + 14);
+
     const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;
-    const isExpired = expiryDate ? expiryDate < new Date() : true;
+
+    const isExpiringSoon = expiryDate
+        ? (expiryDate > now && expiryDate <= twoWeeksFromNow)
+        : false;
+
+    console.log("Checking against threshold:", twoWeeksFromNow.toDateString());
+    console.log("Is Expiring Soon?", isExpiringSoon);
 
     return (
         <div className="member-card shadow-sm mb-1">
@@ -61,12 +72,14 @@ export default function MemberInfo() {
                             </span>
                         </div>
                     </div>
-                    <div className={`member-expire-box ${isExpired ? 'border-danger' : 'border-success'}`}>
+                    <div className={`member-expire-box ${isExpiringSoon ? 'border-danger' : 'border-success'}`}>
                         <div className="member-expire">
-                            <div className={`label ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>Membership Expire On</div>
-                            <div className={`value ms-1 ${isExpired ? 'text-danger' : 'text-success'}`}>
+                            <div className={`label ms-1 ${isExpiringSoon ? 'text-danger' : 'text-success'}`}>Membership Expire On</div>
+                            <div className={`value ms-1 ${isExpiringSoon ? 'text-danger' : 'text-success'}`}>
                                 {getDateFormated(user?.U_EXPIREDDATE, "MMMM dd, yyyy")}
                             </div>
+                            {isExpiringSoon}
+                            <Link href="/membership-payment" className="mt-2 fw-bold btn btn-sm text-white btn-warning">Renew Now</Link>
                         </div>
                     </div>
                     <Link className="profile-view" href="/profile/change-account-details">

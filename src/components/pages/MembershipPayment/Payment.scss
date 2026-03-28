@@ -20,7 +20,7 @@
     .payment-header {
         text-align: center;
         margin-bottom: 1.5rem;
-        h3 { font-weight: 700; color: #1a1a1a; margin-bottom: 0.25rem; }
+        h3 { font-weight: 700; color: #919191; margin-bottom: 0.25rem; }
         .member-badge { font-size: 0.85rem; color: #6c757d; background: #f8f9fa; display: inline-block; padding: 4px 12px; border-radius: 50px; }
     }
 
@@ -78,11 +78,6 @@
         border-radius: 12px;
         font-weight: 600;
         transition: all 0.2s ease;
-
-        &:hover:not(.disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
 
         &.disabled {
             cursor: not-allowed;
