@@ -14,7 +14,7 @@ export function forgotPasswordEmailTemplate(params: {
 </head>
 <body style="margin: 0; padding: 0; background-color: #eeedff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
 
-    <div style="width: 100%; background-color: #eeedff; padding-bottom: 50px;">
+    <div style="width: 100%; background-color: #eeedff; padding-bottom: 30px;">
         
         <br /><br />
         

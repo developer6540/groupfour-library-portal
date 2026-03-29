@@ -1,39 +1,87 @@
 import sgMail from "@sendgrid/mail";
 import logger from "@/lib/logger";
-import { throwException } from "@/lib/exceptions";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
-interface SendEmailPayload {
+export interface SendEmailPayload {
     to: string;
     subject: string;
     html: string;
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailPayload) {
+/**
+ * Send via SendGrid
+ */
+async function sendWithSendGrid({ to, subject, html }: SendEmailPayload) {
+    if (!to || !subject || !html) {
+        throw new Error("Missing email fields for SendGrid");
+    }
+
+    const msg = {
+        to,
+        from: process.env.EMAIL_FROM || "no-reply@example.com",
+        subject,
+        html,
+    };
+
+    await sgMail.send(msg);
+    return { success: true, source: "sendgrid" };
+}
+
+/**
+ * Send via GoogieHost PHP API
+ */
+async function sendWithGoogieHost({ to, subject, html }: SendEmailPayload) {
+    if (!to || !subject || !html) {
+        throw new Error("Missing email fields for GoogieHost");
+    }
+
+    const response = await fetch(process.env.GOOGIEHOST_MAIL_API_URL || "", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to, subject, message: html }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.message || "GoogieHost API failed");
+    }
+
+    return { success: true, source: "googiehost" };
+}
+
+/**
+ * Main sendEmail function
+ */
+export async function sendEmail(payload: SendEmailPayload) {
     try {
-        // Validation
-        if (!to || !subject || !html) {
-            throwException("Missing email fields", 400);
+        const res = await sendWithGoogieHost(payload);
+
+        if (res && res.success === true) {
+            console.log("Mail sent by GoogieHost");
+            return res;
         }
 
-        const msg = {
-            to,
-            from: process.env.EMAIL_FROM || "",
-            subject,
-            html,
-        };
+        throw new Error("GoogieHost returned unsuccessful response");
 
-        await sgMail.send(msg);
+    } catch (googieError: any) {
+        logger.warn("GoogieHost failed:", googieError);
 
-        return [];
+        try {
+            const res = await sendWithSendGrid(payload);
 
-    } catch (error: any) {
-        logger.error("SENDGRID ERROR:", error);
+            if (res && res.success === true) {
+                console.log("Mail sent by SendGrid");
+                return res;
+            }
 
-        throwException(
-            error?.response?.body || error.message || "Failed to send email",
-            500
-        );
+            throw new Error("SendGrid returned unsuccessful response");
+
+        } catch (sendGridError: any) {
+            logger.error("SendGrid failed:", sendGridError);
+
+            throw new Error("Both email providers failed");
+        }
     }
 }
