@@ -22,7 +22,7 @@ export function forgotPasswordEmailTemplate(params: {
             
             <div style="padding: 40px; text-align: left;">
                 
-                <div style="background-color: #6856cb; height: 100px; width: 100%; text-align: center; padding-top: 10px; box-sizing: border-box;">
+                <div style="background-color: #6856cb; height: 100px; width: 100%; text-align: center; box-sizing: border-box;">
                     <div style="display: inline-block; color: #ffffff; font-size: 60px; font-weight: bold;">
                         ✉
                     </div>
