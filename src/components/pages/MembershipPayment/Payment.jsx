@@ -75,9 +75,13 @@ export default function Payment() {
         <div className="payment-container">
             <div className={`payment-card ${loading ? 'loading' : ''}`}>
 
-                {/* Header */}
-                <div className="payment-header">
-                    <h3>Membership Payment</h3>
+                <div className="text-start mb-4">
+                    <div className="text-center mb-0">
+                        <img src="/img/logo.png" alt="Logo" style={{ width: "180px" }} />
+                    </div>
+                    <hr className="gradient-hr" />
+                    <h2 className="h4 fw-bold text-secondary mb-2" style={{fontSize:"20px"}}>Membership Payment</h2>
+                    <p className="text-muted mb-0" style={{fontSize:"15px"}}>Review your membership fee and proceed to payment</p>
                 </div>
 
                 {/* Summary Grid */}

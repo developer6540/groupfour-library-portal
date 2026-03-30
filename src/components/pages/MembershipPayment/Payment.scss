@@ -4,6 +4,12 @@
     padding: 2rem;
     font-family: 'Inter', sans-serif;
 
+    hr.gradient-hr {
+        background: linear-gradient(90deg, #fff0 0%, gray 50%, #fff0 100%);
+        border: 0;
+        height: 3px;
+    }
+
     .payment-card {
         background: #fff;
         border-radius: 20px;
@@ -84,11 +90,11 @@
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        padding: 1rem 2rem;
+        padding: 10px 20px;
         border-radius: 12px;
         font-weight: 600;
         transition: all 0.2s ease;
-
+        width: 100%;
         &.disabled {
             cursor: not-allowed;
             pointer-events: none;
