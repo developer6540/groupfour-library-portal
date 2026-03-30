@@ -36,11 +36,15 @@ export default function Login() {
 
         if (name === "password") {
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
-            if (!value) error = "Password is required";
-            else if (value.length < 8) error = "Minimum 8 characters required";
-            else if (value.length > 20) error = "Maximum 20 characters allowed";
-            else if (!passwordRegex.test(value)) {
-                error = "Password complexity requirements not met";
+
+            if (!value) {
+                error = "Password is required";
+            } else if (value.length < 8) {
+                error = "Minimum 8 characters required";
+            } else if (value.length > 20) {
+                error = "Maximum 20 characters allowed";
+            } else if (!passwordRegex.test(value)) {
+                error = "Password must include at least 1 uppercase letter, 1 number, and 1 special character (@$!%*?&)";
             }
         }
         return error;

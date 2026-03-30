@@ -13,34 +13,36 @@ export default function ValueBox({ data }) {
         }).format(value);
     };
 
+    console.log(data);
+
     const stats = [
         {
             title: "Reserved Books",
-            value: data?.TotalReservedBooks ?? "0",
+            value: data?.dashboard_count.TotalReservedBooks ?? "0",
             icon: "bi-bookmark-check",
             color: "#5e72e4",
         },
         {
             title: "Books Read",
-            value: data?.TotalBooksRead ?? "0",
+            value: data?.dashboard_count.TotalBooksRead ?? "0",
             icon: "bi-journal-check",
             color: "#9a40fb",
         },
         {
             title: "Books Overdue",
-            value: data?.TotalBooksOverdue ?? "0",
+            value: data?.dashboard_count.TotalBooksOverdue ?? "0",
             icon: "bi-exclamation-triangle",
             color: "#f5365c",
         },
         {
             title: "Settled Fines",
-            value: formatCurrency(data?.TotalOverdueFines),
+            value: formatCurrency(data?.dashboard_count.TotalOverdueFines),
             icon: "bi-currency-dollar",
             color: "#2dce89",
         },
         {
             title: "Pending Fines",
-            value: formatCurrency(data?.PendingFines),
+            value: formatCurrency(data?.dashboard_count.PendingFines),
             icon: "bi-currency-dollar",
             color: "#f5365c",
         },

@@ -1,5 +1,24 @@
-import {throwException} from "@/lib/exceptions";
-import {getDbConnection} from "@/lib/db";
+import { throwException } from "@/lib/exceptions";
+import { getDbConnection } from "@/lib/db";
+import sql from "mssql";
+
+// ✅ Types
+type DashboardCount = {
+    TotalReservedBooks: number;
+    TotalBooksRead: number;
+    TotalBooksOverdue: number;
+    TotalOverdueFines: number;
+    PendingFines: number;
+};
+
+type MonthlyRead = {
+    MonthNumber: number;
+    BookCount: number;
+};
+
+type QueryResult = {
+    recordsets: [DashboardCount[], MonthlyRead[]];
+};
 
 export async function getDashboardCounts(code: string) {
     if (!code) {
@@ -8,12 +27,12 @@ export async function getDashboardCounts(code: string) {
 
     try {
         const pool = await getDbConnection();
+
         const request = pool.request();
+        request.input("userCode", sql.VarChar, code);
 
-        request.input('userCode', code);
-
-        // Fetching all Dashboard Counts in a single query
         const query = `
+            -- Dashboard counts
             SELECT
                 (
                     SELECT ISNULL(SUM(BR_QTY), 0)
@@ -26,14 +45,14 @@ export async function getDashboardCounts(code: string) {
                 (
                     SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
                     FROM dbo.T_TBLBOOKRETURN_H h
-                             JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
+                    JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
                     WHERE h.RH_MEMBERCODE = @userCode
                 ) AS TotalBooksRead,
 
                 (
                     SELECT ISNULL(SUM(d.RD_RETURN_QTY), 0)
                     FROM dbo.T_TBLBOOKRETURN_H h
-                             JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
+                    JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
                     WHERE h.RH_MEMBERCODE = @userCode
                       AND d.RD_CONDITION IN ('O', 'P')
                       AND ISNULL(d.RD_RETURN_QTY, 0) > 0
@@ -42,7 +61,7 @@ export async function getDashboardCounts(code: string) {
                 (
                     SELECT ISNULL(SUM(d.FD_AMOUNT), 0)
                     FROM dbo.T_TBLMEMBERFINE_H h
-                             JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
+                    JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
                     WHERE h.FH_MEMBERCODE = @userCode
                       AND d.FD_FINE_TYPE IN ('O','L','D')
                 ) AS TotalOverdueFines,
@@ -50,14 +69,35 @@ export async function getDashboardCounts(code: string) {
                 (
                     SELECT ISNULL(SUM(d.FD_AMOUNT), 0)
                     FROM dbo.T_TBLMEMBERFINE_H h
-                             JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
+                    JOIN dbo.T_TBLMEMBERFINE_D d ON d.FD_DOCNO = h.FH_DOCNO
                     WHERE h.FH_MEMBERCODE = @userCode
                       AND h.FH_STATUS IN ('P','T')
-                ) AS PendingFines
+                ) AS PendingFines;
+
+            -- Monthly reads
+            SELECT
+                MONTH(h.M_DATE) AS MonthNumber,
+                SUM(CAST(ISNULL(d.RD_RETURN_QTY, 0) AS INT)) AS BookCount
+            FROM dbo.T_TBLBOOKRETURN_H h
+            JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO = h.RH_DOCNO
+            WHERE h.RH_MEMBERCODE = @userCode
+              AND YEAR(h.M_DATE) = YEAR(GETDATE())
+            GROUP BY MONTH(h.M_DATE)
+            ORDER BY MonthNumber;
         `;
 
-        const result = await request.query(query);
-        return result.recordset[0];
+        const result = await request.query(query) as unknown as QueryResult;
+
+        return {
+            dashboard_count: result.recordsets?.[0]?.[0] ?? {
+                TotalReservedBooks: 0,
+                TotalBooksRead: 0,
+                TotalBooksOverdue: 0,
+                TotalOverdueFines: 0,
+                PendingFines: 0
+            },
+            monthly_reads: result.recordsets?.[1] ?? []
+        };
 
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Database error";

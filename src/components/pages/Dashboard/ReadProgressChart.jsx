@@ -8,27 +8,26 @@ import {
     Tooltip,
     CartesianGrid,
     ResponsiveContainer,
-    defs,
 } from "recharts";
 
-import "./ReadProgressChart.scss"
+import "./ReadProgressChart.scss";
 
-export default function BooksReadChart() {
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    const lineData = [
-        { month: "Jan", books: 5 },
-        { month: "Feb", books: 8 },
-        { month: "Mar", books: 3 },
-        { month: "Apr", books: 0 },
-        { month: "May", books: 0 },
-        { month: "Jun", books: 0 },
-        { month: "Jul", books: 0 },
-        { month: "Aug", books: 0 },
-        { month: "Sep", books: 0 },
-        { month: "Oct", books: 0 },
-        { month: "Nov", books: 0 },
-        { month: "Dec", books: 0 }
-    ];
+export default function BooksReadChart({ data }) {
+
+    // ✅ Convert API data to chart format
+    const lineData = MONTHS.map((month, index) => {
+        const found = data?.monthly_reads?.find(
+            (m) => m.MonthNumber === index + 1
+        );
+
+        return {
+            month,
+            books: found?.BookCount || 0
+        };
+    });
 
     return (
         <div className="card h-100 chart-line shadow-sm border-0 p-3">
@@ -38,7 +37,7 @@ export default function BooksReadChart() {
             <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={lineData}>
 
-                    {/* Define linear gradient for the line */}
+                    {/* Gradient */}
                     <defs>
                         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#9d4edd" stopOpacity={1}/>
@@ -52,6 +51,7 @@ export default function BooksReadChart() {
                         dataKey="month"
                         tick={{ fontSize: 11, fill: "#636e72", fontWeight: 500 }}
                     />
+
                     <YAxis tick={{ fontSize: 12, fill: "#b2bec3" }} />
 
                     <Tooltip
@@ -69,7 +69,7 @@ export default function BooksReadChart() {
                     <Line
                         type="monotone"
                         dataKey="books"
-                        stroke="url(#lineGrad)"  // <-- gradient stroke
+                        stroke="url(#lineGrad)"
                         strokeWidth={3}
                         dot={{ r: 4, stroke: "#636e72", strokeWidth: 2 }}
                         activeDot={{ r: 6 }}

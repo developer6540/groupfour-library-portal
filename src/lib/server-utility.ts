@@ -74,36 +74,42 @@ export async function generateStrongPassword(length: number = 10): Promise<strin
     const lower = "abcdefghijklmnopqrstuvwxyz";
     const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const numbers = "0123456789";
-    const specials = "!@#$%^&*()_+";
+    const specials = "@$!%*?&";
 
     const all = lower + upper + numbers + specials;
 
-    // Secure random helper
     const getRandomChar = (charset: string) => {
         const array = new Uint32Array(1);
         crypto.getRandomValues(array);
         return charset[array[0] % charset.length];
     };
 
-    let password = [
-        getRandomChar(lower),   // ensure lowercase
-        getRandomChar(upper),   // ensure uppercase
-        getRandomChar(numbers), // ensure number
-        getRandomChar(specials) // ensure special char
-    ];
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
 
-    // Fill remaining length
-    for (let i = password.length; i < length; i++) {
-        password.push(getRandomChar(all));
+    while (true) {
+        let password = [
+            getRandomChar(lower),
+            getRandomChar(upper),
+            getRandomChar(numbers),
+            getRandomChar(specials)
+        ];
+
+        for (let i = password.length; i < length; i++) {
+            password.push(getRandomChar(all));
+        }
+
+        // Shuffle (Fisher-Yates)
+        for (let i = password.length - 1; i > 0; i--) {
+            const array = new Uint32Array(1);
+            crypto.getRandomValues(array);
+            const j = array[0] % (i + 1);
+            [password[i], password[j]] = [password[j], password[i]];
+        }
+
+        const finalPassword = password.join("");
+
+        if (passwordRegex.test(finalPassword)) {
+            return finalPassword;
+        }
     }
-
-    // Fisher-Yates shuffle (secure shuffle)
-    for (let i = password.length - 1; i > 0; i--) {
-        const array = new Uint32Array(1);
-        crypto.getRandomValues(array);
-        const j = array[0] % (i + 1);
-        [password[i], password[j]] = [password[j], password[i]];
-    }
-
-    return password.join("");
 }

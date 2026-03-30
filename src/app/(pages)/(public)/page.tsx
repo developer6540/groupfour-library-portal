@@ -80,7 +80,7 @@ export default async function DashboardPage() {
 
                 <div className="dashboard-row d-flex flex-wrap gap-4">
                     <div className="dashboard-col flex-fill mb-4">
-                        <BooksReadChart />
+                        <BooksReadChart data={dashboardStats} />
                     </div>
                     <div className="dashboard-col flex-fill mb-4">
                         <BookStatusChart data={dashboardStats} />
