@@ -2,10 +2,10 @@
 
 import './MemberInfo.scss';
 import Image from "next/image";
-import {getDateFormated} from "@/lib/client-utility";
+import { getDateFormated } from "@/lib/client-utility";
 import Link from "next/link";
-import React, {useEffect, useState} from "react";
-import {getUserInfo} from "@/lib/server-utility";
+import React, { useEffect, useState } from "react";
+import { getUserInfo } from "@/lib/server-utility";
 
 export default function MemberInfo() {
 
@@ -26,19 +26,31 @@ export default function MemberInfo() {
         fetchUser();
     }, []);
 
-
     const now = new Date();
-    const twoWeeksFromNow = new Date();
-    twoWeeksFromNow.setDate(now.getDate() + 14);
+    const expiryDate = user?.U_EXPIREDDATE ? new Date(user.U_EXPIREDDATE) : null;
 
-    const expiryDate = user?.U_EXPIREDDATE ? new Date(user?.U_EXPIREDDATE) : null;
+    const daysBeforeExpiry = expiryDate ? new Date(expiryDate) : null;
+    if (daysBeforeExpiry) {
+        daysBeforeExpiry.setDate(expiryDate.getDate() - 14);
+    }
 
-    const isExpiringSoon = expiryDate
-        ? (expiryDate > now && expiryDate <= twoWeeksFromNow)
+    const isWithinRenewalWindow = expiryDate && daysBeforeExpiry
+        ? (now >= daysBeforeExpiry && now <= expiryDate)
         : false;
 
-    console.log("Checking against threshold:", twoWeeksFromNow.toDateString());
-    console.log("Is Expiring Soon?", isExpiringSoon);
+    const isExpired = expiryDate ? now > expiryDate : false;
+
+    const boxClass = isExpired
+        ? 'border-danger'
+        : isWithinRenewalWindow
+            ? 'border-danger'
+            : 'border-success';
+
+    const textClass = isExpired
+        ? 'text-danger'
+        : isWithinRenewalWindow
+            ? 'text-danger'
+            : 'text-success';
 
     return (
         <div className="member-card shadow-sm mb-1">
@@ -48,7 +60,6 @@ export default function MemberInfo() {
 
             <div className="member-card-body">
 
-                {/* Profile Section */}
                 <div className="profile-section">
 
                     <div className="profile-left">
@@ -64,27 +75,53 @@ export default function MemberInfo() {
                             <h6 className="text-capitalize">
                                 {user?.U_NAME?.toLowerCase()}
                             </h6>
-                            <p>
-                                {user?.U_EMAIL?.toLowerCase()}
-                            </p>
+                            <p>{user?.U_EMAIL?.toLowerCase()}</p>
+
                             <span className={`badge ${user?.U_ACTIVE ? "badge-success" : "badge-danger"}`}>
                                 {user?.U_ACTIVE ? "Active" : "Inactive"}
                             </span>
                         </div>
                     </div>
-                    <div className={`member-expire-box ${isExpiringSoon ? 'border-danger' : 'border-success'}`}>
+
+                    <div className={`member-expire-box ${boxClass}`}>
                         <div className="member-expire">
-                            <div className={`label ms-1 ${isExpiringSoon ? 'text-danger' : 'text-success'}`}>Membership Expire On</div>
-                            <div className={`value ms-1 ${isExpiringSoon ? 'text-danger' : 'text-success'}`}>
+
+                            <div className={`label ms-1 ${textClass}`}>
+                                Membership Expire On
+                            </div>
+
+                            <div className={`value ms-1 ${textClass}`}>
                                 {getDateFormated(user?.U_EXPIREDDATE, "MMMM dd, yyyy")}
                             </div>
-                            {isExpiringSoon}
-                            <Link href="/membership-payment" className="mt-2 fw-bold btn btn-sm text-white btn-warning">Renew Now</Link>
+
+                            {isExpired && (
+                                <div className="text-danger fw-bold mt-1">
+                                    Expired
+                                </div>
+                            )}
+
+                            {isWithinRenewalWindow && !isExpired && (
+                                <div className="text-danger small mt-1">
+                                    Expiring soon
+                                </div>
+                            )}
+
+                            {(isWithinRenewalWindow || isExpired) && (
+                                <Link
+                                    href="/membership-payment"
+                                    className="mt-2 fw-bold btn btn-sm text-white btn-danger"
+                                >
+                                    Renew Now
+                                </Link>
+                            )}
+
                         </div>
                     </div>
+
                     <Link className="profile-view" href="/profile/change-account-details">
                         <button className="btn btn-sm btn-purple">
-                            Edit Profile Info &nbsp; <i className="bi bi-pencil-square"></i>
+                            Edit Profile Info &nbsp;
+                            <i className="bi bi-pencil-square"></i>
                         </button>
                     </Link>
 
@@ -105,21 +142,19 @@ export default function MemberInfo() {
 
                     <div className="info-item">
                         <span className="label">Date of Birth</span>
-                        <span className="value">{getDateFormated(user?.U_DOB, 'YYYY-MM-DD')}</span>
+                        <span className="value">
+                            {getDateFormated(user?.U_DOB, 'YYYY-MM-DD')}
+                        </span>
                     </div>
 
                     <div className="info-item">
                         <span className="label">Gender</span>
-                        <span className="value">
-                            {user?.U_GENDER}
-                        </span>
+                        <span className="value">{user?.U_GENDER}</span>
                     </div>
 
                     <div className="info-item">
-                        <span className="label"> NIC Number</span>
-                        <span className="value">
-                            {user?.U_NIC}
-                        </span>
+                        <span className="label">NIC Number</span>
+                        <span className="value">{user?.U_NIC}</span>
                     </div>
 
                     <div className="info-item full-width">

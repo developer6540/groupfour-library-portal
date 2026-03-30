@@ -63,7 +63,7 @@ export default function ChangePassword() {
             } else if (value.length > 20) {
                 error = "Maximum 20 characters allowed";
             } else if (!passwordRegex.test(value)) {
-                error = "Must include uppercase, number, and special character (@$!%*?&)";
+                error = "Password must include at least 1 uppercase letter, 1 number, and 1 special character (@$!%*?&)";
             } else if (value === allValues.currentPassword) {
                 error = "New password cannot be the same as current password";
             }
