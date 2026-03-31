@@ -313,13 +313,13 @@ export default function BooksReturn() {
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
                                 <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
-                                        <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
+                                        <div className="top-title-container"><div className="top-title">{book.B_TITLE}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
                                 </div>
                                 <div className="book-info">
-                                    <p className="book-title mt-3">{safeCap(book.B_TITLE)}</p>
+                                    <p className="book-title mt-3">{book.B_TITLE}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
                                     <button  className="btn btn-sm shadow-sm fw-bold btn-feedback mt-3" onClick={() => handleFeedbackView(book)}><i className="bi bi-star"></i> Add Feedback</button>
@@ -347,7 +347,7 @@ export default function BooksReturn() {
                                     <div className="col-md-5 d-none d-md-flex align-items-center justify-content-center p-5 bg-light-purple">
                                         <div className="book-image-container category-icon-container bk-rotate book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
                                             <div className="inner-cover-content">
-                                                <div className="top-title-container"><div className="top-title">{safeCap(selectedBook.B_TITLE)}</div></div>
+                                                <div className="top-title-container"><div className="top-title">{selectedBook.B_TITLE}</div></div>
                                                 <div className="mid-icon"><i className="bi bi-book"></i></div>
                                                 <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
                                             </div>

@@ -84,7 +84,7 @@ export default function Register() {
     }, [csrfToken]);
 
     // Validation
-    const validate = (name, value) => {
+    const validate = (name, value, formData) => {
         let error = "";
 
         switch (name) {
@@ -96,11 +96,18 @@ export default function Register() {
 
             case "fullName":
                 if (!value.trim()) error = "Full name is required";
+                else if (!/^[A-Za-z\s]+$/.test(value))
+                    error = "Numbers and special characters not allowed";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
                 break;
 
             case "phone":
-                if (!value.trim()) error = "Mobile number is required";
-                else if (!/^\d{10}$/.test(value)) error = "Enter a valid 10-digit number";
+                if (!value.trim()) error = "Contact number is required";
+                else if (!/^\d+$/.test(value))
+                    error = "Only numbers allowed (no spaces or dashes)";
+                else if (value.length < 8 || value.length > 10)
+                    error = "Must be between 8 and 10 digits";
                 break;
 
             case "nic":
@@ -116,13 +123,14 @@ export default function Register() {
 
             case "email":
                 if (!value.trim()) error = "Email is required";
-                else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
+                else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
                     error = "Invalid email address";
-                }
                 break;
 
             case "address":
                 if (!value.trim()) error = "Address is required";
+                else if (value.length > 60)
+                    error = "Maximum 60 characters allowed";
                 break;
 
             case "location":
@@ -134,21 +142,34 @@ export default function Register() {
                 break;
 
             case "gender":
-                if (!value) error = "Gender is required";
+                if (!value)
+                    error = "Gender is required";
+                else if (!["male", "female", "other"].includes(value.toLowerCase()))
+                    error = "Select Male, Female or Other";
                 break;
 
             case "password":
                 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Password is required";
-                else if (value.length < 8) error = "Minimum 8 characters required";
-                else if (value.length > 20) error = "Maximum 20 characters allowed";
+                else if (value.length < 8)
+                    error = "Minimum 8 characters required";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
                 else if (!passwordRegex.test(value))
-                    error = "Password must include 1 uppercase letter, 1 number & 1 special character";
+                    error = "Must include 1 uppercase, 1 number & 1 special character";
                 break;
 
             case "confirmPassword":
+                const confirmRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Confirm password is required";
-                else if (value !== formData.password) error = "Passwords do not match";
+                else if (value.length < 8)
+                    error = "Minimum 8 characters required";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
+                else if (!confirmRegex.test(value))
+                    error = "Must include 1 uppercase, 1 number & 1 special character";
+                else if (value !== formData.password)
+                    error = "Passwords do not match";
                 break;
 
             default:

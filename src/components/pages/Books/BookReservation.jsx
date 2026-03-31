@@ -211,7 +211,7 @@ export default function BookReservation() {
                                                 <div className="book-icon-sm me-3"><i className="bi bi-book"></i></div>
                                                 <div>
                                                     <div
-                                                        className="fw-bold text-dark mb-0">{capitalizeFirstLetter(book.B_TITLE)}</div>
+                                                        className="fw-bold text-dark mb-0">{book.B_TITLE}</div>
                                                     <span className="text-muted small-code">Code: {book.B_CODE}</span>
                                                 </div>
                                             </div>
