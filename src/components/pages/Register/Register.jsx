@@ -34,6 +34,8 @@ export default function Register() {
     const [locations, setLocations] = useState([]);
     const [loadingLocations, setLoadingLocations] = useState(true);
 
+    const [userCodeStatus, setUserCodeStatus] = useState("idle");
+
     const [formData, setFormData] = useState({
         userCode: "",
         fullName: "",
@@ -82,6 +84,40 @@ export default function Register() {
 
         void loadLocations();
     }, [csrfToken]);
+
+    useEffect(() => {
+        if (!formData.userCode || errors.userCode) {
+            setUserCodeStatus("idle");
+            return;
+        }
+
+        const timeout = setTimeout(async () => {
+            try {
+                setUserCodeStatus("checking");
+
+                const res = await fetch(
+                    `${getBaseUrl()}/api/v1/user/${formData.userCode}/exist`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrfToken || "",
+                        },
+                    }
+                );
+                const data = await res.json();
+                if (res.ok) {
+                    setUserCodeStatus(data.data.exists ? "taken" : "available");
+                } else {
+                    setUserCodeStatus("idle");
+                }
+            } catch (err) {
+                setUserCodeStatus("idle");
+            }
+        }, 500); // debounce 500ms
+
+        return () => clearTimeout(timeout);
+    }, [formData.userCode]);
 
     // Validation
     const validate = (name, value, formData) => {
@@ -248,6 +284,7 @@ export default function Register() {
 
     const isFormInvalid =
         Object.values(errors).some((err) => err !== "") ||
+        userCodeStatus === "taken" ||
         !formData.userCode ||
         !formData.fullName ||
         !formData.phone ||
@@ -280,10 +317,32 @@ export default function Register() {
                             className={`form-control pe-5 ${errors.userCode ? "is-invalid" : ""}`}
                             placeholder="Any Code"
                             value={formData.userCode}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                handleChange(e);
+                                setUserCodeStatus("idle"); // reset status when typing
+                            }}
                         />
                         <MdNumbers className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
+
+                        {userCodeStatus === "checking" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                                <FaSpinner style={{fontSize:"small"}} className="text-secondary animate-spin" />
+                                <span style={{fontSize:"small"}} className="text-muted">Checking...</span>
+                            </div>
+                        )}
+
+                        {userCodeStatus === "available" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                            <span style={{fontSize:"small"}} className="text-success fw-bold">✔ Great! You can use this User Code.</span>
+                            </div>
+                        )}
+
+                        {userCodeStatus === "taken" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                            <span style={{fontSize:"small"}} className="text-danger fw-bold"> ✖ Sorry, this User Code is already in use. Please choose another.</span>
+                            </div>
+                        )}
                     {errors.userCode && <div className="error-text">{errors.userCode}</div>}
                 </div>
 
