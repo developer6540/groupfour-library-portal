@@ -150,13 +150,11 @@ interface ReservationInput {
 }
 
 export async function reserveBook(reservations: ReservationInput[]) {
-
     if (!reservations || reservations.length === 0) {
         throwException("No reservation data provided", 400);
     }
 
     const pool = await getDbConnection();
-
     const transaction = pool.transaction();
 
     try {
@@ -170,43 +168,59 @@ export async function reserveBook(reservations: ReservationInput[]) {
             const expiresOn = new Date();
             expiresOn.setDate(expiresOn.getDate() + holdDays);
 
-            const request = transaction.request();
+            // Get user location
+            const locRequest = transaction.request();
+            locRequest.input("userCode", item.BR_USERCODE);
 
-            request.input('userCode', item.BR_USERCODE);
-            request.input('bookCode', item.BR_BOOKCODE);
-            request.input('qty', item.BR_QTY);
-            request.input('holdDays', holdDays);
-            request.input('expiresOn', expiresOn);
-            request.input('remark', item.BR_REMARK || "");
-            request.input('lineNo', item.BR_BORROW_LINENO);
+            const locResult = await locRequest.query(`
+                SELECT TOP 1 UL_USERLOC
+                FROM M_TBLUSERLOCATION
+                WHERE UL_USERCODE = @userCode AND UL_ACTIVE = 1
+                ORDER BY M_DATE DESC
+            `);
+
+            const userLocation = locResult.recordset?.[0]?.UL_USERLOC || "00001";
+
+            console.log(locResult.recordset?.[0]?.UL_USERLOC);
+
+            // Add reservation
+            const request = transaction.request();
+            request.input("userCode", item.BR_USERCODE);
+            request.input("bookCode", item.BR_BOOKCODE);
+            request.input("qty", item.BR_QTY);
+            request.input("holdDays", holdDays);
+            request.input("expiresOn", expiresOn);
+            request.input("remark", item.BR_REMARK || "");
+            request.input("lineNo", item.BR_BORROW_LINENO);
+            request.input("locCode", userLocation);
 
             const query = `
                 INSERT INTO T_TBLBOOKRESERVATIONS (
-                    BR_USERCODE, 
+                    BR_USERCODE,
                     BR_BOOKCODE,
                     BR_LOCCODE,
-                    BR_QTY, 
-                    BR_HOLD_DAYS, 
-                    BR_REQ_DATE, 
-                    BR_REMARK, 
-                    M_DATE, 
-                    BR_PROC_BY, 
-                    BR_PROC_AT, 
+                    BR_QTY,
+                    BR_HOLD_DAYS,
+                    BR_REQ_DATE,
+                    BR_REMARK,
+                    M_DATE,
+                    BR_PROC_BY,
+                    BR_PROC_AT,
                     BR_BORROW_LINENO
                 )
                 VALUES (
-                    @userCode, 
-                    @bookCode,
-                    '00001', 
-                    @qty, 
-                    @holdDays, 
-                    GETDATE(), 
-                    @remark, 
-                    GETDATE(), 
-                    @userCode, 
-                    GETDATE(), 
-                    @lineNo
-                )
+                   @userCode,
+                   @bookCode,
+                   @locCode,
+                   @qty,
+                   @holdDays,
+                   GETDATE(),
+                   @remark,
+                   GETDATE(),
+                   @userCode,
+                   GETDATE(),
+                   @lineNo
+               )
             `;
 
             await request.query(query);
@@ -235,5 +249,31 @@ export async function membershipPayment() {
 
     } catch (error: any) {
         throwException(error.message || "Failed to fetch membership payment", error.status || 500);
+    }
+}
+
+export async function checkUserCodeExist(code: string) {
+
+    if (!code) {
+        throwException("Invalid user code", 400);
+    }
+
+    try {
+        const pool = await getDbConnection();
+
+        const result = await pool.request()
+            .input('code', code)
+            .query(`
+                SELECT U_CODE 
+                FROM M_TBLUSERS 
+                WHERE U_CODE = @code
+            `);
+
+        return {
+            exists: (result.recordset.length > 0)
+        };
+
+    } catch (error: any) {
+        throwException(error.message || "Failed to check user code", error.status || 500);
     }
 }

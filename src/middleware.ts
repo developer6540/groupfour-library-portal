@@ -32,7 +32,13 @@ export async function middleware(req: NextRequest) {
         "/api/v1/payment/subscribe",
     ];
 
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    const dynamicPublicRoutes = [
+        /^\/api\/v1\/user\/[^/]+\/exist$/,
+    ];
+
+    const isPublicRoute =
+        publicRoutes.some((route) => pathname === route) ||
+        dynamicPublicRoutes.some((pattern) => pattern.test(pathname));
 
     // Create response early so we can attach cookies
     const response = NextResponse.next();

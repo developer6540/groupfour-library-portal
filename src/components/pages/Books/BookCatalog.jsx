@@ -271,14 +271,14 @@ export default function BookCatalog() {
                                 </div>
                                 <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
-                                        <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
+                                        <div className="top-title-container"><div className="top-title">{book.B_TITLE}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
                                     <p className="book-stock">{book.BI_QTY}</p>
                                 </div>
                                 <div className="book-info">
-                                    <p className="book-title mt-2">{safeCap(book.B_TITLE)}</p>
+                                    <p className="book-title mt-2">{book.B_TITLE}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
                                     {renderStars(0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
@@ -306,7 +306,7 @@ export default function BookCatalog() {
                                     <div className="col-md-5 d-none d-md-flex align-items-center justify-content-center p-5 bg-light-purple">
                                         <div className="book-image-container category-icon-container bk-rotate book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
                                             <div className="inner-cover-content">
-                                                <div className="top-title-container"><div className="top-title">{safeCap(selectedBook.B_TITLE)}</div></div>
+                                                <div className="top-title-container"><div className="top-title">{selectedBook.B_TITLE}</div></div>
                                                 <div className="mid-icon"><i className="bi bi-book"></i></div>
                                                 <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
                                             </div>
@@ -317,7 +317,7 @@ export default function BookCatalog() {
                                         <div className="d-flex flex-column h-100">
                                             <div className="mb-4">
                                                 <span className="badge-minimal mb-2">{safeCap(selectedBook.B_CATEGORY)}</span>
-                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{safeCap(selectedBook.B_TITLE)}</h3>
+                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{selectedBook.B_TITLE}</h3>
                                                 <p className="text-muted mb-3">by <span className="text-dark fw-medium">{safeCap(selectedBook.B_AUTHOR)}</span></p>
                                                 <div className="detail-rating-wrap">{renderStars(0)}</div>
                                             </div>

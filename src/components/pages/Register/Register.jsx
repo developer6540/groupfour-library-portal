@@ -34,6 +34,8 @@ export default function Register() {
     const [locations, setLocations] = useState([]);
     const [loadingLocations, setLoadingLocations] = useState(true);
 
+    const [userCodeStatus, setUserCodeStatus] = useState("idle");
+
     const [formData, setFormData] = useState({
         userCode: "",
         fullName: "",
@@ -83,8 +85,42 @@ export default function Register() {
         void loadLocations();
     }, [csrfToken]);
 
+    useEffect(() => {
+        if (!formData.userCode || errors.userCode) {
+            setUserCodeStatus("idle");
+            return;
+        }
+
+        const timeout = setTimeout(async () => {
+            try {
+                setUserCodeStatus("checking");
+
+                const res = await fetch(
+                    `${getBaseUrl()}/api/v1/user/${formData.userCode}/exist`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrfToken || "",
+                        },
+                    }
+                );
+                const data = await res.json();
+                if (res.ok) {
+                    setUserCodeStatus(data.data.exists ? "taken" : "available");
+                } else {
+                    setUserCodeStatus("idle");
+                }
+            } catch (err) {
+                setUserCodeStatus("idle");
+            }
+        }, 500); // debounce 500ms
+
+        return () => clearTimeout(timeout);
+    }, [formData.userCode]);
+
     // Validation
-    const validate = (name, value) => {
+    const validate = (name, value, formData) => {
         let error = "";
 
         switch (name) {
@@ -96,11 +132,18 @@ export default function Register() {
 
             case "fullName":
                 if (!value.trim()) error = "Full name is required";
+                else if (!/^[A-Za-z\s]+$/.test(value))
+                    error = "Numbers and special characters not allowed";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
                 break;
 
             case "phone":
-                if (!value.trim()) error = "Mobile number is required";
-                else if (!/^\d{10}$/.test(value)) error = "Enter a valid 10-digit number";
+                if (!value.trim()) error = "Contact number is required";
+                else if (!/^\d+$/.test(value))
+                    error = "Only numbers allowed (no spaces or dashes)";
+                else if (value.length < 8 || value.length > 10)
+                    error = "Must be between 8 and 10 digits";
                 break;
 
             case "nic":
@@ -116,13 +159,14 @@ export default function Register() {
 
             case "email":
                 if (!value.trim()) error = "Email is required";
-                else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
+                else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
                     error = "Invalid email address";
-                }
                 break;
 
             case "address":
                 if (!value.trim()) error = "Address is required";
+                else if (value.length > 60)
+                    error = "Maximum 60 characters allowed";
                 break;
 
             case "location":
@@ -134,21 +178,34 @@ export default function Register() {
                 break;
 
             case "gender":
-                if (!value) error = "Gender is required";
+                if (!value)
+                    error = "Gender is required";
+                else if (!["male", "female", "other"].includes(value.toLowerCase()))
+                    error = "Select Male, Female or Other";
                 break;
 
             case "password":
                 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Password is required";
-                else if (value.length < 8) error = "Minimum 8 characters required";
-                else if (value.length > 20) error = "Maximum 20 characters allowed";
+                else if (value.length < 8)
+                    error = "Minimum 8 characters required";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
                 else if (!passwordRegex.test(value))
-                    error = "Password must include 1 uppercase letter, 1 number & 1 special character";
+                    error = "Must include 1 uppercase, 1 number & 1 special character";
                 break;
 
             case "confirmPassword":
+                const confirmRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Confirm password is required";
-                else if (value !== formData.password) error = "Passwords do not match";
+                else if (value.length < 8)
+                    error = "Minimum 8 characters required";
+                else if (value.length > 20)
+                    error = "Maximum 20 characters allowed";
+                else if (!confirmRegex.test(value))
+                    error = "Must include 1 uppercase, 1 number & 1 special character";
+                else if (value !== formData.password)
+                    error = "Passwords do not match";
                 break;
 
             default:
@@ -227,6 +284,7 @@ export default function Register() {
 
     const isFormInvalid =
         Object.values(errors).some((err) => err !== "") ||
+        userCodeStatus === "taken" ||
         !formData.userCode ||
         !formData.fullName ||
         !formData.phone ||
@@ -259,10 +317,32 @@ export default function Register() {
                             className={`form-control pe-5 ${errors.userCode ? "is-invalid" : ""}`}
                             placeholder="Any Code"
                             value={formData.userCode}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                handleChange(e);
+                                setUserCodeStatus("idle"); // reset status when typing
+                            }}
                         />
                         <MdNumbers className="position-absolute end-0 top-50 translate-middle-y me-3 text-secondary " />
                     </div>
+
+                        {userCodeStatus === "checking" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                                <FaSpinner style={{fontSize:"small"}} className="text-secondary animate-spin" />
+                                <span style={{fontSize:"small"}} className="text-muted">Checking...</span>
+                            </div>
+                        )}
+
+                        {userCodeStatus === "available" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                            <span style={{fontSize:"small"}} className="text-success fw-bold">✔ Great! You can use this User Code.</span>
+                            </div>
+                        )}
+
+                        {userCodeStatus === "taken" && (
+                            <div className="mt-2 d-flex align-items-center gap-2">
+                            <span style={{fontSize:"small"}} className="text-danger fw-bold"> ✖ Sorry, this User Code is already in use. Please choose another.</span>
+                            </div>
+                        )}
                     {errors.userCode && <div className="error-text">{errors.userCode}</div>}
                 </div>
 

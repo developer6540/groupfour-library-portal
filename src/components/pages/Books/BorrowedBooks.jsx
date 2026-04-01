@@ -328,7 +328,7 @@ export default function BorrowedBooks() {
                                             >
                                                 <div className="inner-cover-content">
                                                     <div className="top-title-container">
-                                                        <div className="top-title">{safeCap(book.B_TITLE)}</div>
+                                                        <div className="top-title">{book.B_TITLE}</div>
                                                     </div>
                                                     <div className="mid-icon"><i className="bi bi-book"></i></div>
                                                     <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
@@ -339,7 +339,7 @@ export default function BorrowedBooks() {
                                             <span className="list-isbn">{book.B_ISBN || "—"}</span>
                                         </div>
                                         <div className="blh-col blh-wide">
-                                            <span className="list-title">{safeCap(book.B_TITLE)}</span>
+                                            <span className="list-title">{book.B_TITLE}</span>
                                         </div>
                                         <div className="blh-col">
                                             <span className="list-text">{safeCap(book.B_AUTHOR)}</span>
@@ -412,7 +412,7 @@ export default function BorrowedBooks() {
                                     >
                                         <div className="inner-cover-content">
                                             <div className="top-title-container">
-                                                <div className="top-title">{safeCap(selectedBook.B_TITLE)}</div>
+                                                <div className="top-title">{selectedBook.B_TITLE}</div>
                                             </div>
                                             <div className="mid-icon"><i className="bi bi-book"></i></div>
                                             <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
@@ -425,7 +425,7 @@ export default function BorrowedBooks() {
 
                                 {/* Details */}
                                 <div className="col-md-9">
-                                    <h4 className="fw-bold text-purple mb-1">{safeCap(selectedBook.B_TITLE)}</h4>
+                                    <h4 className="fw-bold text-purple mb-1">{selectedBook.B_TITLE}</h4>
                                     <p className="text-muted mb-3">By {safeCap(selectedBook.B_AUTHOR)}</p>
 
                                     <div className="row g-3 mb-3">
@@ -528,7 +528,7 @@ export default function BorrowedBooks() {
                                 <div className="col-sm-6">
                                     <div className="detail-item">
                                         <span className="detail-label">Book Title</span>
-                                        <span className="detail-value">{safeCap(returnBook.B_TITLE)}</span>
+                                        <span className="detail-value">{returnBook.B_TITLE}</span>
                                     </div>
                                 </div>
                                 <div className="col-sm-6">
