@@ -65,7 +65,12 @@ export async function getAllBooks(
                 B.B_ISBN,
                 C.BC_NAME AS B_CATEGORY,
                 BI.BI_QTY,
-                BI.BI_LOCCODE
+                BI.BI_LOCCODE,
+                ISNULL((
+                   SELECT CAST(AVG(CAST(FB_RATING AS DECIMAL(10))) AS DECIMAL(10))
+                   FROM M_TBLFEEDBACK
+                   WHERE FB_BOOK_ID = B.B_CODE
+                ), 0) AS STAR_RATE
 
             FROM M_TBLBOOKS B
             INNER JOIN T_TBLBOOKINVENTORY BI
