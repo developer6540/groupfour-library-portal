@@ -35,6 +35,8 @@ export default function Register() {
     const [loadingLocations, setLoadingLocations] = useState(true);
 
     const [userCodeStatus, setUserCodeStatus] = useState("idle");
+    const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: "", color: "" });
+    const [confirmPasswordStrength, setConfirmPasswordStrength] = useState({ score: 0, label: "", color: "", matches: false });
 
     const [formData, setFormData] = useState({
         userCode: "",
@@ -54,6 +56,7 @@ export default function Register() {
 
     const [errors, setErrors] = useState({});
 
+    // Load locations
     useEffect(() => {
         const loadLocations = async () => {
             try {
@@ -66,25 +69,17 @@ export default function Register() {
                 });
 
                 const data = await res.json();
-                console.log("Locations API response:", data);
-
-                if (res.ok) {
-                    // Defensive: check if array exists
-                    setLocations(Array.isArray(data) ? data : data.data || []);
-                } else {
-                    setLocations([]);
-                }
-            } catch (err) {
-                console.error("Failed to load locations", err);
+                setLocations(Array.isArray(data) ? data : data.data || []);
+            } catch {
                 setLocations([]);
             } finally {
                 setLoadingLocations(false);
             }
         };
-
         void loadLocations();
     }, [csrfToken]);
 
+    // User code availability check
     useEffect(() => {
         if (!formData.userCode || errors.userCode) {
             setUserCodeStatus("idle");
@@ -111,25 +106,44 @@ export default function Register() {
                 } else {
                     setUserCodeStatus("idle");
                 }
-            } catch (err) {
+            } catch {
                 setUserCodeStatus("idle");
             }
-        }, 500); // debounce 500ms
+        }, 500);
 
         return () => clearTimeout(timeout);
-    }, [formData.userCode]);
+    }, [formData.userCode, errors.userCode]);
 
-    // Validation
+    // Password strength calculation
+    const getPasswordStrength = (password) => {
+        let score = 0;
+        if (!password) return { score, label: "", color: "" };
+
+        if (password.length >= 8) score += 1;
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[@$!%*?&]/.test(password)) score += 1;
+        if (password.length >= 12) score += 1;
+
+        let label = "";
+        let color = "";
+
+        if (score <= 2) { label = "Weak"; color = "bg-danger"; }
+        else if (score <= 4) { label = "Medium"; color = "bg-warning"; }
+        else { label = "Strong"; color = "bg-success"; }
+
+        return { score, label, color };
+    };
+
+    // Validation function
     const validate = (name, value, formData) => {
         let error = "";
-
         switch (name) {
             case "userCode":
                 if (!value.trim()) error = "User code is required";
                 else if (/\s/.test(value)) error = "No spaces allowed";
                 else if (value.length < 3) error = "Minimum 3 characters required";
                 break;
-
             case "fullName":
                 if (!value.trim()) error = "Full name is required";
                 else if (!/^[A-Za-z\s]+$/.test(value))
@@ -137,7 +151,6 @@ export default function Register() {
                 else if (value.length > 20)
                     error = "Maximum 20 characters allowed";
                 break;
-
             case "phone":
                 if (!value.trim()) error = "Contact number is required";
                 else if (!/^\d+$/.test(value))
@@ -145,94 +158,98 @@ export default function Register() {
                 else if (value.length < 8 || value.length > 10)
                     error = "Must be between 8 and 10 digits";
                 break;
-
             case "nic":
                 if (!value.trim()) error = "NIC is required";
                 else {
                     const oldNic = /^\d{9}[vVxX]$/;
                     const newNic = /^\d{12}$/;
-                    if (!oldNic.test(value) && !newNic.test(value)) {
+                    if (!oldNic.test(value) && !newNic.test(value))
                         error = "Enter valid NIC Number (Old or New)";
-                    }
                 }
                 break;
-
             case "email":
                 if (!value.trim()) error = "Email is required";
                 else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
                     error = "Invalid email address";
                 break;
-
             case "address":
-                if (!value.trim()) error = "Address is required";
-                else if (value.length > 60)
-                    error = "Maximum 60 characters allowed";
+                if (value.length > 60) error = "Maximum 60 characters allowed";
                 break;
-
             case "location":
                 if (!value.trim()) error = "Location is required";
                 break;
-
             case "dob":
                 if (!value) error = "Date of Birth is required";
                 break;
-
             case "gender":
                 if (!value)
                     error = "Gender is required";
                 else if (!["male", "female", "other"].includes(value.toLowerCase()))
                     error = "Select Male, Female or Other";
                 break;
-
             case "password":
-                const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Password is required";
-                else if (value.length < 8)
-                    error = "Minimum 8 characters required";
-                else if (value.length > 20)
-                    error = "Maximum 20 characters allowed";
-                else if (!passwordRegex.test(value))
+                else if (value.length < 8) error = "Minimum 8 characters required";
+                else if (value.length > 20) error = "Maximum 20 characters allowed";
+                else if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(value))
                     error = "Must include 1 uppercase, 1 number & 1 special character";
                 break;
-
             case "confirmPassword":
-                const confirmRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
                 if (!value) error = "Confirm password is required";
-                else if (value.length < 8)
-                    error = "Minimum 8 characters required";
-                else if (value.length > 20)
-                    error = "Maximum 20 characters allowed";
-                else if (!confirmRegex.test(value))
-                    error = "Must include 1 uppercase, 1 number & 1 special character";
-                else if (value !== formData.password)
-                    error = "Passwords do not match";
+                else if (value !== formData.password) error = "Passwords do not match";
                 break;
-
             default:
                 break;
         }
-
         return error;
     };
 
     const handleChange = (e) => {
         const { id, value } = e.target;
-        setFormData((prev) => ({ ...prev, [id]: value }));
-        setErrors((prev) => ({ ...prev, [id]: validate(id, value) }));
+
+        setFormData((prev) => {
+            const newFormData = { ...prev, [id]: value };
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                [id]: validate(id, value, newFormData)
+            }));
+
+            if (id === "password") {
+                setPasswordStrength(getPasswordStrength(value));
+                setConfirmPasswordStrength((prev) => ({
+                    ...prev,
+                    matches: newFormData.confirmPassword === value
+                }));
+            }
+
+            if (id === "confirmPassword") {
+                setConfirmPasswordStrength((prev) => ({
+                    ...prev,
+                    matches: value === newFormData.password,
+                    score: getPasswordStrength(value).score,
+                    color: getPasswordStrength(value).color
+                }));
+            }
+
+            return newFormData;
+        });
+
+        if (id === "userCode") setUserCodeStatus("idle");
     };
 
     const handleDateChange = (date) => {
         const isoDate = date ? moment(date).toISOString() : "";
         setFormData((prev) => ({ ...prev, dob: isoDate }));
-        setErrors((prev) => ({ ...prev, dob: validate("dob", isoDate) }));
+        setErrors((prev) => ({ ...prev, dob: validate("dob", isoDate, formData) }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Pass full formData to validation
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
-            newErrors[key] = validate(key, formData[key]);
+            newErrors[key] = validate(key, formData[key], formData);
         });
         setErrors(newErrors);
 
@@ -275,7 +292,7 @@ export default function Register() {
 
             alerts.success("Registration Success", `Hi ${formData.fullName}, your account is created.`);
             router.push("/membership-payment");
-        } catch (err) {
+        } catch {
             alerts.error("Connection Error", "Could not reach the server.");
         } finally {
             setLoading(false);
@@ -554,6 +571,17 @@ export default function Register() {
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
+                        {formData.password && (
+                            <div className="mt-2">
+                                <div className="progress" style={{ height: "6px" }}>
+                                    <div
+                                        className={`progress-bar ${passwordStrength.color}`}
+                                        role="progressbar"
+                                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
                         {errors.password && <div className="error-text">{errors.password}</div>}
                     </div>
 
@@ -577,6 +605,17 @@ export default function Register() {
                                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
+                        {formData.confirmPassword && (
+                            <div className="mt-2">
+                                <div className="progress" style={{ height: "6px" }}>
+                                    <div
+                                        className={`progress-bar ${confirmPasswordStrength.color}`}
+                                        role="progressbar"
+                                        style={{ width: `${(confirmPasswordStrength.score / 5) * 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
                         {errors.confirmPassword && <div className="error-text">{errors.confirmPassword}</div>}
                     </div>
                 </div>
