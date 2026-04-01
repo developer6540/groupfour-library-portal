@@ -280,7 +280,7 @@ export default function BookCatalog() {
                                 <div className="book-info">
                                     <p className="book-title mt-2">{book.B_TITLE}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
-                                    {renderStars(0)}
+                                    {renderStars(book.STAR_RATE || 0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
                                 </div>
                             </div>
@@ -319,7 +319,7 @@ export default function BookCatalog() {
                                                 <span className="badge-minimal mb-2">{safeCap(selectedBook.B_CATEGORY)}</span>
                                                 <h3 className="fw-bold text-dark mb-1 lh-sm">{selectedBook.B_TITLE}</h3>
                                                 <p className="text-muted mb-3">by <span className="text-dark fw-medium">{safeCap(selectedBook.B_AUTHOR)}</span></p>
-                                                <div className="detail-rating-wrap">{renderStars(0)}</div>
+                                                <div className="detail-rating-wrap">{renderStars(selectedBook.STAR_RATE || 0)}</div>
                                             </div>
 
                                             <div className="specs-grid mb-auto">
