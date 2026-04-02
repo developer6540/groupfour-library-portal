@@ -36,6 +36,8 @@ export default function BookCatalog() {
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 12;
 
+    const [userResEligibility, setUserResEligibility] = useState(null);
+
     const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
     const getCoverData = (bookCode) => {
@@ -135,6 +137,31 @@ export default function BookCatalog() {
         setCurrentPage(1);
     }, [debouncedFilters]);
 
+    useEffect(() => {
+        const fetchUserEligibility = async () => {
+            const userCode = await getUserCode();
+            if (!userCode) return;
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}/reservation/eligibility`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": getCsrfToken() || '',
+                    },
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    setUserResEligibility(result.data);
+                }
+            } catch (error) {
+                console.error("Error pre-fetching eligibility:", error);
+            }
+        };
+
+        fetchUserEligibility();
+    }, [currentPage]);
+
     const clearFilters = () => {
         setTitleInput(""); setAuthorInput(""); setIsbnInput(""); setCategoryInput("");
         setFilters({ title: "", author: "", isbn: "", category: "" });
@@ -149,23 +176,20 @@ export default function BookCatalog() {
     };
 
     const handleAddToCart = async (book, e) => {
-
         const user = await getUserInfo();
-        const userData = typeof user === "string" ? JSON.parse(user) : user;
-        const maxBorrow = userData?.U_MAXBORROW || 2;
+        //const userData = typeof user === "string" ? JSON.parse(user) : user;
+        //const maxBorrow = userData?.U_MAXBORROW || 2;
+        const maxReservation = 2;
         const currentCart = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
-
         if (currentCart.some(item => item.B_CODE === book.B_CODE)) {
             alerts.warning("Already in your cart.");
             return;
         }
-        if (currentCart.length >= maxBorrow) {
-            alerts.error(`Limit reached! Max ${maxBorrow} books.`);
+        if (currentCart.length >= maxReservation) {
+            alerts.error(`Limit reached!`, `You may only reserve up to ${maxReservation} books per reservation.`);
             return;
         }
-
         animateToCart(e);
-
         setGlobalDataCart([...currentCart, book]);
     };
 

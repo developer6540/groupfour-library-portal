@@ -277,3 +277,72 @@ export async function checkUserCodeExist(code: string) {
         throwException(error.message || "Failed to check user code", error.status || 500);
     }
 }
+
+export async function checkUserEligibility(code: string) {
+    if (!code) throwException("Invalid user code", 400);
+
+    try {
+        const pool = await getDbConnection();
+
+        const query = `
+            SELECT
+                U_CODE,
+                U_MAXBORROW,
+                -- Count currently borrowed books
+                ISNULL((
+                           SELECT SUM(bd.BD_QTY - bd.BD_RETURNED_QTY)
+                           FROM T_TBLBOOKBORROW_H bh
+                                    JOIN T_TBLBOOKBORROW_D bd ON bh.BH_DOCNO = bd.BD_DOCNO
+                           WHERE bh.BH_MEMBERCODE = u.U_CODE
+                             AND bd.BD_STATUS IN ('O', 'P')
+                       ), 0) AS CurrentBorrowedCount,
+                -- Count active reservations (Status 'P' for Pending or 'A' for Approved/Active)
+                ISNULL((
+                           SELECT COUNT(*)
+                           FROM T_TBLBOOKRESERVATIONS br
+                           WHERE br.BR_USERCODE = u.U_CODE
+                             AND br.BR_STATUS IN ('P', 'A')
+                       ), 0) AS CurrentReservationCount
+            FROM M_TBLUSERS u
+            WHERE u.U_CODE = @code
+        `;
+
+        const result = await pool.request()
+            .input('code', code)
+            .query(query);
+
+        if (result.recordset.length === 0) {
+            throwException("User not found", 404);
+        }
+
+        const stats = result.recordset[0];
+        const maxReservationLimit = 2;
+
+        // Logic check
+        const hasReservationSlot = stats.CurrentReservationCount < maxReservationLimit;
+        const hasBorrowSlot = (stats.CurrentBorrowedCount + stats.CurrentReservationCount) < stats.U_MAXBORROW;
+
+        const isEligible = hasReservationSlot && hasBorrowSlot;
+
+        // Determine specific message
+        let message = "Eligible";
+        if (!hasReservationSlot) {
+            message = `Maximum reservation limit of ${maxReservationLimit} reached.`;
+        } else if (!hasBorrowSlot) {
+            message = `Total limit reached (Borrowed + Reservations). Max: ${stats.U_MAXBORROW}`;
+        }
+
+        return {
+            uCode: stats.U_CODE,
+            isEligible: isEligible,
+            currentBorrowed: stats.CurrentBorrowedCount,
+            currentReservations: stats.CurrentReservationCount,
+            maxLimit: stats.U_MAXBORROW,
+            maxResLimit: maxReservationLimit,
+            message: message
+        };
+
+    } catch (error: any) {
+        throwException(error.message || "Eligibility check failed", 500);
+    }
+}
