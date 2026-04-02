@@ -198,7 +198,15 @@ export default function BorrowedBooks() {
     const formatDate = (val) => {
         if (!val) return "—";
         const d = new Date(val);
-        return isNaN(d) ? val : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+        return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    };
+
+    /* True when dueDate is a real date that comes BEFORE the borrowDate */
+    const isInvalidDatePair = (borrowVal, dueVal) => {
+        if (!borrowVal || !dueVal) return false;
+        const b = new Date(borrowVal);
+        const d = new Date(dueVal);
+        return !isNaN(b.getTime()) && !isNaN(d.getTime()) && d < b;
     };
 
     return (
@@ -354,9 +362,16 @@ export default function BorrowedBooks() {
                                             <span className="list-date">{formatDate(book.BH_BORROWDATE)}</span>
                                         </div>
                                         <div className="blh-col blh-date-cell">
-                                            <span className={`list-date${book.BD_STATUS === 'L' ? ' list-date-overdue' : ''}`}>
-                                                {formatDate(book.BD_DUEDATE)}
-                                            </span>
+                                            {isInvalidDatePair(book.BH_BORROWDATE, book.BD_DUEDATE) ? (
+                                                <span className="list-date list-date-invalid" title="Return date is before borrow date — data error">
+                                                    <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                                    {formatDate(book.BD_DUEDATE)}
+                                                </span>
+                                            ) : (
+                                                <span className={`list-date${book.BD_STATUS === 'L' ? ' list-date-overdue' : ''}`}>
+                                                    {formatDate(book.BD_DUEDATE)}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="blh-col blh-actions" onClick={(e) => e.stopPropagation()}>
                                             <button

@@ -1,6 +1,71 @@
 import { getDbConnection } from "@/lib/db";
 import { throwException } from "@/lib/exceptions";
 
+// ─── Approval Record ────────────────────────────────────────────────────────
+
+export interface ApprovalInsertDto {
+    userCode:      string;
+    userUid?:      string | null;
+    name:          string;
+    mobile?:       string | null;
+    groupCode:     string;
+    subType?:      string | null;
+    paidAmt:       number;
+    dueAmt:        number;
+    paymentMethod?: string | null;
+    referenceNo?:  string | null;
+    approvedBy?:   string | null;
+    apDate?:       Date;
+    processed:     boolean;
+    canceled:      boolean;
+}
+
+/**
+ * Inserts a record into dbo.T_TBLAPPROVAL and returns the generated AP_ID.
+ * Must be called inside an existing transaction.
+ */
+export async function insertApprovalRecord(dto: ApprovalInsertDto): Promise<string> {
+    const pool = await getDbConnection();
+
+    const idResult = await pool.request().query(`
+        SELECT 'AP' + RIGHT('00000000' + CAST(
+            ISNULL(MAX(TRY_CAST(SUBSTRING(AP_ID,3,8) AS INT)),0) + 1 AS VARCHAR(8)), 8)
+        FROM dbo.T_TBLAPPROVAL WITH (UPDLOCK, HOLDLOCK)
+        WHERE AP_ID LIKE 'AP[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
+    `);
+
+    const apId: string = Object.values(idResult.recordset[0])[0] as string ?? "AP00000001";
+
+    await pool.request()
+        .input("AP_ID",            apId)
+        .input("AP_U_ID",          dto.userCode)
+        .input("AP_U_UID",         dto.userUid         ?? null)
+        .input("AP_NAME",          dto.name)
+        .input("AP_MOBILE",        dto.mobile          ?? null)
+        .input("AP_GROUP",         dto.groupCode)
+        .input("AP_SUBSTYPE",      dto.subType         ?? null)
+        .input("AP_PAIDAMT",       dto.paidAmt)
+        .input("AP_DUEAMT",        dto.dueAmt)
+        .input("AP_PAYMENTMETHOD", dto.paymentMethod   ?? null)
+        .input("AP_REFERENCENO",   dto.referenceNo     ?? null)
+        .input("AP_APPROVEDBY",    dto.approvedBy      ?? null)
+        .input("AP_DATE",          dto.apDate ?? new Date())
+        .input("AP_PROCCESS",      dto.processed ? 1 : 0)
+        .input("AP_CALCEL",        dto.canceled  ? 1 : 0)
+        .query(`
+            INSERT INTO dbo.T_TBLAPPROVAL
+                (AP_ID, AP_U_ID, AP_U_UID, AP_NAME, AP_MOBILE, AP_GROUP, AP_SUBSTYPE,
+                 AP_PAIDAMT, AP_DUEAMT, AP_PAYMENTMETHOD, AP_REFERENCENO, AP_APPROVEDBY,
+                 AP_DATE, AP_PROCCESS, AP_CALCEL)
+            VALUES
+                (@AP_ID, @AP_U_ID, @AP_U_UID, @AP_NAME, @AP_MOBILE, @AP_GROUP, @AP_SUBSTYPE,
+                 @AP_PAIDAMT, @AP_DUEAMT, @AP_PAYMENTMETHOD, @AP_REFERENCENO, @AP_APPROVEDBY,
+                 @AP_DATE, @AP_PROCCESS, @AP_CALCEL)
+        `);
+
+    return apId;
+}
+
 interface BooksResult {
     data: any[];
     total: number;
@@ -269,6 +334,12 @@ export async function getBorrowedBooks(
                    OR b.B_AUTHOR LIKE '%' + @T + '%'
                    OR ISNULL(b.B_ISBN,'') LIKE '%' + @T + '%')
               AND (@MC IS NULL OR h.BH_MEMBERCODE = @MC)
+              -- Exclude cancelled / bulk-uploaded records; only show real borrow activity
+              AND d.BD_STATUS IN ('O', 'L', 'R')
+              -- Exclude rows where the borrow date is missing or invalid
+              AND h.BH_BORROWDATE IS NOT NULL
+              -- Exclude rows where due date precedes the borrow date (data-entry errors)
+              AND (d.BD_DUEDATE IS NULL OR d.BD_DUEDATE >= h.BH_BORROWDATE)
         `;
 
         const dataQuery = `
@@ -368,12 +439,22 @@ export async function recordFinePayment(
     amount: number,
     payMode: string,
     refNo: string | null
-): Promise<{ applied: number; finesSettled: number }> {
+): Promise<{ applied: number; finesSettled: number; approvalId: string | null }> {
     try {
         if (!memberCode?.trim() || amount <= 0)
             throw throwException("Invalid member or amount", 400);
 
         const pool = await getDbConnection();
+
+        // 0. Fetch member info for the approval record
+        const memberResult = await pool.request()
+            .input("MC", memberCode.trim())
+            .query(`
+                SELECT U_CODE, U_NAME, U_MOBILE, U_GROUP, U_SUBSTYPE
+                FROM dbo.M_TBLUSERS
+                WHERE U_CODE = @MC
+            `);
+        const member = memberResult.recordset[0];
 
         // 1. Fetch all outstanding fine headers for this member, oldest first
         const outstanding = await pool.request()
@@ -385,7 +466,7 @@ export async function recordFinePayment(
                 ORDER BY FH_FINE_DATE ASC
             `);
 
-        let remaining   = amount;
+        let remaining    = amount;
         let finesSettled = 0;
 
         for (const row of outstanding.recordset) {
@@ -423,7 +504,30 @@ export async function recordFinePayment(
             if (parseFloat(row.FH_BALANCE) - applyAmount <= 0) finesSettled++;
         }
 
-        return { applied: amount - remaining, finesSettled };
+        const applied = amount - remaining;
+
+        // 4. Insert approval record for the payment
+        let approvalId: string | null = null;
+        if (applied > 0 && member) {
+            approvalId = await insertApprovalRecord({
+                userCode:      member.U_CODE,
+                userUid:       member.U_CODE,
+                name:          member.U_NAME,
+                mobile:        member.U_MOBILE ?? null,
+                groupCode:     member.U_GROUP  ?? "USER",
+                subType:       member.U_SUBSTYPE ?? null,
+                paidAmt:       applied,
+                dueAmt:        0,
+                paymentMethod: payMode || "CARD",
+                referenceNo:   refNo   ?? null,
+                approvedBy:    "PORTAL",
+                apDate:        new Date(),
+                processed:     true,
+                canceled:      false,
+            });
+        }
+
+        return { applied, finesSettled, approvalId };
     } catch (error: any) {
         throw throwException(error.message || "Database error", error.status || 500);
     }
