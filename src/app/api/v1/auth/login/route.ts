@@ -3,6 +3,7 @@ import { errorResponse, successResponse } from "@/lib/response";
 import { authenticateUser } from "@/services/auth.service";
 import {setCsrfTokenServer, setSessionServer} from "@/lib/session-server";
 import Logger from "@/lib/logger";
+import {pushNotification} from "@/services/notification.service";
 
 export async function POST(request: NextRequest) {
     try {
@@ -28,6 +29,11 @@ export async function POST(request: NextRequest) {
 
         // Create CSRF token
         await setCsrfTokenServer();
+
+        await pushNotification({
+            title: "Login Successfully",
+            message: "You have successfully logged in",
+        })
 
         // Success Response
         return NextResponse.json(
