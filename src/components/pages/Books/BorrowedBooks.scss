@@ -283,6 +283,17 @@
             color: #dc2626;
             font-weight: 700;
         }
+
+        &.list-date-invalid {
+            color: #b45309;
+            font-weight: 600;
+            background: #fef3c7;
+            border-radius: 4px;
+            padding: 1px 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
     }
 
     .btn-return-list {
