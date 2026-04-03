@@ -160,11 +160,12 @@ export async function reserveBook(reservations: ReservationInput[]) {
     try {
         await transaction.begin();
 
+        const bookCodes: string[] = [];
+
         for (const item of reservations) {
-            // Validate hold days (max 3 as per your requirement)
+
             const holdDays = Math.min(item.BR_HOLD_DAYS, 3);
 
-            // Calculate expiry date (Request Date + Hold Days)
             const expiresOn = new Date();
             expiresOn.setDate(expiresOn.getDate() + holdDays);
 
@@ -181,9 +182,7 @@ export async function reserveBook(reservations: ReservationInput[]) {
 
             const userLocation = locResult.recordset?.[0]?.UL_USERLOC || "00001";
 
-            console.log(locResult.recordset?.[0]?.UL_USERLOC);
-
-            // Add reservation
+            // Insert reservation
             const request = transaction.request();
             request.input("userCode", item.BR_USERCODE);
             request.input("bookCode", item.BR_BOOKCODE);
@@ -194,7 +193,7 @@ export async function reserveBook(reservations: ReservationInput[]) {
             request.input("lineNo", item.BR_BORROW_LINENO);
             request.input("locCode", userLocation);
 
-            const query = `
+            await request.query(`
                 INSERT INTO T_TBLBOOKRESERVATIONS (
                     BR_USERCODE,
                     BR_BOOKCODE,
@@ -209,25 +208,40 @@ export async function reserveBook(reservations: ReservationInput[]) {
                     BR_BORROW_LINENO
                 )
                 VALUES (
-                   @userCode,
-                   @bookCode,
-                   @locCode,
-                   @qty,
-                   @holdDays,
-                   GETDATE(),
-                   @remark,
-                   GETDATE(),
-                   @userCode,
-                   GETDATE(),
-                   @lineNo
-               )
-            `;
+                    @userCode,
+                    @bookCode,
+                    @locCode,
+                    @qty,
+                    @holdDays,
+                    GETDATE(),
+                    @remark,
+                    GETDATE(),
+                    @userCode,
+                    GETDATE(),
+                    @lineNo
+                )
+            `);
 
-            await request.query(query);
+            // collect book codes
+            bookCodes.push(item.BR_BOOKCODE);
         }
 
+        // Fetch book details AFTER inserts
+        const booksRequest = transaction.request();
+
+        const uniqueCodes = [...new Set(bookCodes)];
+
+        booksRequest.input("codes", uniqueCodes.join(","));
+
+        const booksResult = await booksRequest.query(`
+            SELECT B_CODE, B_TITLE
+            FROM M_TBLBOOKS
+            WHERE B_CODE IN (${uniqueCodes.map((_, i) => `'${uniqueCodes[i]}'`).join(",")})
+        `);
+
         await transaction.commit();
-        return [];
+
+        return booksResult.recordset || [];
 
     } catch (error: any) {
         if (transaction) await transaction.rollback();
@@ -279,6 +293,7 @@ export async function checkUserCodeExist(code: string) {
 }
 
 export async function checkUserEligibility(code: string) {
+
     if (!code) throwException("Invalid user code", 400);
 
     try {
@@ -288,21 +303,22 @@ export async function checkUserEligibility(code: string) {
             SELECT
                 U_CODE,
                 U_MAXBORROW,
-                -- Count currently borrowed books
+
                 ISNULL((
                            SELECT SUM(bd.BD_QTY - bd.BD_RETURNED_QTY)
                            FROM T_TBLBOOKBORROW_H bh
                                     JOIN T_TBLBOOKBORROW_D bd ON bh.BH_DOCNO = bd.BD_DOCNO
                            WHERE bh.BH_MEMBERCODE = u.U_CODE
                              AND bd.BD_STATUS IN ('O', 'P')
-                       ), 0) AS CurrentBorrowedCount,
-                -- Count active reservations (Status 'P' for Pending or 'A' for Approved/Active)
+                       ), 0) AS CURRENT_BORROW_COUNT,
+
                 ISNULL((
                            SELECT COUNT(*)
                            FROM T_TBLBOOKRESERVATIONS br
                            WHERE br.BR_USERCODE = u.U_CODE
                              AND br.BR_STATUS IN ('P', 'A')
-                       ), 0) AS CurrentReservationCount
+                       ), 0) AS CURRENT_RESERVE_COUNT
+
             FROM M_TBLUSERS u
             WHERE u.U_CODE = @code
         `;
@@ -311,35 +327,41 @@ export async function checkUserEligibility(code: string) {
             .input('code', code)
             .query(query);
 
-        if (result.recordset.length === 0) {
+        if (!result.recordset.length) {
             throwException("User not found", 404);
         }
 
         const stats = result.recordset[0];
-        const maxReservationLimit = 2;
 
-        // Logic check
-        const hasReservationSlot = stats.CurrentReservationCount < maxReservationLimit;
-        const hasBorrowSlot = (stats.CurrentBorrowedCount + stats.CurrentReservationCount) < stats.U_MAXBORROW;
+        const maxReservationLimit = parseInt(process.env.MAX_RESERVATION_COUNT || "2");
+
+        const currentBorrowed = stats.CURRENT_BORROW_COUNT;
+        const currentReservations = stats.CURRENT_RESERVE_COUNT;
+
+        // CORE RULES
+        const hasReservationSlot = currentReservations < maxReservationLimit;
+
+        const totalAfterReservation = currentBorrowed + currentReservations;
+        const hasBorrowSlot = totalAfterReservation < stats.U_MAXBORROW;
 
         const isEligible = hasReservationSlot && hasBorrowSlot;
 
-        // Determine specific message
         let message = "Eligible";
+
         if (!hasReservationSlot) {
-            message = `Maximum reservation limit of ${maxReservationLimit} reached.`;
+            message = `You have already added ${maxReservationLimit} reservations. Please borrow them first`;
         } else if (!hasBorrowSlot) {
-            message = `Total limit reached (Borrowed + Reservations). Max: ${stats.U_MAXBORROW}`;
+            message = `You’ve reached your maximum borrowing limit (Max Limit: ${stats.U_MAXBORROW}). Please return some books to continue.`;
         }
 
         return {
             uCode: stats.U_CODE,
-            isEligible: isEligible,
-            currentBorrowed: stats.CurrentBorrowedCount,
-            currentReservations: stats.CurrentReservationCount,
+            isEligible,
+            currentBorrowed,
+            currentReservations,
             maxLimit: stats.U_MAXBORROW,
             maxResLimit: maxReservationLimit,
-            message: message
+            message
         };
 
     } catch (error: any) {

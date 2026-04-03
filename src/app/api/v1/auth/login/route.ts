@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
         // Create CSRF token
         await setCsrfTokenServer();
 
-        await pushNotification({
-            title: "Login Successfully",
-            message: "You have successfully logged in",
-        })
+        // await pushNotification({
+        //     title: "Login",
+        //     message: "You have successfully logged in",
+        // })
 
         // Success Response
         return NextResponse.json(

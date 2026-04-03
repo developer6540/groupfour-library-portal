@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { reserveBook } from "@/services/user.service";
 import { errorResponse, successResponse } from "@/lib/response";
 import Logger from "@/lib/logger";
+import {pushNotification} from "@/services/notification.service";
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,6 +17,16 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await reserveBook(body);
+
+        // Push notification per book
+        if (result?.length) {
+            for (const book of result) {
+                await pushNotification({
+                    title: "Reservation Request",
+                    message: `Book reservation request for " ${book.B_TITLE} " sent for approval`
+                });
+            }
+        }
 
         return NextResponse.json(
             successResponse(result, "Reservations submitted successfully", 201)

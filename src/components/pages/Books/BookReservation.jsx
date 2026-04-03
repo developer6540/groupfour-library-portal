@@ -8,8 +8,11 @@ import {useDataContext} from "@/lib/dataContext";
 import Link from "next/link";
 import {alerts} from "@/lib/alerts";
 import {getUserInfo} from "@/lib/server-utility";
+import {useRouter} from "next/navigation";
 
 export default function BookReservation() {
+
+    const router = useRouter();
 
     const {getGlobalDataCart, setGlobalDataCart} = useDataContext();
     const [isHydrated, setIsHydrated] = useState(false);
@@ -102,26 +105,31 @@ export default function BookReservation() {
                     const user = await getUserInfo();
                     const userData = typeof user === "string" ? JSON.parse(user) : user;
 
-                    // Calculate total quantity in the cart
-                    const totalQtyInCart = cartItems.reduce((sum, book) => sum + (book.BR_QTY || 0), 0);
+                   // Check reservation eligibility
+                    const eligibilityRes = await fetch(`${getBaseUrl()}/api/v1/user/${userData.U_CODE}/reservation/eligibility`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": getCsrfToken() || '',
+                        }
+                    });
 
-                    // Validate against user's max borrow limit
-                    if (userData.U_MAXBORROW && totalQtyInCart > userData.U_MAXBORROW) {
-                        alerts.error(`You can only borrow a maximum of ${userData.U_MAXBORROW} books. Your current selection has ${totalQtyInCart}.`);
+                    const eligibility = await eligibilityRes.json();
+
+                    if (!eligibilityRes.ok || !eligibility.data.isEligible) {
+                        alerts.error(eligibility.data?.message || "You are not eligible to reserve books.");
                         return;
                     }
 
-                    // Map payload to match your Database Service expectations
+                    // Payload
                     const payload = cartItems.map((book, index) => ({
                         BR_USERCODE: userData?.U_CODE,
                         BR_BOOKCODE: book.B_CODE,
-                        BR_QTY: 1, //book.BR_QTY,
-                        BR_HOLD_DAYS: 3, //book.BR_HOLD_DAYS,
+                        BR_QTY: 1,
+                        BR_HOLD_DAYS: 3,
                         BR_REMARK: book.BR_REMARK,
                         BR_BORROW_LINENO: index + 1
                     }));
 
-                    // API Call to your new endpoint
                     const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-books`, {
                         method: "POST",
                         headers: {
@@ -135,22 +143,30 @@ export default function BookReservation() {
 
                     if (response.ok) {
                         alerts.success("Reservation submitted successfully!");
-
-                        // clear cart locally and globally on success
                         setGlobalDataCart([]);
                         setSessionClient("cart-items", JSON.stringify([]));
+                        router.push('/books/reserve/complete');
                     } else {
                         alerts.error(result.message || "Failed to submit reservation.");
                     }
 
                 } catch (error) {
                     console.error("Reservation failed:", error);
-                    alerts.error("A network error occurred. Please try again later.");
+                    alerts.error("A network error occurred.");
                 }
-
             }
-        )
+        );
+    };
 
+    const confirmClearAll = async () => {
+
+        alerts.confirm(
+            "Clear Cart",
+            "Are you sure you want to clear all your selected books?",
+            async () => {
+                setGlobalDataCart([])
+            }
+        );
     };
 
     if (!isHydrated) {
@@ -172,10 +188,10 @@ export default function BookReservation() {
                 {cartItems.length > 0 && (
                     <button
                         type="button"
-                        className="btn btn-link btn-sm text-danger text-decoration-none"
-                        onClick={() => setGlobalDataCart([])}
+                        className="btn btn-danger btn-sm text-white text-decoration-none"
+                        onClick={confirmClearAll}
                     >
-                        Clear All
+                        <i className="bi bi-trash3"></i> &nbsp; Clear All
                     </button>
                 )}
             </div>
@@ -251,7 +267,7 @@ export default function BookReservation() {
                                                         type="text"
                                                         className="form-control form-control-sm remark-input"
                                                         placeholder="Add any specific instructions here..."
-                                                        value={book.BR_REMARK}
+                                                        value={book.BR_REMARK || ""}
                                                         onChange={(e) => handleRemarkChange(book.B_CODE, e.target.value)}
                                                     />
                                                 </div>

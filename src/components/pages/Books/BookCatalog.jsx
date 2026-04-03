@@ -189,6 +189,7 @@ export default function BookCatalog() {
             alerts.error(`Limit reached!`, `You may only reserve up to ${maxReservation} books per reservation.`);
             return;
         }
+
         animateToCart(e);
         setGlobalDataCart([...currentCart, book]);
     };

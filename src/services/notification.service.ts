@@ -12,6 +12,7 @@ export type Notification = {
 
 // Add new notification (MAIN)
 export async function pushNotification(data: {
+    user_code?: string;
     title: string;
     message: string;
 }): Promise<Notification[]> {
@@ -31,7 +32,7 @@ export async function pushNotification(data: {
         }
 
         const newNotification: Notification = {
-            user_code: await getUserCode(),
+            user_code: data.user_code || await getUserCode(),
             title: data.title.trim(),
             message: data.message.trim(),
             status: true,
