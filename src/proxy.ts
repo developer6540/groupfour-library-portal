@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import Unauthorized from "next/dist/client/components/builtin/unauthorized";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const IS_PROD = process.env.NODE_ENV === "production";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
 
     const { pathname } = req.nextUrl;
 
@@ -18,9 +18,11 @@ export async function middleware(req: NextRequest) {
         "/sign-in",
         "/register",
         "/forgot-password",
+        "/payment",
         "/api/v1/auth/login",
         "/api/v1/auth/register",
         "/api/v1/locations",
+        "/api/v1/payment",
     ];
 
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
@@ -33,7 +35,7 @@ export async function middleware(req: NextRequest) {
         response.cookies.set("X-CSRF-Token", crypto.randomUUID(), {
             path: "/",
             httpOnly: false,
-            secure: true,
+            secure: IS_PROD,   // only enforce Secure flag in production (HTTPS)
             sameSite: "lax",
         });
     }

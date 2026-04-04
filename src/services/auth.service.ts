@@ -43,11 +43,22 @@ export async function authenticateUser(usercode: string, pass: string) {
 
     // 3. Validations
     if (!user) throwException("User details not found", 400);
-    if (!user.U_ACTIVE) throwException("Your account is inactive.", 400);
-    if (user.U_LOCKED) throwException("Account is locked.", 400);
+    if (user.U_LOCKED) throwException("Account is locked. Please contact the library.", 403);
+    if (!user.U_ACTIVE) throwException("Your account has been deactivated. Please contact the library.", 403);
 
-    if (user.U_EXPIREDDATE && new Date(user.U_EXPIREDDATE) < new Date()) {
-        throwException("Your membership has expired.", 400);
+    // Subscription / Payment checks — 402 Payment Required
+    const isExpired = user.U_EXPIREDDATE && new Date(user.U_EXPIREDDATE) < new Date();
+    if (!user.U_SUBSSTATUS || !user.U_MEMSTATUS || isExpired) {
+        const msg = isExpired
+            ? `Your subscription expired on ${new Date(user.U_EXPIREDDATE).toLocaleDateString("en-GB")}. Please renew to continue.`
+            : "Your subscription is inactive. Please renew to access the library.";
+        const err = new Error(msg) as any;
+        err.status        = 402;
+        err.requiresPayment = true;
+        err.usercode      = usercode;
+        err.username      = user.U_NAME;
+        err.expiredDate   = user.U_EXPIREDDATE || null;
+        throw err;
     }
 
     // 4. Generate Token with 'jose'

@@ -38,6 +38,24 @@ export async function POST(request: NextRequest) {
 
         Logger.error("Login API Failure:", error.message || error);
 
+        // 402 — subscription expired / inactive → redirect to payment
+        if (error.status === 402) {
+            return NextResponse.json(
+                {
+                    status: "payment_required",
+                    statusCode: 402,
+                    message: error.message,
+                    requiresPayment: true,
+                    data: {
+                        usercode:    error.usercode    || null,
+                        name:        error.username    || null,
+                        expiredDate: error.expiredDate || null,
+                    },
+                },
+                { status: 402 }
+            );
+        }
+
         const status = error.status || 500;
         const message = status === 500 ? "Internal Server Error" : error.message;
 

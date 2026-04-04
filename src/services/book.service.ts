@@ -9,7 +9,7 @@ interface BooksResult {
 interface GetBooksOptions {
     page?: number;
     pageSize?: number;
-    userCode: string;
+    userCode?: string;
 }
 
 export async function getAllBooks(

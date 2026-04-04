@@ -1,0 +1,359 @@
+<mxfile host="app.diagrams.net" modified="2026-03-26T00:00:00.000Z" agent="GitHub Copilot" version="21.0.0" type="device">
+  <diagram name="Deployment Diagram" id="deployment-diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══════════════════════════════════════════════════════════
+             TITLE
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="title" value="Group Four Library Portal — Deployment Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;fontColor=#1A3A5C;" vertex="1" parent="1">
+          <mxGeometry x="327" y="20" width="1000" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Version 1.0  ·  March 2026  ·  Next.js 15 · MSSQL Azure · SendGrid" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=2;fontColor=#64748B;" vertex="1" parent="1">
+          <mxGeometry x="327" y="60" width="1000" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: CLIENT DEVICE
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-client" value="«device»&#xa;Client Device" style="shape=mxgraph.archimate3.tech;techType=node;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="260" height="370" as="geometry" />
+        </mxCell>
+
+        <!-- Browser component -->
+        <mxCell id="comp-browser" value="«component»&#xa;Web Browser&#xa;(Chrome / Firefox / Safari)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="175" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Next.js Client bundle -->
+        <mxCell id="comp-client-bundle" value="«execution environment»&#xa;Next.js Client Bundle&#xa;(React · Bootstrap 5 · SCSS)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="265" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- CSRF cookie -->
+        <mxCell id="comp-csrf-cookie" value="«artifact»&#xa;CSRF Token Cookie&#xa;(X-CSRF-Token)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="355" width="210" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- JWT Session cookie -->
+        <mxCell id="comp-jwt-cookie" value="«artifact»&#xa;JWT Session Cookie&#xa;(httpOnly · Secure)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="428" width="210" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: NEXT.JS SERVER (App Server)
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-server" value="«execution environment»&#xa;Next.js 15 App Server&#xa;(Node.js · Turbopack)" style="shape=mxgraph.archimate3.tech;techType=node;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="430" y="100" width="780" height="610" as="geometry" />
+        </mxCell>
+
+        <!-- ── Middleware layer ── -->
+        <mxCell id="layer-middleware" value="«component»&#xa;Middleware Layer (middleware.ts)&#xa;JWT Verification · CSRF Enforcement · Route Guard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1A3A5C;strokeColor=#1A3A5C;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="455" y="160" width="730" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ── App Router ── -->
+        <mxCell id="layer-approuter" value="«component»&#xa;Next.js App Router (src/app)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2563EB;strokeColor=#2563EB;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="455" y="238" width="330" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- Pages -->
+        <mxCell id="comp-pages" value="«artifact»&#xa;Pages&#xa;/ · /sign-in · /register · /forgot-password&#xa;/books · /books/borrowed · /books/returned&#xa;/books/reserve · /payment · /profile/**" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="298" width="330" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- React Components -->
+        <mxCell id="comp-react" value="«artifact»&#xa;React Components (src/components)&#xa;Navbar · Sidebar · BookCatalog · Dashboard&#xa;BorrowedBooks · ReturnedBooks · PaymentPage&#xa;Login · Register · Profile · ForgotPassword" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="416" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ── API Routes ── -->
+        <mxCell id="layer-api" value="«component»&#xa;API Routes (src/app/api/v1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0891B2;strokeColor=#0891B2;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="810" y="238" width="380" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- Auth routes -->
+        <mxCell id="comp-auth-api" value="«artifact»&#xa;Auth Routes&#xa;POST /auth/login&#xa;POST /auth/register&#xa;POST /auth/logout&#xa;POST /auth/forgot-password" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0891B2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="298" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Book routes -->
+        <mxCell id="comp-book-api" value="«artifact»&#xa;Book Routes&#xa;GET /book/list&#xa;GET /book/borrowed&#xa;GET /book/returned&#xa;GET /book/fine-summary&#xa;POST /book/fine-payment&#xa;GET /book/due-notifications" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0891B2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="298" width="175" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- User routes -->
+        <mxCell id="comp-user-api" value="«artifact»&#xa;User Routes&#xa;GET/PATCH /user/[code]/profile&#xa;PATCH /user/[code]/password&#xa;GET /user/[code]/dashboard/counts&#xa;POST /user/reserve-books" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0891B2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="420" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Other routes -->
+        <mxCell id="comp-other-api" value="«artifact»&#xa;Other Routes&#xa;POST /payment/subscribe&#xa;GET /category/list&#xa;GET /locations&#xa;POST /send-email&#xa;GET /health · GET /logs" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0891B2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="450" width="175" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ── Services ── -->
+        <mxCell id="layer-services" value="«component»&#xa;Service Layer (src/services)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16A34A;strokeColor=#16A34A;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="455" y="548" width="730" height="44" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-auth-svc" value="«component»&#xa;auth.service.ts&#xa;authenticateUser()&#xa;registerUser()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16A34A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="606" width="170" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-book-svc" value="«component»&#xa;book.service.ts&#xa;getAllBooks()&#xa;getBorrowedBooks()&#xa;getReturnedBooks()&#xa;getMemberFineSummary()&#xa;recordFinePayment()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16A34A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="641" y="606" width="175" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-user-svc" value="«component»&#xa;user.service.ts&#xa;getUserProfile()&#xa;updateProfile()&#xa;changePassword()&#xa;getDashboardCounts()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16A34A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="832" y="606" width="175" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-category-svc" value="«component»&#xa;category.service.ts&#xa;getAllCategories()&#xa;getLocations()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16A34A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1023" y="606" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ── Lib / Utilities ── -->
+        <mxCell id="layer-lib" value="«component»&#xa;Library / Utilities (src/lib)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EA580C;strokeColor=#EA580C;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="455" y="720" width="730" height="44" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-lib-items" value="db.ts (mssql pool) · session-server.ts · session-client.ts · passwordHasher.js (PBKDF2-SHA256) · alerts.ts · logger.ts · response.ts · client-utility.ts · textToSpeech.ts" style="text;html=1;strokeColor=#EA580C;fillColor=#ffedd5;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="455" y="776" width="730" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: AZURE SQL SERVER
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-db" value="«device»&#xa;Azure Cloud · SQL Server&#xa;207.148.75.112:1533" style="shape=mxgraph.archimate3.tech;techType=node;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="430" y="860" width="500" height="270" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-db-engine" value="«execution environment»&#xa;Microsoft SQL Server&#xa;Database: LibraryMS" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="455" y="920" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-tables" value="«artifact»&#xa;Tables&#xa;Members · Books · Categories&#xa;BorrowedBooks · ReturnedBooks&#xa;Fines · Subscriptions · Locations&#xa;Notifications · Logs" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="695" y="920" width="210" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-db-security" value="«artifact»&#xa;Security&#xa;Parameterized Queries&#xa;Connection Pooling (mssql)&#xa;Azure Firewall Rules" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="1000" width="210" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: SENDGRID (External)
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-sendgrid" value="«external service»&#xa;SendGrid&#xa;Email API" style="shape=mxgraph.archimate3.tech;techType=node;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="860" width="280" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-sendgrid-api" value="«artifact»&#xa;SendGrid REST API&#xa;@sendgrid/mail&#xa;Transactional Email&#xa;Due-date · Account alerts" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1075" y="920" width="230" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: FILE SYSTEM / STATIC ASSETS
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-static" value="«device»&#xa;File System&#xa;Static Assets" style="shape=mxgraph.archimate3.tech;techType=node;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontStyle=1;fontSize=13;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="560" width="260" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-public" value="«artifact»&#xa;public/&#xa;Book cover images (JPG/PNG)&#xa;Video assets (MP4)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="85" y="620" width="210" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-logs" value="«artifact»&#xa;logs/&#xa;Application server logs&#xa;(logger.ts → winston)" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="85" y="718" width="210" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             NODE: ENV CONFIG
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="node-env" value="«artifact»&#xa;Environment Config&#xa;.env.local" style="shape=mxgraph.archimate3.tech;techType=artifact;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="840" width="260" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="comp-env-vars" value="JWT_SECRET&#xa;DB_SERVER · DB_NAME · DB_USER · DB_PASS&#xa;SENDGRID_API_KEY&#xa;LOG_CODE&#xa;NEXT_PUBLIC_BASE_URL" style="text;html=1;strokeColor=#d6b656;fillColor=#fffde7;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="75" y="895" width="232" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             CONNECTIONS
+        ═══════════════════════════════════════════════════════════ -->
+
+        <!-- Browser → Middleware (HTTPS) -->
+        <mxCell id="edge-browser-mw" value="HTTPS&#xa;HTTP/2" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#2563EB;strokeWidth=2.5;fontColor=#2563EB;fontSize=10;fontStyle=1;" edge="1" source="comp-browser" target="layer-middleware" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware → App Router -->
+        <mxCell id="edge-mw-router" value="Page Request" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1A3A5C;strokeWidth=2;fontColor=#1A3A5C;fontSize=10;" edge="1" source="layer-middleware" target="layer-approuter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware → API Routes -->
+        <mxCell id="edge-mw-api" value="API Request" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1A3A5C;strokeWidth=2;fontColor=#1A3A5C;fontSize=10;" edge="1" source="layer-middleware" target="layer-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- App Router → Pages -->
+        <mxCell id="edge-router-pages" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2563EB;strokeWidth=1.5;" edge="1" source="layer-approuter" target="comp-pages" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Pages → React Components -->
+        <mxCell id="edge-pages-comp" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2563EB;strokeWidth=1.5;" edge="1" source="comp-pages" target="comp-react" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Routes → Auth -->
+        <mxCell id="edge-api-auth" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0891B2;strokeWidth=1.5;" edge="1" source="layer-api" target="comp-auth-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Routes → Book -->
+        <mxCell id="edge-api-book" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0891B2;strokeWidth=1.5;" edge="1" source="layer-api" target="comp-book-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Routes → User -->
+        <mxCell id="edge-api-user" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0891B2;strokeWidth=1.5;" edge="1" source="layer-api" target="comp-user-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Routes → Other -->
+        <mxCell id="edge-api-other" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0891B2;strokeWidth=1.5;" edge="1" source="layer-api" target="comp-other-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Auth API → Auth Service -->
+        <mxCell id="edge-authapi-svc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="comp-auth-api" target="layer-services" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Book API → Book Service -->
+        <mxCell id="edge-bookapi-svc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="comp-book-api" target="layer-services" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- User API → User Service -->
+        <mxCell id="edge-userapi-svc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="comp-user-api" target="layer-services" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Services → Auth Service -->
+        <mxCell id="edge-svc-authsvc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="layer-services" target="comp-auth-svc" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Services → Book Service -->
+        <mxCell id="edge-svc-booksvc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="layer-services" target="comp-book-svc" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Services → User Service -->
+        <mxCell id="edge-svc-usersvc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="layer-services" target="comp-user-svc" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Services → Category Service -->
+        <mxCell id="edge-svc-catsvc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#16A34A;strokeWidth=1.5;" edge="1" source="layer-services" target="comp-category-svc" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Services → Lib -->
+        <mxCell id="edge-svc-lib" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#EA580C;strokeWidth=1.5;" edge="1" source="layer-services" target="layer-lib" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lib → DB -->
+        <mxCell id="edge-lib-db" value="TCP :1533&#xa;mssql pool" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.3;exitY=1;exitDx=0;exitDy=0;entryX=0.3;entryY=0;entryDx=0;entryDy=0;strokeColor=#d79b00;strokeWidth=2.5;fontColor=#d79b00;fontSize=10;fontStyle=1;" edge="1" source="layer-lib" target="node-db" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Auth Service → SendGrid -->
+        <mxCell id="edge-authsvc-mail" value="HTTPS&#xa;SendGrid API" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#9673a6;strokeWidth=2;fontColor=#9673a6;fontSize=10;fontStyle=1;" edge="1" source="comp-auth-svc" target="node-sendgrid" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Other API → SendGrid (send-email route) -->
+        <mxCell id="edge-otherapi-mail" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#9673a6;strokeWidth=1.5;dashed=1;" edge="1" source="comp-other-api" target="node-sendgrid" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server → Static assets -->
+        <mxCell id="edge-server-static" value="serves" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.4;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;strokeColor=#666666;strokeWidth=1.5;fontColor=#666666;fontSize=10;" edge="1" source="node-server" target="node-static" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server → Logs -->
+        <mxCell id="edge-server-logs" value="writes" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.55;exitDx=0;exitDy=0;entryX=1;entryY=0.7;entryDx=0;entryDy=0;strokeColor=#666666;strokeWidth=1.5;fontColor=#666666;fontSize=10;" edge="1" source="node-server" target="comp-logs" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Env → Server -->
+        <mxCell id="edge-env-server" value="injects&#xa;env vars" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.85;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;fontColor=#b45309;fontSize=10;fontStyle=1;dashed=1;" edge="1" source="node-env" target="node-server" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Client CSRF cookie -->
+        <mxCell id="edge-mw-csrf" value="sets cookie" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#b85450;strokeWidth=1.5;fontColor=#b85450;fontSize=10;dashed=1;" edge="1" source="layer-middleware" target="comp-csrf-cookie" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Auth → JWT cookie -->
+        <mxCell id="edge-auth-jwt" value="issues JWT" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.85;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#b85450;strokeWidth=1.5;fontColor=#b85450;fontSize=10;dashed=1;" edge="1" source="comp-auth-api" target="comp-jwt-cookie" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             LEGEND
+        ═══════════════════════════════════════════════════════════ -->
+        <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="120" width="240" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1A3A5C;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="128" width="240" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Legend items -->
+        <mxCell id="leg1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1385" y="168" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg1t" value="Client Node / Next.js Component" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1"><mxGeometry x="1419" y="168" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1385" y="198" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg2t" value="App Server (Next.js Node)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1"><mxGeometry x="1419" y="198" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="1385" y="228" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg3t" value="Azure SQL Database Node" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1"><mxGeometry x="1419" y="228" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="1385" y="258" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg4t" value="External Service (SendGrid)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1"><mxGeometry x="1419" y="258" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg5" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1A3A5C;strokeColor=#1A3A5C;" vertex="1" parent="1"><mxGeometry x="1385" y="288" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg5t" value="Middleware Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#1A3A5C;" vertex="1" parent="1"><mxGeometry x="1419" y="288" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg6" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#2563EB;strokeColor=#2563EB;" vertex="1" parent="1"><mxGeometry x="1385" y="318" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg6t" value="App Router / Pages" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#2563EB;" vertex="1" parent="1"><mxGeometry x="1419" y="318" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg7" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0891B2;strokeColor=#0891B2;" vertex="1" parent="1"><mxGeometry x="1385" y="348" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg7t" value="API Routes Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#0891B2;" vertex="1" parent="1"><mxGeometry x="1419" y="348" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg8" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#16A34A;strokeColor=#16A34A;" vertex="1" parent="1"><mxGeometry x="1385" y="378" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg8t" value="Service Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#16A34A;" vertex="1" parent="1"><mxGeometry x="1419" y="378" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg9" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EA580C;strokeColor=#EA580C;" vertex="1" parent="1"><mxGeometry x="1385" y="408" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg9t" value="Lib / Utilities Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#EA580C;" vertex="1" parent="1"><mxGeometry x="1419" y="408" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg10" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1385" y="438" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg10t" value="Security Artifacts (JWT / CSRF)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1419" y="438" width="185" height="18" as="geometry" /></mxCell>
+
+        <mxCell id="leg11" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1385" y="468" width="26" height="18" as="geometry" /></mxCell>
+        <mxCell id="leg11t" value="Config / Artifacts" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#b45309;" vertex="1" parent="1"><mxGeometry x="1419" y="468" width="185" height="18" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

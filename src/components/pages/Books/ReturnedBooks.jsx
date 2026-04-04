@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./ReturnedBooks.scss";
 import Pagination from "@/components/common/Pagination";
-import { capitalizeFirstLetter } from "@/lib/utility";
+import { capitalizeFirstLetter } from "@/lib/client-utility";
 
 const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 

@@ -82,6 +82,19 @@ export default function Login() {
             const result = await res.json();
             import("sonner").then(({ toast }) => toast.dismiss(loadingToastId));
 
+            // 402 — subscription expired → redirect to payment gateway
+            if (res.status === 402 && result.requiresPayment) {
+                alerts.warning(
+                    "Subscription Required",
+                    result.message || "Please renew your subscription to continue.",
+                    3500
+                );
+                const u = encodeURIComponent(result.data?.usercode || "");
+                const n = encodeURIComponent(result.data?.name || "");
+                setTimeout(() => router.push(`/payment?u=${u}&n=${n}`), 2500);
+                return;
+            }
+
             if (!res.ok) {
                 alerts.error("Login Failed", result.message || "Invalid credentials");
                 return;

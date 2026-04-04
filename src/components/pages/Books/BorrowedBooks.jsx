@@ -3,7 +3,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./BorrowedBooks.scss";
 import Pagination from "@/components/common/Pagination";
-import { capitalizeFirstLetter } from "@/lib/utility";
+import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
+import { getCsrfToken } from "@/lib/session-client";
+import { alerts } from "@/lib/alerts";
+import { FaLock, FaSpinner, FaUserAlt, FaCalendarAlt } from "react-icons/fa";
+import { MdOutlineCreditCard } from "react-icons/md";
+import { FaCcVisa, FaCcMastercard, FaCcAmex } from "react-icons/fa6";
 
 const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
@@ -51,6 +56,9 @@ export default function BorrowedBooks() {
     // Fine summary
     const [fineSummary,  setFineSummary]  = useState({ totalFine: 0, totalPaid: 0, totalBalance: 0 });
     const [showPayModal, setShowPayModal] = useState(false);
+    const [payLoading,   setPayLoading]   = useState(false);
+    const [payForm,      setPayForm]      = useState({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
+    const [payErrors,    setPayErrors]    = useState({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
 
     const pageSize   = 12;
     const totalPages = Math.ceil(total / pageSize) || 1;
@@ -143,6 +151,87 @@ export default function BorrowedBooks() {
 
     const closeModal = () => setShowModal(false);
 
+    const resetPayForm = () => {
+        setPayForm({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
+        setPayErrors({ cardName: "", cardNumber: "", expiry: "", cvv: "" });
+    };
+
+    const closePayModal = () => {
+        setShowPayModal(false);
+        resetPayForm();
+    };
+
+    const formatCardNumber = (val) =>
+        val.replace(/\D/g, "").substring(0, 16).replace(/(.{4})/g, "$1 ").trim();
+
+    const formatExpiry = (val) => {
+        const digits = val.replace(/\D/g, "").substring(0, 4);
+        return digits.length >= 3 ? digits.substring(0, 2) + "/" + digits.substring(2) : digits;
+    };
+
+    const handlePayFieldChange = (e) => {
+        const { id, value } = e.target;
+        let v = value;
+        if (id === "pCardNumber") v = formatCardNumber(value);
+        if (id === "pExpiry")     v = formatExpiry(value);
+        if (id === "pCvv")        v = value.replace(/\D/g, "").substring(0, 3);
+        setPayForm(prev => ({ ...prev, [id.replace("p", "").charAt(0).toLowerCase() + id.replace("p", "").slice(1)]: v }));
+        setPayErrors(prev => ({ ...prev, [id.replace("p", "").charAt(0).toLowerCase() + id.replace("p", "").slice(1)]: "" }));
+    };
+
+    const validatePayForm = () => {
+        const e = { cardName: "", cardNumber: "", expiry: "", cvv: "" };
+        if (!payForm.cardName.trim())                                e.cardName   = "Cardholder name is required";
+        if (payForm.cardNumber.replace(/\s/g, "").length !== 16)    e.cardNumber = "Enter a valid 16-digit card number";
+        const [mm, yy] = (payForm.expiry || "").split("/");
+        if (!mm || !yy || parseInt(mm) < 1 || parseInt(mm) > 12 || yy.length !== 2)
+                                                                     e.expiry     = "Enter valid expiry MM/YY";
+        if (payForm.cvv.length !== 3)                                e.cvv        = "Enter a valid 3-digit CVV";
+        setPayErrors(e);
+        return !Object.values(e).some(Boolean);
+    };
+
+    const handlePaySubmit = async (ev) => {
+        ev.preventDefault();
+        if (!validatePayForm()) return;
+        if (fineSummary.totalBalance <= 0) {
+            alerts.info("No Outstanding Fine", "You have no balance to pay.");
+            return;
+        }
+        setPayLoading(true);
+        const toastId = alerts.loading("Processing payment...");
+        try {
+            const refNo = "REF-" + Date.now();
+            const res = await fetch(`${getBaseUrl()}/api/v1/book/fine-payment`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || "",
+                },
+                body: JSON.stringify({
+                    memberCode: memberCodeRef.current,
+                    amount:     fineSummary.totalBalance,
+                    payMode:    "CARD",
+                    refNo,
+                }),
+            });
+            const result = await res.json();
+            import("sonner").then(({ toast }) => toast.dismiss(toastId));
+            if (!res.ok) {
+                alerts.error("Payment Failed", result.message || "Something went wrong.");
+                return;
+            }
+            alerts.success("Payment Successful! 🎉", result.message || "Your fine has been cleared.", 4000);
+            closePayModal();
+            fetchFineSummary();
+            fetchBooks();
+        } catch {
+            alerts.error("Connection Error", "Could not process payment. Please try again.");
+        } finally {
+            setPayLoading(false);
+        }
+    };
+
     const formatDate = (val) => {
         if (!val) return "—";
         const d = new Date(val);
@@ -175,7 +264,7 @@ export default function BorrowedBooks() {
                 <button
                     type="button"
                     className="btn-pay-standalone"
-                    onClick={() => setShowPayModal(true)}
+                    onClick={() => { resetPayForm(); setShowPayModal(true); }}
                 >
                     <i className="bi bi-credit-card-fill me-2"></i>Pay Fine
                 </button>
@@ -423,17 +512,18 @@ export default function BorrowedBooks() {
             )}
             {/* ── Pay Modal ── */}
             {showPayModal && (
-                <div className="modal-overlay" onClick={() => setShowPayModal(false)}>
+                <div className="modal-overlay" onClick={closePayModal}>
                     <div className="modal-box pay-modal-box" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-box-header">
                             <h5 className="mb-0 fw-bold">
                                 <i className="bi bi-credit-card-fill me-2"></i>Outstanding Fine Payment
                             </h5>
-                            <button type="button" className="modal-close-btn" onClick={() => setShowPayModal(false)}>
+                            <button type="button" className="modal-close-btn" onClick={closePayModal}>
                                 <i className="bi bi-x-lg"></i>
                             </button>
                         </div>
                         <div className="modal-box-body">
+                            {/* Summary row */}
                             <div className="pay-modal-summary mb-4">
                                 <div className="row g-3">
                                     <div className="col-sm-4">
@@ -445,34 +535,125 @@ export default function BorrowedBooks() {
                                     <div className="col-sm-4">
                                         <div className="detail-item">
                                             <span className="detail-label">Total Fine</span>
-                                            <span className="detail-value">LKR {fineSummary.totalFine.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                                            <span className="detail-value">LKR {fineSummary.totalFine.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
                                     <div className="col-sm-4">
                                         <div className="detail-item balance-box">
                                             <span className="detail-label">Amount Due</span>
-                                            <span className="detail-value fine-amount fw-bold fs-5">LKR {fineSummary.totalBalance.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
+                                            <span className="detail-value fine-amount fw-bold fs-5">LKR {fineSummary.totalBalance.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="pay-info-notice mb-4">
-                                <i className="bi bi-info-circle-fill me-2"></i>
-                                You will be redirected to our secure payment gateway. The amount is pre-filled and fixed.
+
+                            {/* Card payment form */}
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="small fw-semibold text-secondary">
+                                    <i className="bi bi-credit-card me-2"></i>Card Details
+                                </span>
+                                <div className="d-flex align-items-center gap-1">
+                                    <FaCcVisa       size={30} style={{ color: "#1a1f71" }} title="Visa" />
+                                    <FaCcMastercard size={30} style={{ color: "#eb001b" }} title="Mastercard" />
+                                    <FaCcAmex       size={30} style={{ color: "#007bc1" }} title="American Express" />
+                                </div>
                             </div>
-                            <div className="text-center">
-                                <a
-                                    href={`http://localhost:3001/?amount=${fineSummary.totalBalance.toFixed(2)}&type=fine&locked=1&member=${encodeURIComponent(memberCodeRef.current)}&callback=${encodeURIComponent('http://localhost:3000/api/v1/book/fine-payment')}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-pay-now-gateway"
+                            <form onSubmit={handlePaySubmit} noValidate>
+                                {/* Cardholder Name */}
+                                <div className="mb-3">
+                                    <label htmlFor="pCardName" className="form-label small fw-semibold text-secondary">Cardholder Name *</label>
+                                    <div className="position-relative">
+                                        <FaUserAlt className="form-icon text-muted" style={{ position:"absolute", top:"50%", left:"14px", transform:"translateY(-50%)", pointerEvents:"none" }} />
+                                        <input
+                                            id="pCardName"
+                                            type="text"
+                                            value={payForm.cardName}
+                                            onChange={handlePayFieldChange}
+                                            placeholder="Name on card"
+                                            className={`form-control rounded-3 ps-5 ${payErrors.cardName ? "is-invalid" : ""}`}
+                                        />
+                                    </div>
+                                    {payErrors.cardName && <div className="text-danger small mt-1">{payErrors.cardName}</div>}
+                                </div>
+
+                                {/* Card Number */}
+                                <div className="mb-3">
+                                    <label htmlFor="pCardNumber" className="form-label small fw-semibold text-secondary">Card Number *</label>
+                                    <div className="position-relative">
+                                        <MdOutlineCreditCard size={20} className="text-muted" style={{ position:"absolute", top:"50%", left:"14px", transform:"translateY(-50%)", pointerEvents:"none" }} />
+                                        <input
+                                            id="pCardNumber"
+                                            type="text"
+                                            value={payForm.cardNumber}
+                                            onChange={handlePayFieldChange}
+                                            placeholder="1234 5678 9012 3456"
+                                            className={`form-control rounded-3 ps-5 ${payErrors.cardNumber ? "is-invalid" : ""}`}
+                                        />
+                                    </div>
+                                    {payErrors.cardNumber && <div className="text-danger small mt-1">{payErrors.cardNumber}</div>}
+                                </div>
+
+                                {/* Expiry + CVV */}
+                                <div className="row g-3 mb-4">
+                                    <div className="col-7">
+                                        <label htmlFor="pExpiry" className="form-label small fw-semibold text-secondary">Expiry Date *</label>
+                                        <div className="position-relative">
+                                            <FaCalendarAlt className="text-muted" style={{ position:"absolute", top:"50%", left:"14px", transform:"translateY(-50%)", pointerEvents:"none" }} />
+                                            <input
+                                                id="pExpiry"
+                                                type="text"
+                                                value={payForm.expiry}
+                                                onChange={handlePayFieldChange}
+                                                placeholder="MM/YY"
+                                                className={`form-control rounded-3 ps-5 ${payErrors.expiry ? "is-invalid" : ""}`}
+                                            />
+                                        </div>
+                                        {payErrors.expiry && <div className="text-danger small mt-1">{payErrors.expiry}</div>}
+                                    </div>
+                                    <div className="col-5">
+                                        <label htmlFor="pCvv" className="form-label small fw-semibold text-secondary">CVV *</label>
+                                        <div className="position-relative">
+                                            <FaLock className="text-muted" style={{ position:"absolute", top:"50%", left:"14px", transform:"translateY(-50%)", pointerEvents:"none" }} />
+                                            <input
+                                                id="pCvv"
+                                                type="password"
+                                                value={payForm.cvv}
+                                                onChange={handlePayFieldChange}
+                                                placeholder="•••"
+                                                className={`form-control rounded-3 ps-5 ${payErrors.cvv ? "is-invalid" : ""}`}
+                                            />
+                                        </div>
+                                        {payErrors.cvv && <div className="text-danger small mt-1">{payErrors.cvv}</div>}
+                                    </div>
+                                </div>
+
+                                {/* Order summary */}
+                                <div className="order-summary mb-4 p-3 rounded-3 bg-light border">
+                                    <div className="d-flex justify-content-between">
+                                        <span className="text-muted small">Payment Type</span>
+                                        <span className="fw-semibold small">Library Fine</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between mt-1">
+                                        <span className="text-muted small">Total</span>
+                                        <span className="fw-bold text-danger">LKR {fineSummary.totalBalance.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={payLoading || fineSummary.totalBalance <= 0}
+                                    className="btn btn-purple w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                                 >
-                                    <i className="bi bi-credit-card-2-front-fill me-2"></i>Pay Now — LKR {fineSummary.totalBalance.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
-                                </a>
-                            </div>
+                                    {payLoading
+                                        ? <><FaSpinner className="spin" /> Processing...</>
+                                        : <><FaLock size={14} /> Pay LKR {fineSummary.totalBalance.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</>
+                                    }
+                                </button>
+                                <p className="text-center mt-3 small text-muted">🔒 Payments are secured and encrypted</p>
+                            </form>
                         </div>
                         <div className="modal-box-footer">
-                            <button type="button" className="btn btn-secondary" onClick={() => setShowPayModal(false)}>Close</button>
+                            <button type="button" className="btn btn-secondary" onClick={closePayModal} disabled={payLoading}>Close</button>
                         </div>
                     </div>
                 </div>
