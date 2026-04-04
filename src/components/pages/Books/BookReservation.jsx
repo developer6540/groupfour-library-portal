@@ -9,6 +9,7 @@ import Link from "next/link";
 import {alerts} from "@/lib/alerts";
 import {getUserInfo} from "@/lib/server-utility";
 import {useRouter} from "next/navigation";
+import {FaSpinner} from "react-icons/fa";
 
 export default function BookReservation() {
 
@@ -16,6 +17,8 @@ export default function BookReservation() {
 
     const {getGlobalDataCart, setGlobalDataCart} = useDataContext();
     const [isHydrated, setIsHydrated] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Use the global context as the single source of truth
     const cartItems = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
@@ -101,6 +104,8 @@ export default function BookReservation() {
             "Are you sure you want to make reservation?",
             async () => {
 
+                setIsSubmitting(true);
+
                 try {
                     const user = await getUserInfo();
                     const userData = typeof user === "string" ? JSON.parse(user) : user;
@@ -117,6 +122,7 @@ export default function BookReservation() {
 
                     if (!eligibilityRes.ok || !eligibility.data.isEligible) {
                         alerts.error(eligibility.data?.message || "You are not eligible to reserve books.");
+                        setIsSubmitting(false);
                         return;
                     }
 
@@ -130,7 +136,7 @@ export default function BookReservation() {
                         BR_BORROW_LINENO: index + 1
                     }));
 
-                    const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-books`, {
+                    const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-booksyy`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -145,14 +151,17 @@ export default function BookReservation() {
                         alerts.success("Reservation submitted successfully!");
                         setGlobalDataCart([]);
                         setSessionClient("cart-items", JSON.stringify([]));
+                        setIsSubmitting(false);
                         router.push('/books/reserve/complete');
                     } else {
                         alerts.error(result.message || "Failed to submit reservation.");
+                        setIsSubmitting(false);
                     }
 
                 } catch (error) {
                     console.error("Reservation failed:", error);
                     alerts.error("A network error occurred.");
+                    setIsSubmitting(false);
                 }
             }
         );
@@ -280,10 +289,19 @@ export default function BookReservation() {
                         </table>
                     </div>
                     <div className="reservation-footer d-flex justify-content-between align-items-center mt-4">
-                        <p className="small fw-bold text-muted mb-0">Total books: <strong>{cartItems.length}</strong>
-                        </p>
-                        <button type="button" className="btn btn-purple" onClick={confirmReservation}>Confirm
-                            Reservation
+                        <p className="small fw-bold text-muted mb-0">Total books: <strong>{cartItems.length}</strong></p>
+                        <button type="button" disabled={isSubmitting} className="btn btn-purple" onClick={confirmReservation}>
+                            {isSubmitting ? (
+                                <>
+                                    <FaSpinner className="animate-spin" /> &nbsp;
+                                    Confirm Reservation
+                                </>
+                            ) : (
+                                <>
+                                    <i className="bi bi-book"></i> &nbsp; Confirm Reservation
+                                </>
+                            )}
+
                         </button>
                     </div>
                 </>
