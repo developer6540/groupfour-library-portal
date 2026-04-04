@@ -136,7 +136,7 @@ export default function BookReservation() {
                         BR_BORROW_LINENO: index + 1
                     }));
 
-                    const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-booksyy`, {
+                    const response = await fetch(`${getBaseUrl()}/api/v1/user/reserve-books`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
