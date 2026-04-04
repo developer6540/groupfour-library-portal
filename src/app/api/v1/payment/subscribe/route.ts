@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDbConnection } from "@/lib/db";
 import { errorResponse, successResponse } from "@/lib/response";
 import Logger from "@/lib/logger";
+import {getBaseUrl} from "@/lib/client-utility";
+import {getCsrfToken} from "@/lib/session-client";
+import {alerts} from "@/lib/alerts";
 
 const PLANS: Record<string, { months: number; label: string }> = {
     MONTHLY: { months: 1,  label: "Monthly" },
@@ -48,7 +51,7 @@ export async function POST(req: NextRequest) {
         // Update subscription in DB
         await pool.request()
             .input("code",    usercode)
-            .input("plan",    plan)
+            .input("plan",    '00003')
             .input("expiry",  newExpiry)
             .query(`
                 UPDATE M_TBLUSERS
@@ -64,10 +67,7 @@ export async function POST(req: NextRequest) {
         Logger.info(`Subscription renewed: ${usercode} → ${plan} until ${newExpiry.toLocaleDateString("en-GB")}`);
 
         return NextResponse.json(
-            successResponse(
-                { usercode, plan: PLANS[plan].label, expiryDate: newExpiry },
-                `Subscription renewed successfully until ${newExpiry.toLocaleDateString("en-GB")}`
-            )
+            successResponse({ usercode, plan: PLANS[plan].label, expiryDate: newExpiry }, `Subscription renewed successfully until ${newExpiry.toLocaleDateString("en-GB")}`)
         );
 
     } catch (error: any) {

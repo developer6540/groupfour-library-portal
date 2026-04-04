@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { FaLock, FaSpinner, FaCalendarAlt, FaUserAlt } from "react-icons/fa";
 import { MdOutlineCreditCard } from "react-icons/md";
 import "./PaymentPage.scss";
+import {getUserInfo} from "@/lib/server-utility";
+import {alerts} from "@/lib/alerts";
+import {getCsrfToken} from "@/lib/session-client";
+import {getBaseUrl} from "@/lib/client-utility";
 
 export default function PaymentPage() {
 
@@ -45,14 +49,59 @@ export default function PaymentPage() {
         return !Object.values(e).some(Boolean);
     };
 
-    const handleSubmit = (ev) => {
+    // const handleSubmit = (ev) => {
+    //     ev.preventDefault();
+    //     if (!validate()) return;
+    //     setLoading(true);
+    //     setTimeout(() => {
+    //         setLoading(false);
+    //         setPaid(true);
+    //     }, 1800);
+    // };
+
+    const handleSubmit = async (ev) => {
         ev.preventDefault();
         if (!validate()) return;
+
         setLoading(true);
-        setTimeout(() => {
+        const user = await getUserInfo();
+        const userData = typeof user === "string" ? JSON.parse(user) : user;
+        const usercode = userData?.U_CODE || 0;
+        try {
+            const response = await fetch("/api/v1/payment/subscribe", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+                body: JSON.stringify({
+                    usercode: usercode,
+                    plan: 'ANNUAL',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alerts.success(data.message);
+                const res = await fetch(`${getBaseUrl()}/api/v1/auth/logout`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': getCsrfToken() || '',
+                    }
+                });
+                setPaid(true);
+            } else {
+                // Handle API errors (User not found, DB errors, etc.)
+                alerts.error(data.message || "Payment failed. Please try again.");
+            }
+        } catch (err) {
+            console.error("Network Error:", err);
+            alerts.error("A network error occurred. Please check your connection.");
+        } finally {
             setLoading(false);
-            setPaid(true);
-        }, 1800);
+        }
     };
 
     if (paid) {

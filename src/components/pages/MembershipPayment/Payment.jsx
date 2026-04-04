@@ -63,7 +63,7 @@ export default function Payment() {
         if (user?.U_CODE) params.set("u", user.U_CODE);
         if (user?.U_NAME) params.set("n", user.U_NAME);
         params.set("a", String(membershipAmount));
-        router.push(`/payment?${params.toString()}`);
+        router.push(`/payment-gateway`);
     };
 
     const formattedBalance = membershipAmount.toLocaleString('en-LK', {

@@ -12,6 +12,7 @@ export async function POST() {
         cookieStore.delete("user-info");
         cookieStore.delete("cart-items");
         cookieStore.delete("X-CSRF-Token");
+        cookieStore.delete("notifications");
 
         // 2. Return a success response
         return NextResponse.json(
