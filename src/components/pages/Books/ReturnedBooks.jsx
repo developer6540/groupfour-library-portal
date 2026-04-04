@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./ReturnedBooks.scss";
 import Pagination from "@/components/common/Pagination";
 import { capitalizeFirstLetter } from "@/lib/client-utility";
+import { getUserInfo } from "@/lib/server-utility";
 
 const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
@@ -43,13 +44,15 @@ export default function ReturnedBooks() {
 
     /* ── Read logged-in user once on mount ── */
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem("user");
-            const user   = stored ? JSON.parse(stored) : null;
-            memberCodeRef.current = user?.U_CODE || "";
-            setLoggedUser(user);
-        } catch {}
-        setUserReady(true);
+        const loadUser = async () => {
+            try {
+                const user = await getUserInfo();
+                memberCodeRef.current = user?.U_CODE || "";
+                setLoggedUser(user);
+            } catch {}
+            setUserReady(true);
+        };
+        loadUser();
     }, []);
 
     /* ── Debounce search ── */

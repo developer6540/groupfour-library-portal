@@ -19,9 +19,66 @@ export async function authenticateUser(usercode: string, pass: string) {
         throwException("Sorry! This portal is for members only.", 403);
     }
 
-    // Verify Password
-    if (!verifyPassword(pass, storedAuth.U_PASSWORD)) {
-        throwException("Invalid login credentials", 401);
+    // Verify password with fail-count tracking
+    const isValid = verifyPassword(pass, storedAuth.U_PASSWORD);
+    const failCount = storedAuth.U_FAIL_COUNT || 0;
+    const maxAttempts = 5;
+
+    if (!isValid) {
+        const newFailCount = failCount + 1;
+
+        // Increment fail count
+        await pool.request()
+            .input("usercode", usercode)
+            .input("failCount", newFailCount)
+            .query(`
+                UPDATE M_TBLUSERS
+                SET U_FAIL_COUNT = @failCount
+                WHERE U_CODE = @usercode
+            `);
+
+        const attemptsLeft = maxAttempts - newFailCount;
+
+        // Auto-lock if failCount >= maxAttempts
+        if (newFailCount >= maxAttempts) {
+
+            // Lock the user account
+            await pool.request()
+                .input("usercode", usercode)
+                .query(`
+                    UPDATE M_TBLUSERS
+                    SET
+                        U_LOCKED = 1,
+                        U_LOCKED_AT = GETDATE()
+                    WHERE U_CODE = @usercode
+                `);
+
+            // Insert into user lock approval table
+            await pool.request()
+                .input("usercode", usercode)
+                .query(`INSERT INTO T_TBLUSERLOCKAPPROVAL
+                            (UL_ID, UL_USERCODE, UL_DATE, UL_STATUS, M_DATE)
+                            VALUES
+                                (
+                                    'UL' + CONVERT(VARCHAR(14), GETDATE(), 112)
+                                        + REPLACE(CONVERT(VARCHAR(8), GETDATE(), 108), ':', '')
+                                        + RIGHT('000' + CAST(ABS(CHECKSUM(NEWID())) % 1000 AS VARCHAR(3)), 3),
+                                    @usercode,
+                                    GETDATE(),
+                                    'P',
+                                    GETDATE()
+                                )`);
+            throwException(
+                "Account locked due to multiple failed login attempts. Please contact the librarian to unlock.",
+                403
+            );
+        }
+
+        // Throw message with remaining attempts
+        throwException(
+            `Invalid login credentials. You have ${attemptsLeft} out of ${maxAttempts} attempts left.`,
+            401
+        );
     }
 
     // 2. Fetch User Details

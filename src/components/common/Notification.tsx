@@ -127,7 +127,7 @@ const Notification = () => {
                                     <p className="mb-0 fw-bold text-dark" style={{ fontSize: '14px' }}>
                                         {notif.title}
                                     </p>
-                                    <p className="mb-1 text-muted" style={{ fontSize: '12px' }}>
+                                    <p className="mb-1" style={{ fontSize: '12px' }}>
                                         {notif.message}
                                     </p>
                                     <small className="text-muted" style={{ fontSize: '10px' }}>

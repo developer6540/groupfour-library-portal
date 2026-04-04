@@ -4,25 +4,48 @@ import './MemberInfo.scss';
 import Image from "next/image";
 import { getDateFormated } from "@/lib/client-utility";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { getUserInfo } from "@/lib/server-utility";
+import {getCsrfToken} from "@/lib/session-client";
 
 export default function MemberInfo() {
 
     const [user, setUser] = useState(null);
 
+    const hasTriggered = useRef(false);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const data = await getUserInfo();
+
                 if (data) {
-                    const parsedUser = typeof data === 'string' ? JSON.parse(data) : data;
+                    const parsedUser =
+                        typeof data === "string" ? JSON.parse(data) : data;
+
                     setUser(parsedUser);
+
+                    // 🔥 Trigger notification ONLY ONCE
+                    if (!hasTriggered.current) {
+                        await fetch("/api/v1/notification/update", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-Token": getCsrfToken() || "",
+                            },
+                            body: JSON.stringify({
+                                type: "MEMBERSHIP_EXPIRY",
+                            }),
+                        });
+
+                        hasTriggered.current = true;
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching member info:", error);
             }
         };
+
         fetchUser();
     }, []);
 

@@ -5,6 +5,7 @@ import "./BorrowedBooks.scss";
 import Pagination from "@/components/common/Pagination";
 import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
 import { getCsrfToken } from "@/lib/session-client";
+import { getUserInfo } from "@/lib/server-utility";
 import { alerts } from "@/lib/alerts";
 import { FaLock, FaSpinner, FaUserAlt, FaCalendarAlt } from "react-icons/fa";
 import { MdOutlineCreditCard } from "react-icons/md";
@@ -66,13 +67,15 @@ export default function BorrowedBooks() {
 
     /* ── Read logged-in user once on mount ── */
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem("user");
-            const user   = stored ? JSON.parse(stored) : null;
-            memberCodeRef.current = user?.U_CODE || "";
-            setLoggedUser(user);
-        } catch {}
-        setUserReady(true);
+        const loadUser = async () => {
+            try {
+                const user = await getUserInfo();
+                memberCodeRef.current = user?.U_CODE || "";
+                setLoggedUser(user);
+            } catch {}
+            setUserReady(true);
+        };
+        loadUser();
     }, []);
 
     /* ── Debounce search only ── */
