@@ -333,7 +333,7 @@ export async function getBorrowedBooks(
                    OR b.B_TITLE LIKE '%' + @T + '%'
                    OR b.B_AUTHOR LIKE '%' + @T + '%'
                    OR ISNULL(b.B_ISBN,'') LIKE '%' + @T + '%')
-              AND (@MC IS NULL OR h.BH_MEMBERCODE = @MC)
+              AND h.BH_MEMBERCODE = @MC
               -- Exclude cancelled / bulk-uploaded records; only show real borrow activity
               AND d.BD_STATUS IN ('O', 'L', 'R')
               -- Exclude rows where the borrow date is missing or invalid
@@ -363,14 +363,12 @@ export async function getBorrowedBooks(
                 ISNULL(
                     (SELECT CAST(AVG(CAST(f.FB_RATING AS FLOAT)) AS DECIMAL(3,1))
                      FROM dbo.M_TBLFEEDBACK f
-                     WHERE TRY_CAST(f.FB_BOOK_ID AS VARCHAR) = b.B_CODE
-                        OR f.FB_BOOK_ID = TRY_CAST(b.B_CODE AS INT)), 0
+                     WHERE CAST(f.FB_BOOK_ID AS NVARCHAR(50)) = b.B_CODE), 0
                 ) AS AVG_RATING,
                 ISNULL(
                     (SELECT COUNT(*)
                      FROM dbo.M_TBLFEEDBACK f
-                     WHERE TRY_CAST(f.FB_BOOK_ID AS VARCHAR) = b.B_CODE
-                        OR f.FB_BOOK_ID = TRY_CAST(b.B_CODE AS INT)), 0
+                     WHERE CAST(f.FB_BOOK_ID AS NVARCHAR(50)) = b.B_CODE), 0
                 ) AS RATING_COUNT
             FROM dbo.T_TBLBOOKBORROW_H h
             INNER JOIN dbo.T_TBLBOOKBORROW_D d ON d.BD_DOCNO = h.BH_DOCNO

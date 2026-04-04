@@ -37,8 +37,8 @@ const RatingStars = ({ rating, count }) => {
     );
 };
 
-export default function BorrowedBooks() {
-    const memberCodeRef  = useRef("");          // holds U_CODE without state timing issues
+export default function BorrowedBooks({ memberCode = "" }) {
+    const memberCodeRef  = useRef(memberCode);      // holds U_CODE without state timing issues
     const [books,        setBooks]        = useState([]);
     const [total,        setTotal]        = useState(0);
     const [isLoading,    setIsLoading]    = useState(true);
@@ -65,14 +65,9 @@ export default function BorrowedBooks() {
 
     /* ── Read logged-in user once on mount ── */
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem("user");
-            const user   = stored ? JSON.parse(stored) : null;
-            memberCodeRef.current = user?.U_CODE || "";
-            setLoggedUser(user);
-        } catch {}
+        memberCodeRef.current = memberCode;
         setUserReady(true);
-    }, []);
+    }, [memberCode]);
 
     /* ── Debounce search only ── */
     useEffect(() => {
@@ -88,7 +83,7 @@ export default function BorrowedBooks() {
         if (!userReady || !memberCodeRef.current) return;
         try {
             const params = new URLSearchParams({ member: memberCodeRef.current });
-            const res = await fetch(`/api/v1/book/fine-summary?${params}`);
+            const res = await fetch(`/api/v1/books/fine-summary?${params}`);
             const result = await res.json();
             if (res.ok && result.data) setFineSummary(result.data);
         } catch (err) {
@@ -100,7 +95,7 @@ export default function BorrowedBooks() {
 
     /* ── Fetch — uses ref so member is always correct ── */
     const fetchBooks = useCallback(async () => {
-        if (!userReady) return;
+        if (!userReady || !memberCodeRef.current) return;
         setIsLoading(true);
         try {
             const params = new URLSearchParams({
@@ -629,7 +624,7 @@ export default function BorrowedBooks() {
                             </div>
                             <div className="text-center">
                                 <a
-                                    href={`http://localhost:3001/?amount=${fineSummary.totalBalance.toFixed(2)}&type=fine&locked=1&member=${encodeURIComponent(memberCodeRef.current)}&callback=${encodeURIComponent('http://localhost:3000/api/v1/book/fine-payment')}`}
+                                    href={`http://localhost:3001/?amount=${fineSummary.totalBalance.toFixed(2)}&type=fine&locked=1&member=${encodeURIComponent(memberCodeRef.current)}&callback=${encodeURIComponent('http://localhost:3001/api/v1/books/fine-payment')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn-pay-now-gateway"
