@@ -332,7 +332,7 @@ export default function Register() {
                             type="text"
                             id="userCode"
                             className={`form-control pe-5 ${errors.userCode ? "is-invalid" : ""}`}
-                            placeholder="Any Code"
+                            placeholder="Enter any code you familiar..."
                             value={formData.userCode}
                             onChange={(e) => {
                                 handleChange(e);
@@ -371,7 +371,7 @@ export default function Register() {
                             type="text"
                             id="fullName"
                             className={`form-control pe-5 ${errors.fullName ? "is-invalid" : ""}`}
-                            placeholder="Nimal Fernando"
+                            placeholder="Enter your full name...."
                             value={formData.fullName}
                             onChange={handleChange}
                         />
@@ -389,7 +389,7 @@ export default function Register() {
                                 type="tel"
                                 id="phone"
                                 className={`form-control pe-5 ${errors.phone ? "is-invalid" : ""}`}
-                                placeholder="0771234567"
+                                placeholder="Enter your phone number...."
                                 value={formData.phone}
                                 onChange={handleChange}
                             />
@@ -412,7 +412,7 @@ export default function Register() {
                                 type="text"
                                 id="nic"
                                 className={`form-control pe-5 ${errors.nic ? "is-invalid" : ""}`}
-                                placeholder="901234567V"
+                                placeholder="Enter your nic (new or old)"
                                 value={formData.nic}
                                 onChange={handleChange}
                             />
@@ -441,7 +441,7 @@ export default function Register() {
                             type="email"
                             id="email"
                             className={`form-control pe-5 ${errors.email ? "is-invalid" : ""}`}
-                            placeholder="john@example.com"
+                            placeholder="Enter your email address...."
                             value={formData.email}
                             onChange={handleChange}
                         />
@@ -458,7 +458,7 @@ export default function Register() {
                             type="text"
                             id="address"
                             className={`form-control pe-5 ${errors.address ? "is-invalid" : ""}`}
-                            placeholder="123 Main Street, Colombo 4"
+                            placeholder="Enter your address...."
                             value={formData.address}
                             onChange={handleChange}
                         />
@@ -559,7 +559,7 @@ export default function Register() {
                                 type={showPassword ? "text" : "password"}
                                 id="password"
                                 className={`form-control pe-5 ${errors.password ? "is-invalid" : ""}`}
-                                placeholder="••••••••"
+                                placeholder="Enter your password..."
                                 value={formData.password}
                                 onChange={handleChange}
                             />
@@ -593,7 +593,7 @@ export default function Register() {
                                 type={showConfirmPassword ? "text" : "password"}
                                 id="confirmPassword"
                                 className={`form-control pe-5 ${errors.confirmPassword ? "is-invalid" : ""}`}
-                                placeholder="••••••••"
+                                placeholder="Enter your confirm password..."
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                             />

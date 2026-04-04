@@ -44,7 +44,7 @@ export default function WelcomeBanner() {
         const interval = setInterval(() => {
             index = (index + 1) % images.length; // next image in order
             setCurrentImage(images[index]);
-        }, 6000); // change every 5 seconds
+        }, 7000); // change every 5 seconds
 
         return () => clearInterval(interval);
     }, []);

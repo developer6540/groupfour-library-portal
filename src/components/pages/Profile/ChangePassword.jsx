@@ -30,6 +30,45 @@ export default function ChangePassword() {
         confirmPassword: ""
     });
 
+    const [passwordStrength, setPasswordStrength] = useState({
+        score: 0,
+        label: "",
+        color: ""
+    });
+
+    const [confirmPasswordStrength, setConfirmPasswordStrength] = useState({
+        score: 0,
+        color: "",
+        matches: false
+    });
+
+    const getPasswordStrength = (password) => {
+        let score = 0;
+        if (!password) return { score, label: "", color: "" };
+
+        if (password.length >= 8) score += 1;
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[@$!%*?&]/.test(password)) score += 1;
+        if (password.length >= 12) score += 1;
+
+        let label = "";
+        let color = "";
+
+        if (score <= 2) {
+            label = "Weak";
+            color = "bg-danger";
+        } else if (score <= 4) {
+            label = "Medium";
+            color = "bg-warning";
+        } else {
+            label = "Strong";
+            color = "bg-success";
+        }
+
+        return { score, label, color };
+    };
+
     useEffect(() => {
         const loadUser = async () => {
             try {
@@ -91,7 +130,28 @@ export default function ChangePassword() {
             [name]: validate(name, value, newFormData)
         }));
 
-        // Re-validate confirm password when new password changes
+        // 🔥 NEW: password strength logic
+        if (name === "newPassword") {
+            const strength = getPasswordStrength(value);
+            setPasswordStrength(strength);
+
+            setConfirmPasswordStrength(prev => ({
+                ...prev,
+                matches: newFormData.confirmPassword === value
+            }));
+        }
+
+        if (name === "confirmPassword") {
+            const strength = getPasswordStrength(value);
+
+            setConfirmPasswordStrength({
+                score: strength.score,
+                color: strength.color,
+                matches: value === newFormData.newPassword
+            });
+        }
+
+        // revalidate confirm password
         if (name === "newPassword" && newFormData.confirmPassword) {
             setErrors(prev => ({
                 ...prev,
@@ -222,6 +282,13 @@ export default function ChangePassword() {
                     <div className="col-md-7">
                         <div className="user-details">
 
+                            <ul className="list-unstyled pass-rules mb-0 extra-small">
+                                <li>8 - 20 Characters</li>
+                                <li>At least 1 Uppercase Letter</li>
+                                <li>At least 1 Number</li>
+                                <li>At least 1 Special Character (@$!%*?&)</li>
+                            </ul>
+
                             {[
                                 { label: "Current Password", name: "currentPassword", show: showCurrent, toggle: setShowCurrent },
                                 { label: "New Password", name: "newPassword", show: showNew, toggle: setShowNew },
@@ -247,7 +314,30 @@ export default function ChangePassword() {
                                         >
                                             <i className={`bi ${field.show ? "bi-eye-slash" : "bi-eye"}`}></i>
                                         </span>
+
+                                        {field.name === "newPassword" && formData.newPassword && (
+                                            <div className="mt-2">
+                                                <div className="progress" style={{ height: "6px" }}>
+                                                    <div
+                                                        className={`progress-bar ${passwordStrength.color}`}
+                                                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
                                     </div>
+
+                                    {field.name === "confirmPassword" && formData.confirmPassword && (
+                                        <div className="mt-2">
+                                            <div className="progress" style={{ height: "6px" }}>
+                                                <div
+                                                    className={`progress-bar ${confirmPasswordStrength.color}`}
+                                                    style={{ width: `${(confirmPasswordStrength.score / 5) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {errors[field.name] && (
                                         <div className="invalid-feedback d-block">
