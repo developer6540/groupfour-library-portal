@@ -1,168 +1,80 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getDbConnection } from "@/lib/db";
 import { errorResponse, successResponse } from "@/lib/response";
 import Logger from "@/lib/logger";
-import { getDbConnection } from "@/lib/db";
-import { insertApprovalRecord } from "@/services/book.service";
 
-// ── Plan config ──────────────────────────────────────────────────────────────
-const PLANS: Record<string, { subsType: string; months: number; amount: number }> = {
-    MONTHLY: { subsType: "00001", months: 1,  amount: 500  },
-    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 },
+const PLANS: Record<string, { months: number; label: string }> = {
+    MONTHLY: { months: 1,  label: "Monthly" },
+    ANNUAL:  { months: 12, label: "Annual"  },
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
     try {
-        const body = await request.json();
-        const { usercode, plan } = body as { usercode?: string; plan?: string };
+        const body = await req.json();
+        const { usercode, plan } = body;
 
-        // ── Validatimport { NextRequest, NextResponse } from "next/server";
-import { errorResponse, successResponse } from "@/lib/response";
-?mport { errorResponse, successResponse } from "@/lib/rcoimport Logger from "@/lib/logger";
-import { getDbConnection } f  import { getDbConnection } from "uiimport { insertApprovalRecord } from "@/se}
-
-// ── Plan config ─────────────.toconst PLANS: Record<string, { subsType: string; months: number; amount: number }> = {
-    MONTHLY: { subsType: "00001", months: 1,  amount: 500  },
-    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 , ")}`, 400),
+        if (!usercode || !plan) {
+            return NextResponse.json(
+                errorResponse("usercode and plan are required", 400),
                 { status: 400 }
             );
         }
 
-        const po    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 }─────────────────────???   try {
-        const body = await request.json?       ??        const { usercode, plan } = body a  
-        // ── Validatimport { NextRequest, Next  .input("code", usercode.trimimport { errorResponse, successResponse } from "@/lib/response";
-?mport U_GROUP,?mport { errorResponse, successResponse } from "@/lib/rcoimpo Uimport { getDbConnection } f  import { getDbConnection } from "uiimport { insertApprovalRecoRO
-// ── Plan config ─────────────.toconst PLANS: Record<string, { subsType: st  r    MONTHLY: { subsType: "00001", months: 1,  amount: 500  },
-    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 , ")}`, 400),
-             ?   ANNUAL:  { subsType: "00002", months: 12, amount: 5000 ,??                { status: 400 }
+        if (!PLANS[plan]) {
+            return NextResponse.json(
+                errorResponse("Invalid plan. Choose MONTHLY or ANNUAL", 400),
+                { status: 400 }
             );
         }
 
-        const??           );
+        const pool = await getDbConnection();
+
+        // Verify user exists
+        const userResult = await pool.request()
+            .input("code", usercode)
+            .query(`SELECT U_CODE, U_NAME FROM M_TBLUSERS WHERE U_CODE = @code AND U_GROUP = 'USER'`);
+
+        if (!userResult.recordset[0]) {
+            return NextResponse.json(
+                errorResponse("User not found", 404),
+                { status: 404 }
+            );
         }
 
-              }
+        // Calculate new expiry date
+        const newExpiry = new Date();
+        newExpiry.setMonth(newExpiry.getMonth() + PLANS[plan].months);
 
-  extend from t        const body = await request.json?       ??        const { usercode, plan } = body a  
-        // ── Validatimport { NextRequest, Next  .inpve        // ── Validatimport { NextRequest, Next  .input("code", usercode.trimimport { errnt?mport U_GROUP,?mport { errorResponse, successResponse } from "@/lib/rcoimpo Uimport { getDbConnection } f  import { getDbConnection } from te// ── Plan config ─────────────.toconst PLANS: Record<string, { subsType: st  r    MONTHLY: { subsType: "00001", months: 1,  amount: 500  },
-    .s    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 , ")}`, 400),
-             ?   ANNUAL:  { subsType: "00002", months: 12, amount: 5000 ,??                { s??            ?   ANNUAL:  { subsType: "00002", months: 12, amount: 50es            );
-        }
+        // Update subscription in DB
+        await pool.request()
+            .input("code",    usercode)
+            .input("plan",    plan)
+            .input("expiry",  newExpiry)
+            .query(`
+                UPDATE M_TBLUSERS
+                SET U_SUBSSTATUS = 1,
+                    U_MEMSTATUS  = 1,
+                    U_ACTIVE     = 1,
+                    U_SUBSTYPE   = @plan,
+                    U_EXPIREDDATE = @expiry,
+                    M_DATE       = GETDATE()
+                WHERE U_CODE = @code
+            `);
 
-        const??           );
-        }
+        Logger.info(`Subscription renewed: ${usercode} → ${plan} until ${newExpiry.toLocaleDateString("en-GB")}`);
 
-              }
+        return NextResponse.json(
+            successResponse(
+                { usercode, plan: PLANS[plan].label, expiryDate: newExpiry },
+                `Subscription renewed successfully until ${newExpiry.toLocaleDateString("en-GB")}`
+            )
+        );
 
-  extend from t                  }
-
-  ("
-                  }
-
-              }
-
-  
-      .que
-  extend from           // ── Validatimport { NextRequest, Next  .inpve        // ── Vali            U_EXPIREDDATE = @    .s    ANNUAL:  { subsType: "00002", months: 12, amount: 5000 , ")}`, 400),
-             ?   ANNUAL:  { subsType: "00002", months: 12, amount: 5000 ,??                { s??            ?   ANNUAL:  { subsType: "00002", months: 12, amount: 50es            );
-        }
-
-        const??           );
-        }
-
-              }
-
-  extend from t                  }
-
-  ("
-                  }
-
-        const approvalId = await insertApprovalRecord({
-            userCod             ?   ANNUAL:  { subsType: "00002", months: 12, amount: 5000 ,??:         }
-
-        const??           );
-        }
-
-              }
-
-  extend from t                  }
-
-  ("
-                  }
-
-              }
-
-  
-      .que
-  extend from           
-                  }
-
-fig.amount,
-       
-       Amt
-  extend from   
-  ("
-                  }
-
-              
-              }
-
-nul
-  
-      .que ap ro  extend  "             ?   ANNUAL:  { subsType: "00002", months: 12, amount: 5000 ,??                { s??            ?   ANNUAL:  { subsType: "00002", months: 12, amount: 50es            );
-        }
-
-      ey        }
-
-        const??           );
-        }
-
-              }
-
-  extend from t                  }
-
-  ("
-                  }
-
-        const approvalId = await insertApprovalRecord  
-                  }
-
-              }
-
-  
-          
-  exxpiry:  newE
-  ("
-                  }
-
-              
-        const app               userCod             ?   ANNUAL:  { subsTct
-        const??           );
-        }
-
-              }
-
-  extend from t                  }
-
-  ("
-                 }
-
-              }
-
-  
-       .er
-  extend from (p
-  ("
-                  }
-
-            et
-              }
-
-son
-  
-      .queerr rR  extend rror.message || "Internal S
-fig.amount,
-     r.s   us || 500  
-            { st  ("
-          tu   | 
-              
-        
+    } catch (error: any) {
+        Logger.error("Payment API Error:", error);
+        return NextResponse.json(
+            errorResponse(error.message || "Payment processing failed", 500),
+            { status: 500 }
+        );
+    }
+}
