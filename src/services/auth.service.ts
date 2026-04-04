@@ -63,7 +63,6 @@ export async function authenticateUser(usercode: string, pass: string) {
                 .query(`
                     UPDATE M_TBLUSERS
                     SET
-                        U_ACTIVE = 0,
                         U_LOCKED = 1,
                         U_LOCKED_AT = GETDATE()
                     WHERE U_CODE = @usercode
