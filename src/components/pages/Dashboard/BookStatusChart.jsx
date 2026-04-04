@@ -14,9 +14,9 @@ import "./BookStatusChart.scss";
 export default function BookStatusChart({data}) {
 
     const pieData = [
-        { name: "Reserved book", value: data?.TotalReservedBooks ?? "0", gradientId: "grad1" },
-        { name: "Total Books Read", value: data?.TotalBooksRead ?? "0", gradientId: "grad2" },
-        { name: "Books Overdue", value: data?.TotalBooksOverdue ?? "0", gradientId: "grad3" },
+        { name: "Reserved book", value: data?.dashboard_count.TotalReservedBooks ?? "0", gradientId: "grad1" },
+        { name: "Total Books Read", value: data?.dashboard_count.TotalBooksRead ?? "0", gradientId: "grad2" },
+        { name: "Books Overdue", value: data?.dashboard_count.TotalBooksOverdue ?? "0", gradientId: "grad3" },
     ];
 
     // Radial gradients for 3D effect

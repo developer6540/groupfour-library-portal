@@ -22,8 +22,10 @@ const menuItems = [
     },
     {
         title: "Book Catalog", icon: "bi-book", key: "book-catalog", children: [
-            { title: "Book List", path: "/books" },
-            { title: "Reserve Book", path: "/books/reserve" }
+            { title: "Books List", path: "/books" },
+            { title: "Reserve Books", path: "/books/reserve" },
+            { title: "Borrowed Books", path: "/books/borrowed" },
+            { title: "Returned Books", path: "/books/return" }
         ]
     },
     {

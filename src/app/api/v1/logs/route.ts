@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import {errorResponse, successResponse} from "../../../../lib/response";
+import {errorResponse, successResponse} from "@/lib/response";
 
-export async function GET(req) {
+export async function GET(req:any) {
 
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');

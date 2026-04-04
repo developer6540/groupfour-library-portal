@@ -7,6 +7,7 @@ import { useDataContext } from "@/lib/dataContext";
 import { capitalizeFirstLetter, getBaseUrl } from "@/lib/client-utility";
 import { alerts } from "@/lib/alerts";
 import {getUserCode, getUserInfo} from "@/lib/server-utility";
+import {getCsrfToken} from "@/lib/session-client";
 
 const loadBootstrap = async () => {
     if (typeof window !== "undefined" && !window.bootstrap) {
@@ -34,6 +35,8 @@ export default function BookCatalog() {
     const [debouncedFilters, setDebouncedFilters] = useState(filters);
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 12;
+
+    const [userResEligibility, setUserResEligibility] = useState(null);
 
     const safeCap = (str) => str ? capitalizeFirstLetter(str) : "N/A";
 
@@ -72,7 +75,13 @@ export default function BookCatalog() {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/category/list`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
 
             if (response.ok && result.data) {
@@ -97,7 +106,13 @@ export default function BookCatalog() {
                 page: currentPage.toString(),
                 pageSize: booksPerPage.toString(),
             });
-            const response = await fetch(`${getBaseUrl()}/api/v1/book/list?${queryParams.toString()}`);
+            const response = await fetch(`${getBaseUrl()}/api/v1/books/list?${queryParams.toString()}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": getCsrfToken() || '',
+                },
+            });
             const result = await response.json();
             if (response.ok && result.data) {
                 setBooks(result.data.data || []);
@@ -122,6 +137,31 @@ export default function BookCatalog() {
         setCurrentPage(1);
     }, [debouncedFilters]);
 
+    useEffect(() => {
+        const fetchUserEligibility = async () => {
+            const userCode = await getUserCode();
+            if (!userCode) return;
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/v1/user/${userCode}/reservation/eligibility`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": getCsrfToken() || '',
+                    },
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    setUserResEligibility(result.data);
+                }
+            } catch (error) {
+                console.error("Error pre-fetching eligibility:", error);
+            }
+        };
+
+        fetchUserEligibility();
+    }, [currentPage]);
+
     const clearFilters = () => {
         setTitleInput(""); setAuthorInput(""); setIsbnInput(""); setCategoryInput("");
         setFilters({ title: "", author: "", isbn: "", category: "" });
@@ -136,31 +176,36 @@ export default function BookCatalog() {
     };
 
     const handleAddToCart = async (book, e) => {
-
         const user = await getUserInfo();
-        const userData = typeof user === "string" ? JSON.parse(user) : user;
-        const maxBorrow = userData?.U_MAXBORROW || 2;
+        //const userData = typeof user === "string" ? JSON.parse(user) : user;
+        //const maxBorrow = userData?.U_MAXBORROW || 2;
+        const maxReservation = 2;
         const currentCart = Array.isArray(getGlobalDataCart) ? getGlobalDataCart : [];
-
         if (currentCart.some(item => item.B_CODE === book.B_CODE)) {
             alerts.warning("Already in your cart.");
             return;
         }
-        if (currentCart.length >= maxBorrow) {
-            alerts.error(`Limit reached! Max ${maxBorrow} books.`);
+        if (currentCart.length >= maxReservation) {
+            alerts.error(`Limit reached!`, `You may only reserve up to ${maxReservation} books per reservation.`);
             return;
         }
-
         animateToCart(e);
-
         setGlobalDataCart([...currentCart, book]);
     };
 
     const animateToCart = (event) => {
-        const cart = document.getElementById("cart-icon");
 
-        const card = event.target.closest(".book-card");
+        const cart = document.getElementById("cart-icon");
+        if (!cart) return;
+
+        const sourceEl = event?.currentTarget || event?.target;
+        if (!sourceEl) return;
+
+        const card = sourceEl.closest?.(".book-card");
+        if (!card) return;
+
         const img = card.querySelector(".book-image");
+        if (!img) return;
 
         const imgRect = img.getBoundingClientRect();
         const cartRect = cart.getBoundingClientRect();
@@ -173,9 +218,10 @@ export default function BookCatalog() {
         clone.style.width = `${imgRect.width}px`;
         clone.style.height = `${imgRect.height}px`;
         clone.style.zIndex = "20000";
-        clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
         clone.style.pointerEvents = "none";
-        clone.style.filter = "blur(5px)";
+        clone.style.transition = "all 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+        clone.style.transform = "scale(1)";
+        clone.style.opacity = "1";
 
         document.body.appendChild(clone);
 
@@ -185,7 +231,7 @@ export default function BookCatalog() {
             clone.style.width = "40px";
             clone.style.height = "40px";
             clone.style.opacity = "0";
-            clone.style.borderRadius = "20%";
+            clone.style.transform = "scale(0.3)";
         });
 
         setTimeout(() => {
@@ -235,8 +281,8 @@ export default function BookCatalog() {
                     <div className="col-12 text-center py-5"><div className="spinner-border text-purple"></div></div>
                 )}
                 {!isLoading && books.length > 0 ? (
-                    books.map(book => (
-                        <div key={book.B_CODE} className="col-lg-4 col-md-6">
+                    books.map((book, index) => (
+                        <div key={index} className="col-lg-4 col-md-6">
                             <div className="book-card">
                                 <div className="book-isbn">ISBN: {book.B_ISBN}</div>
                                 <div className="book-overlay">
@@ -249,16 +295,16 @@ export default function BookCatalog() {
                                 </div>
                                 <div className="book-image-container category-icon-container bk-rotate book-image" style={{ backgroundImage: `url(${getCoverData(book.B_CODE)})` }}>
                                     <div className="inner-cover-content">
-                                        <div className="top-title-container"><div className="top-title">{safeCap(book.B_TITLE)}</div></div>
+                                        <div className="top-title-container"><div className="top-title">{book.B_TITLE}</div></div>
                                         <div className="mid-icon"><i className="bi bi-book"></i></div>
                                         <div className="bottom-label">{safeCap(book.B_AUTHOR)}</div>
                                     </div>
-                                    <p className="book-stock">{book.TOTAL_AVAILABLE_QTY}</p>
+                                    <p className="book-stock">{book.BI_QTY}</p>
                                 </div>
                                 <div className="book-info">
-                                    <p className="book-title">{safeCap(book.B_TITLE)}</p>
+                                    <p className="book-title mt-2">{book.B_TITLE}</p>
                                     <p className="book-author">{safeCap(book.B_AUTHOR)}</p>
-                                    {renderStars(0)}
+                                    {renderStars(book.STAR_RATE || 0)}
                                     <div className="mt-2"><span className="badge-category">{safeCap(book.B_CATEGORY)}</span></div>
                                 </div>
                             </div>
@@ -282,9 +328,9 @@ export default function BookCatalog() {
                             {selectedBook && (
                                 <div className="row g-0">
                                     <div className="col-md-5 d-none d-md-flex align-items-center justify-content-center p-5 bg-light-purple">
-                                        <div className="book-image-container category-icon-container book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
+                                        <div className="book-image-container category-icon-container bk-rotate book-image" style={{ width:'100%', height:'100%', backgroundImage: `url(${getCoverData(selectedBook.B_CODE)})` }}>
                                             <div className="inner-cover-content">
-                                                <div className="top-title-container"><div className="top-title">{safeCap(selectedBook.B_TITLE)}</div></div>
+                                                <div className="top-title-container"><div className="top-title">{selectedBook.B_TITLE}</div></div>
                                                 <div className="mid-icon"><i className="bi bi-book"></i></div>
                                                 <div className="bottom-label">{safeCap(selectedBook.B_AUTHOR)}</div>
                                             </div>
@@ -295,9 +341,9 @@ export default function BookCatalog() {
                                         <div className="d-flex flex-column h-100">
                                             <div className="mb-4">
                                                 <span className="badge-minimal mb-2">{safeCap(selectedBook.B_CATEGORY)}</span>
-                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{safeCap(selectedBook.B_TITLE)}</h3>
+                                                <h3 className="fw-bold text-dark mb-1 lh-sm">{selectedBook.B_TITLE}</h3>
                                                 <p className="text-muted mb-3">by <span className="text-dark fw-medium">{safeCap(selectedBook.B_AUTHOR)}</span></p>
-                                                <div className="detail-rating-wrap">{renderStars(0)}</div>
+                                                <div className="detail-rating-wrap">{renderStars(selectedBook.STAR_RATE || 0)}</div>
                                             </div>
 
                                             <div className="specs-grid mb-auto">
@@ -311,7 +357,7 @@ export default function BookCatalog() {
                                                 </div>
                                                 <div className="spec-row">
                                                     <span className="label">Available Stock</span>
-                                                    <span className="value fw-semibold">{selectedBook.TOTAL_AVAILABLE_QTY}</span>
+                                                    <span className="value fw-semibold">{selectedBook.BI_QTY}</span>
                                                 </div>
                                             </div>
 

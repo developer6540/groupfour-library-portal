@@ -66,3 +66,50 @@ export async function setUserInfo(updatedData: any) {
         };
     }
 }
+
+export async function generateStrongPassword(length: number = 10): Promise<string> {
+    if (length < 8) length = 8;
+    if (length > 20) length = 20;
+
+    const lower = "abcdefghijklmnopqrstuvwxyz";
+    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numbers = "0123456789";
+    const specials = "@$!%*?&";
+
+    const all = lower + upper + numbers + specials;
+
+    const getRandomChar = (charset: string) => {
+        const array = new Uint32Array(1);
+        crypto.getRandomValues(array);
+        return charset[array[0] % charset.length];
+    };
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
+
+    while (true) {
+        let password = [
+            getRandomChar(lower),
+            getRandomChar(upper),
+            getRandomChar(numbers),
+            getRandomChar(specials)
+        ];
+
+        for (let i = password.length; i < length; i++) {
+            password.push(getRandomChar(all));
+        }
+
+        // Shuffle (Fisher-Yates)
+        for (let i = password.length - 1; i > 0; i--) {
+            const array = new Uint32Array(1);
+            crypto.getRandomValues(array);
+            const j = array[0] % (i + 1);
+            [password[i], password[j]] = [password[j], password[i]];
+        }
+
+        const finalPassword = password.join("");
+
+        if (passwordRegex.test(finalPassword)) {
+            return finalPassword;
+        }
+    }
+}

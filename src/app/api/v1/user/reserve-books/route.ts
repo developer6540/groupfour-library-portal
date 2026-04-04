@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         const result = await reserveBook(body);
 
         return NextResponse.json(
-            successResponse(result, "Reservations submitted successfully")
+            successResponse(result, "Reservations submitted successfully", 201)
         );
 
     } catch (error: any) {

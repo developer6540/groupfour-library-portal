@@ -47,7 +47,7 @@ export default function WelcomeBanner() {
                 </div>
 
                 <img
-                    src="/img/members.png"
+                    src="/img/welcome-banner/members.png"
                     alt="Student"
                     className="welcome-right-img"
                 />

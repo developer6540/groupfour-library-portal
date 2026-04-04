@@ -15,7 +15,7 @@ export async function POST() {
 
         // 2. Return a success response
         return NextResponse.json(
-            successResponse(null, "Logged out successfully")
+            successResponse(null, "Logged out successfully", 201)
         );
     } catch (error: any) {
         return NextResponse.json(

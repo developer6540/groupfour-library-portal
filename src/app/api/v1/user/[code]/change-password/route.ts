@@ -8,7 +8,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ code: s
     try {
         const body = await req.json();
         const updatedUser = await changePassword(code, body);
-        return NextResponse.json(successResponse(updatedUser, "Password successfully changed"));
+        return NextResponse.json(successResponse(updatedUser, "Password successfully changed", 201));
     } catch (error: any) {
         Logger.error("API Error (changePassword): ", error);
         return NextResponse.json(errorResponse(error.message, error.status || 500), {

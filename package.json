@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "clean": "rm -rf .next & next dev"
   },
@@ -22,6 +22,7 @@
     "moment": "^2.30.1",
     "mssql": "^12.2.0",
     "next": "16.1.6",
+    "nodemailer": "^8.0.4",
     "react": "19.2.3",
     "react-chartjs-2": "^5.3.1",
     "react-datepicker": "^9.1.0",
