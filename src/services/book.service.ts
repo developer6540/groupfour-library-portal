@@ -151,7 +151,6 @@ export async function getBorrowedBooks(
 ): Promise<BooksResult> {
     try {
         const pool = await getDbConnection();
-        const request = pool.request();
 
         const searchTerm = searchParams.get("t")?.trim() || null;
         const memberCode = searchParams.get("member")?.trim() || null;
@@ -160,8 +159,13 @@ export async function getBorrowedBooks(
         const pageSize = options.pageSize && options.pageSize > 0 ? options.pageSize : 12;
         const offset = (page - 1) * pageSize;
 
-        request.input("T", searchTerm);
-        request.input("MC", memberCode);
+        const request1 = pool.request();
+        request1.input("T", searchTerm);
+        request1.input("MC", memberCode);
+
+        const request2 = pool.request();
+        request2.input("T", searchTerm);
+        request2.input("MC", memberCode);
 
         const whereClause = `
             WHERE (@T IS NULL
@@ -218,8 +222,8 @@ export async function getBorrowedBooks(
             ${whereClause}
         `;
 
-        const result = await request.query(dataQuery);
-        const countResult = await request.query(countQuery);
+        const result = await request1.query(dataQuery);
+        const countResult = await request2.query(countQuery);
         const total = countResult.recordset[0]?.total || 0;
 
         return { data: result.recordset || [], total };
@@ -335,7 +339,6 @@ export async function getReturnedBooks(
 ): Promise<BooksResult> {
     try {
         const pool = await getDbConnection();
-        const request = pool.request();
 
         const searchTerm = searchParams.get("t")?.trim() || null;
         const memberCode = searchParams.get("member")?.trim() || null;
@@ -347,8 +350,13 @@ export async function getReturnedBooks(
         const pageSize = options.pageSize && options.pageSize > 0 ? options.pageSize : 12;
         const offset = (page - 1) * pageSize;
 
-        request.input("T", searchTerm);
-        request.input("MC", memberCode);
+        const request1 = pool.request();
+        request1.input("T", searchTerm);
+        request1.input("MC", memberCode);
+
+        const request2 = pool.request();
+        request2.input("T", searchTerm);
+        request2.input("MC", memberCode);
 
         const whereClause = `
             WHERE h.RH_MEMBERCODE = @MC
@@ -393,8 +401,8 @@ export async function getReturnedBooks(
             ${whereClause}
         `;
 
-        const result = await request.query(dataQuery);
-        const countResult = await request.query(countQuery);
+        const result = await request1.query(dataQuery);
+        const countResult = await request2.query(countQuery);
         const total = countResult.recordset[0]?.total || 0;
 
         return { data: result.recordset || [], total };
@@ -439,7 +447,6 @@ export async function getAllReturnBooks(
 ): Promise<BooksResult> {
     try {
         const pool = await getDbConnection();
-        const request = pool.request();
 
         const searchTerm = searchParams.get("t")?.trim() || null;
         const memberCode = options.userCode?.trim() || searchParams.get("member")?.trim() || null;
@@ -450,8 +457,13 @@ export async function getAllReturnBooks(
         const pageSize = options.pageSize && options.pageSize > 0 ? options.pageSize : 10;
         const offset = (page - 1) * pageSize;
 
-        request.input("T", searchTerm);
-        request.input("MC", memberCode);
+        const request1 = pool.request();
+        request1.input("T", searchTerm);
+        request1.input("MC", memberCode);
+
+        const request2 = pool.request();
+        request2.input("T", searchTerm);
+        request2.input("MC", memberCode);
 
         const whereClause = `
             WHERE h.RH_MEMBERCODE = @MC
@@ -496,8 +508,8 @@ export async function getAllReturnBooks(
             ${whereClause}
         `;
 
-        const result = await request.query(dataQuery);
-        const countResult = await request.query(countQuery);
+        const result = await request1.query(dataQuery);
+        const countResult = await request2.query(countQuery);
         const total = countResult.recordset[0]?.total || 0;
 
         return { data: result.recordset || [], total };
