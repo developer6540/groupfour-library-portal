@@ -3,6 +3,7 @@ import Logger from "@/lib/logger";
 import {registerUser} from "@/services/auth.service";
 import {NextRequest, NextResponse} from "next/server";
 import {pushNotification} from "@/services/notification.service";
+import {setSessionServer} from "@/lib/session-server";
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,6 +15,9 @@ export async function POST(req: NextRequest) {
             title: "Registration",
             message: "Account created successfully",
         })
+        await setSessionServer("user-info", {
+            U_CODE: body.U_CODE
+        });
         return NextResponse.json(successResponse(updatedUser, "Account registered successfully", 201));
     } catch (error: any) {
         Logger.error("API Error (registerUser): ", error);

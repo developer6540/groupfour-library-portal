@@ -22,7 +22,7 @@ export async function middleware(req: NextRequest) {
         "/sign-in",
         "/register",
         "/forgot-password",
-        "/payment",
+        "/payment-gateway",
         "/membership-payment",
         "/api/v1/auth/login",
         "/api/v1/auth/register",

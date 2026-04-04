@@ -48,6 +48,8 @@ export async function POST(req: NextRequest) {
         const newExpiry = new Date();
         newExpiry.setMonth(newExpiry.getMonth() + PLANS[plan].months);
 
+        console.log("GGGGGGGGGGGGGGGG ", newExpiry, usercode);
+
         // Update subscription in DB
         await pool.request()
             .input("code",    usercode)
@@ -64,10 +66,10 @@ export async function POST(req: NextRequest) {
                 WHERE U_CODE = @code
             `);
 
-        Logger.info(`Subscription renewed: ${usercode} → ${plan} until ${newExpiry.toLocaleDateString("en-GB")}`);
+        Logger.info(`Subscription plan: ${usercode} → ${plan} until ${newExpiry.toLocaleDateString("en-GB")}`);
 
         return NextResponse.json(
-            successResponse({ usercode, plan: PLANS[plan].label, expiryDate: newExpiry }, `Subscription renewed successfully until ${newExpiry.toLocaleDateString("en-GB")}`)
+            successResponse({ usercode, plan: PLANS[plan].label, expiryDate: newExpiry }, `Subscription plan: ${usercode} → ${plan} until ${newExpiry.toLocaleDateString("en-GB")}`)
         );
 
     } catch (error: any) {
