@@ -432,3 +432,115 @@ export async function getDueNotifications(memberCode: string): Promise<any[]> {
         throw throwException(error.message || "Database error", error.status || 500);
     }
 }
+
+export async function getAllReturnBooks(
+    searchParams: URLSearchParams,
+    options: GetBooksOptions = {}
+): Promise<BooksResult> {
+    try {
+        const pool = await getDbConnection();
+        const request = pool.request();
+
+        const searchTerm = searchParams.get("t")?.trim() || null;
+        const memberCode = options.userCode?.trim() || searchParams.get("member")?.trim() || null;
+
+        if (!memberCode) return { data: [], total: 0 };
+
+        const page = options.page && options.page > 0 ? options.page : 1;
+        const pageSize = options.pageSize && options.pageSize > 0 ? options.pageSize : 10;
+        const offset = (page - 1) * pageSize;
+
+        request.input("T", searchTerm);
+        request.input("MC", memberCode);
+
+        const whereClause = `
+            WHERE h.RH_MEMBERCODE = @MC
+              AND (@T IS NULL
+                   OR b.B_TITLE  LIKE '%' + @T + '%'
+                   OR b.B_AUTHOR LIKE '%' + @T + '%'
+                   OR ISNULL(b.B_ISBN,'') LIKE '%' + @T + '%')
+        `;
+
+        const dataQuery = `
+            SELECT
+                h.RH_DOCNO,
+                h.RH_BORROW_DOCNO,
+                h.RH_MEMBERCODE,
+                h.RH_RETURNDATE,
+                h.RH_STATUS,
+                d.RD_LINENO,
+                d.RD_BOOKCODE,
+                d.RD_RETURN_QTY,
+                d.RD_CONDITION,
+                d.RD_FINE_AMOUNT,
+                d.RD_REMARK,
+                b.B_TITLE,
+                b.B_AUTHOR,
+                b.B_PUBLISHER,
+                b.B_ISBN,
+                c.BC_NAME AS B_CATEGORY
+            FROM dbo.T_TBLBOOKRETURN_H h
+            INNER JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO  = h.RH_DOCNO
+            INNER JOIN dbo.M_TBLBOOKS b          ON b.B_CODE   = d.RD_BOOKCODE
+            LEFT  JOIN dbo.M_TBLBOOKCATEGORY c   ON c.BC_CODE  = b.B_CATEGORY
+            ${whereClause}
+            ORDER BY h.RH_RETURNDATE DESC, h.RH_DOCNO, d.RD_LINENO
+            OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY;
+        `;
+
+        const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM dbo.T_TBLBOOKRETURN_H h
+            INNER JOIN dbo.T_TBLBOOKRETURN_D d ON d.RD_DOCNO  = h.RH_DOCNO
+            INNER JOIN dbo.M_TBLBOOKS b          ON b.B_CODE   = d.RD_BOOKCODE
+            ${whereClause}
+        `;
+
+        const result = await request.query(dataQuery);
+        const countResult = await request.query(countQuery);
+        const total = countResult.recordset[0]?.total || 0;
+
+        return { data: result.recordset || [], total };
+    } catch (error: any) {
+        throw throwException(error.message || "Database error", error.status || 500);
+    }
+}
+
+export async function processBookReturn(
+    docNo: string,
+    lineNo: number,
+    memberCode: string
+): Promise<void> {
+    try {
+        const pool = await getDbConnection();
+        const request = pool.request();
+
+        request.input("DocNo", docNo);
+        request.input("LineNo", lineNo);
+        request.input("MC", memberCode);
+
+        // Mark the borrow detail line as returned
+        await request.query(`
+            UPDATE dbo.T_TBLBOOKBORROW_D
+            SET BD_STATUS       = 'R',
+                BD_RETURNED_QTY = BD_QTY
+            WHERE BD_DOCNO  = @DocNo
+              AND BD_LINENO = @LineNo
+        `);
+
+        // If all lines for the borrow header are returned, close the header
+        await pool.request()
+            .input("DocNo", docNo)
+            .query(`
+                UPDATE dbo.T_TBLBOOKBORROW_H
+                SET BH_STATUS = 'C'
+                WHERE BH_DOCNO = @DocNo
+                  AND NOT EXISTS (
+                      SELECT 1 FROM dbo.T_TBLBOOKBORROW_D
+                      WHERE BD_DOCNO = @DocNo AND BD_STATUS <> 'R'
+                  )
+            `);
+    } catch (error: any) {
+        throw throwException(error.message || "Database error", error.status || 500);
+    }
+}
