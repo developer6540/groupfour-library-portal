@@ -349,7 +349,7 @@ export default function BookCatalog() {
 
                                             <div className="specs-grid mb-auto">
                                                 <div className="spec-row">
-                                                    <span className="label">ISBN-13</span>
+                                                    <span className="label">ISBN</span>
                                                     <span className="value">{selectedBook.B_ISBN}</span>
                                                 </div>
                                                 <div className="spec-row">

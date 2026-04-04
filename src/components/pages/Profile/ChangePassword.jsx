@@ -276,7 +276,7 @@ export default function ChangePassword() {
 
                 <div className="row align-items-start">
                     <div className="col-md-5 text-center mb-3">
-                        <Image src="/img/pass-change.png" alt="Security" width={150} height={150} priority style={{ width: '100%', height: 'auto' }} />
+                        <Image src="/img/pass-change.png" alt="Security" width={150} height={150} priority style={{ width: '100%', height: 'auto', marginTop:"60px" }} />
                     </div>
 
                     <div className="col-md-7">
@@ -315,18 +315,18 @@ export default function ChangePassword() {
                                             <i className={`bi ${field.show ? "bi-eye-slash" : "bi-eye"}`}></i>
                                         </span>
 
-                                        {field.name === "newPassword" && formData.newPassword && (
-                                            <div className="mt-2">
-                                                <div className="progress" style={{ height: "6px" }}>
-                                                    <div
-                                                        className={`progress-bar ${passwordStrength.color}`}
-                                                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
                                     </div>
+
+                                    {field.name === "newPassword" && formData.newPassword && (
+                                        <div className="mt-2">
+                                            <div className="progress" style={{ height: "6px" }}>
+                                                <div
+                                                    className={`progress-bar ${passwordStrength.color}`}
+                                                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {field.name === "confirmPassword" && formData.confirmPassword && (
                                         <div className="mt-2">
